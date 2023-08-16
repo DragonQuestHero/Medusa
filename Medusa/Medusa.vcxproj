@@ -130,7 +130,7 @@
     <ClCompile Include="libpeconv\resource_util.cpp" />
     <ClCompile Include="libpeconv\tls_parser.cpp" />
     <ClCompile Include="libpeconv\util.cpp" />
-    <ClCompile Include="Module.cc" />
+    <ClCompile Include="Modules.cc" />
     <ClCompile Include="Process.cc" />
     <QtRcc Include="Medusa.qrc" />
     <QtUic Include="HookScanner.ui" />
@@ -138,6 +138,7 @@
     <ClCompile Include="Medusa.cpp" />
     <ClCompile Include="main.cpp" />
     <QtUic Include="Medusa.ui" />
+    <QtUic Include="Modules.ui" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Driver_Load.h" />
@@ -146,7 +147,7 @@
     <ClInclude Include="libpeconv\fix_dot_net_ep.h" />
     <ClInclude Include="libpeconv\ntddk.h" />
     <ClInclude Include="libpeconv\peconv.h" />
-    <ClInclude Include="Module.h" />
+    <QtMoc Include="Modules.h" />
     <ClInclude Include="ntdll.h" />
     <ClInclude Include="ntstatus.h" />
     <ClInclude Include="Process.h" />

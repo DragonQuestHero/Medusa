@@ -1,6 +1,6 @@
 #include "FileCheck.h"
 
-#include "Module.h"
+#include "Modules.h"
 
 #include "libpeconv/peconv.h"
 #include "libpeconv/peconv/pe_loader.h"
@@ -59,7 +59,7 @@ bool FileCheck::CheckSimple(ULONG64 PID)
 		return false;
 	}
 
-	Module _Module;
+	Modules _Module;
 	std::vector<MODULEENTRY32W> temp_vector = _Module.GetWin32MoudleList(PID);
 	if (temp_vector.size() == 0)
 	{
@@ -154,7 +154,7 @@ std::vector<_CheckDifferent> FileCheck::CheckPlain(ULONG64 PID)
 		return temp_vector_check;
 	}
 
-	Module _Module;
+	Modules _Module;
 	std::vector<MODULEENTRY32W> temp_vector = _Module.GetWin32MoudleList(PID);
 	if (temp_vector.size() == 0)
 	{
@@ -203,6 +203,7 @@ std::vector<_CheckDifferent> FileCheck::CheckPlain(ULONG64 PID)
 			}
 			_CheckDifferent temp__CheckDifferent;
 			RtlZeroMemory(&temp__CheckDifferent, sizeof(_CheckDifferent));
+			temp__CheckDifferent.Fail = true;
 			RtlCopyMemory(temp__CheckDifferent.Name, x.szModule, 256);
 			RtlCopyMemory(temp__CheckDifferent.Path, x.szExePath, MAX_PATH);
 			temp_vector_check.push_back(temp__CheckDifferent);
@@ -217,6 +218,7 @@ std::vector<_CheckDifferent> FileCheck::CheckPlain(ULONG64 PID)
 			{
 				_CheckDifferent temp__CheckDifferent;
 				RtlZeroMemory(&temp__CheckDifferent, sizeof(_CheckDifferent));
+				temp__CheckDifferent.Fail = true;
 				RtlCopyMemory(temp__CheckDifferent.Name, x.szModule, 256);
 				RtlCopyMemory(temp__CheckDifferent.Path, x.szExePath, MAX_PATH);
 				temp_vector_check.push_back(temp__CheckDifferent);

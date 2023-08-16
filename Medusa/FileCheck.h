@@ -19,6 +19,7 @@ struct _CheckDifferent
 	ULONG64 Addr;
 	char FileHex[20];
 	char MemoryHex[20];
+	bool Fail;
 };
 
 

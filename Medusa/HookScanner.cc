@@ -14,7 +14,7 @@ HookScanner::HookScanner(QWidget* parent)
 	_Model->setColumnCount(6);
 	_Model->setHeaderData(0, Qt::Horizontal, u8"Index");
 	_Model->setHeaderData(1, Qt::Horizontal, u8"Name");
-	_Model->setHeaderData(2, Qt::Horizontal, u8"Offset");
+	_Model->setHeaderData(2, Qt::Horizontal, u8"Addr");
 	_Model->setHeaderData(3, Qt::Horizontal, u8"File");
 	_Model->setHeaderData(4, Qt::Horizontal, u8"Memory");
 	_Model->setHeaderData(5, Qt::Horizontal, u8"Path");

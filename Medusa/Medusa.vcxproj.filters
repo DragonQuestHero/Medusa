@@ -52,9 +52,6 @@
     <ClCompile Include="FileCheck.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Module.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="libpeconv\buffer_util.cpp">
       <Filter>Header Files\libpeconv</Filter>
     </ClCompile>
@@ -145,6 +142,9 @@
     <ClCompile Include="HookScanner.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Modules.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Process.h">
@@ -160,9 +160,6 @@
       <Filter>Header Files\Driver_Load</Filter>
     </ClInclude>
     <ClInclude Include="FileCheck.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Module.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="libpeconv\fix_dot_net_ep.h">
@@ -187,9 +184,15 @@
     <QtUic Include="HookScanner.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+    <QtUic Include="Modules.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="HookScanner.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Modules.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

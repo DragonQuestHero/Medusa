@@ -13,7 +13,9 @@
 
 #include "ui_Medusa.h"
 #include "ui_HookScanner.h"
+#include "ui_Modules.h"
 #include "HookScanner.h"
+#include "Modules.h"
 
 #include "Process.h"
 #include "Driver_Load.h"
@@ -32,6 +34,8 @@ public slots:
 	void ProcessRightMenu(QAction*);
 	void DriverLoad(QAction*);
 	void GetProcessList();
+	void R3ModulesView(ULONG64 PID);
+	void R0ModulesView(ULONG64 PID);
 private:
 	bool _Driver_Loaded = false;
 private:
@@ -41,13 +45,17 @@ private:
 private:
     Ui::MedusaClass ui;
 	HookScanner _HookScanner;
+	Modules _Modules;
     QStandardItemModel* _Model;
 private:
-	QMenu _TableView_Menu_R3Inject;
-	QAction _TableView_Action_R3Inject;
+	QMenu _TableView_Menu_Inject;
+	QAction _TableView_Action_Inject;
 
 	QMenu _HookCheck;
 	QAction _Hook_QAction_Check;
+
+	QMenu _TableView_Menu_Modules;
+	QAction _TableView_Action_Modules;
 public:
 	int Enable_Debug()
 	{

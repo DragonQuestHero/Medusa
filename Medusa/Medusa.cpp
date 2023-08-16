@@ -36,11 +36,10 @@ Medusa::Medusa(QWidget *parent)
 	QTextCodec* codec = QTextCodec::codecForName("UTF-8");
 	QTextCodec::setCodecForLocale(codec);
 
-	_TableView_Action_R3Inject.setMenu(&_TableView_Menu_R3Inject);
-
-	_TableView_Menu_R3Inject.setTitle("Inject DLL");
-	_TableView_Menu_R3Inject.addAction("CreateRemoteThread+LoadLibraryA");
-	_TableView_Menu_R3Inject.addAction("NtCreateRemoteThread+syscall+shellcode+ldrloadlibaby");
+	_TableView_Action_Inject.setMenu(&_TableView_Menu_Inject);
+	_TableView_Menu_Inject.setTitle("Inject DLL");
+	_TableView_Menu_Inject.addAction("CreateRemoteThread+LoadLibraryA");
+	_TableView_Menu_Inject.addAction("NtCreateRemoteThread+syscall+shellcode+ldrloadlibaby");
 
 
 	_Hook_QAction_Check.setMenu(&_HookCheck);
@@ -49,8 +48,17 @@ Medusa::Medusa(QWidget *parent)
 	_HookCheck.addAction("R3HookScanner"); 
 	_HookCheck.addAction("R3QuickCheckALL");
 
-	ui.tableView->addAction(&_TableView_Action_R3Inject);
+
+	_TableView_Action_Modules.setMenu(&_TableView_Menu_Modules);
+	_TableView_Menu_Modules.setTitle("ModulesView");
+	_TableView_Menu_Modules.addAction("R3ModulesView");
+	_TableView_Menu_Modules.addAction("R0ModulesView(hide check)");
+
+
+
+	ui.tableView->addAction(&_TableView_Action_Inject);
 	ui.tableView->addAction(&_Hook_QAction_Check);
+	ui.tableView->addAction(&_TableView_Action_Modules);
 
 
 	Set_SLOTS();
@@ -72,8 +80,9 @@ void Medusa::Set_SLOTS()
 {
 	connect(ui.tabWidget, SIGNAL(tabBarClicked(int)), SLOT(ChangeTab()));//进程
 
-	connect(&_TableView_Menu_R3Inject, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
+	connect(&_TableView_Menu_Inject, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 	connect(&_HookCheck, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
+	connect(&_TableView_Menu_Modules, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 
 
 	connect(ui.menuMenu, SIGNAL(triggered(QAction*)), SLOT(DriverLoad(QAction*)));
@@ -320,14 +329,25 @@ void Medusa::ProcessRightMenu(QAction* action)
 			_HookScanner._Model->setData(_HookScanner._Model->index(i, 3), String_TO_HEX(std::string(x.FileHex,20)).data());
 			_HookScanner._Model->setData(_HookScanner._Model->index(i, 4), String_TO_HEX(std::string(x.MemoryHex, 20)).data());
 			_HookScanner._Model->setData(_HookScanner._Model->index(i, 5), QString::fromWCharArray(x.Path));
+			if (x.Fail)
+			{
+				_HookScanner._Model->item(i, 0)->setBackground(QColor(Qt::red));
+				_HookScanner._Model->item(i, 1)->setBackground(QColor(Qt::red));
+				_HookScanner._Model->item(i, 2)->setBackground(QColor(Qt::red));
+				_HookScanner._Model->item(i, 3)->setBackground(QColor(Qt::red));
+				_HookScanner._Model->item(i, 4)->setBackground(QColor(Qt::red));
+				_HookScanner._Model->item(i, 5)->setBackground(QColor(Qt::red));
+			}
 			i++;
 		}
 		_HookScanner.show();
-		
-
-		//QMessageBox::information(this, "1", "2");
 	}
 
+
+	if (action->text() == "R3ModulesView")
+	{
+		R3ModulesView(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+	}
 }
 
 void Medusa::ChangeTab()
@@ -338,6 +358,36 @@ void Medusa::ChangeTab()
 	}
 }
 
+void Medusa::R3ModulesView(ULONG64 PID)
+{
+	std::vector<MODULEENTRY32W> temp_vector =
+		_Modules.GetWin32MoudleList(PID);
+	int i = 0;
+	for (auto x : temp_vector)
+	{
+		_Modules._Model->setVerticalHeaderItem(i, new QStandardItem);
+		_Modules._Model->setData(_Modules._Model->index(i, 0), i);
+		_Modules._Model->setData(_Modules._Model->index(i, 1), QString::fromWCharArray(x.szModule));
+		std::ostringstream ret;
+		ret << std::hex << "0x" << (ULONG64)x.modBaseAddr;
+		_Modules._Model->setData(_Modules._Model->index(i, 2), ret.str().data());
+		std::ostringstream ret2;
+		ret2 << std::hex << "0x" << x.modBaseSize;
+		_Modules._Model->setData(_Modules._Model->index(i, 3), ret2.str().data());
+		std::wstring retStr;
+		if (_Process.QueryValue(L"FileDescription", x.szExePath, retStr))
+		{
+			_Modules._Model->setData(_Modules._Model->index(i, 4), QString::fromWCharArray(retStr.data()));
+		}
+		i++;
+	}
+	_Modules.show();
+}
+
+void Medusa::R0ModulesView(ULONG64 PID)
+{
+	
+}
 
 void Medusa::GetProcessList()
 {
