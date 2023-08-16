@@ -145,6 +145,9 @@
     <ClCompile Include="Modules.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Threads.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Process.h">
@@ -187,12 +190,18 @@
     <QtUic Include="Modules.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+    <QtUic Include="Threads.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="HookScanner.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="Modules.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Threads.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

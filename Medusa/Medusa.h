@@ -14,8 +14,12 @@
 #include "ui_Medusa.h"
 #include "ui_HookScanner.h"
 #include "ui_Modules.h"
+#include "ui_Threads.h"
+
 #include "HookScanner.h"
 #include "Modules.h"
+#include "Threads.h"
+
 
 #include "Process.h"
 #include "Driver_Load.h"
@@ -34,8 +38,12 @@ public slots:
 	void ProcessRightMenu(QAction*);
 	void DriverLoad(QAction*);
 	void GetProcessList();
-	void R3ModulesView(ULONG64 PID);
-	void R0ModulesView(ULONG64 PID);
+	void RightMenuR3ModulesView(ULONG64 PID);
+	void RightMenuR0ModulesView(ULONG64 PID);
+	void RightMenuDLLInject(QAction*);
+	void RightMenuHookScanner(QAction*);
+	void RightMenuR3ThreadsView(ULONG64 PID);
+	void RightMenuR0ThreadsView(ULONG64 PID);
 private:
 	bool _Driver_Loaded = false;
 private:
@@ -46,16 +54,77 @@ private:
     Ui::MedusaClass ui;
 	HookScanner _HookScanner;
 	Modules _Modules;
+	Threads _Threads;
     QStandardItemModel* _Model;
 private:
 	QMenu _TableView_Menu_Inject;
 	QAction _TableView_Action_Inject;
 
-	QMenu _HookCheck;
-	QAction _Hook_QAction_Check;
+	QMenu _TableView_Menu_HookCheck;
+	QAction _TableView_Action_HookCheck;
 
 	QMenu _TableView_Menu_Modules;
 	QAction _TableView_Action_Modules;
+
+	QMenu _TableView_Menu_Threads;
+	QAction _TableView_Action_Threads;
+public:
+	void ProcessUI()
+	{
+		_Model = new QStandardItemModel();
+		ui.tableView->setModel(_Model);
+		ui.tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+		ui.tableView->horizontalHeader()->setSectionsClickable(false);
+		ui.tableView->verticalHeader()->setDefaultSectionSize(25);
+		ui.tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+		_Model->setColumnCount(6);
+		_Model->setHeaderData(0, Qt::Horizontal, u8"Index");
+		_Model->setHeaderData(1, Qt::Horizontal, u8"PID");
+		_Model->setHeaderData(2, Qt::Horizontal, u8"Name");
+		_Model->setHeaderData(3, Qt::Horizontal, u8"EPROCESS");
+		_Model->setHeaderData(4, Qt::Horizontal, u8"Path");
+		_Model->setHeaderData(5, Qt::Horizontal, u8"Desciption");
+		ui.tableView->setColumnWidth(0, 50);
+		ui.tableView->setColumnWidth(1, 100);
+		ui.tableView->setColumnWidth(2, 200);
+		ui.tableView->setColumnWidth(3, 200);
+		ui.tableView->setColumnWidth(4, 500);
+		ui.tableView->setColumnWidth(5, 400);
+		ui.tableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	}
+	void ProcessRightMenuUI()
+	{
+		_TableView_Action_Inject.setMenu(&_TableView_Menu_Inject);
+		_TableView_Menu_Inject.setTitle("Inject DLL");
+		_TableView_Menu_Inject.addAction("CreateRemoteThread+LoadLibraryA");
+		_TableView_Menu_Inject.addAction("NtCreateRemoteThread+syscall+shellcode+ldrloadlibaby");
+
+
+		_TableView_Action_HookCheck.setMenu(&_TableView_Menu_HookCheck);
+		_TableView_Menu_HookCheck.setTitle("HookScanner");
+		_TableView_Menu_HookCheck.addAction("R3HookScannerSimple(Y/N)");
+		_TableView_Menu_HookCheck.addAction("R3HookScanner");
+		_TableView_Menu_HookCheck.addAction("R3QuickCheckALL");
+
+
+		_TableView_Action_Modules.setMenu(&_TableView_Menu_Modules);
+		_TableView_Menu_Modules.setTitle("ModulesView");
+		_TableView_Menu_Modules.addAction("R3ModulesView");
+		_TableView_Menu_Modules.addAction("R0ModulesView(second check)");
+
+		_TableView_Action_Threads.setMenu(&_TableView_Menu_Threads);
+		_TableView_Menu_Threads.setTitle("ThreadView");
+		_TableView_Menu_Threads.addAction("R3ThreadView");
+		_TableView_Menu_Threads.addAction("R0ThreadView(second check)");
+
+
+
+		ui.tableView->addAction(&_TableView_Action_Inject);
+		ui.tableView->addAction(&_TableView_Action_HookCheck);
+		ui.tableView->addAction(&_TableView_Action_Modules);
+		ui.tableView->addAction(&_TableView_Action_Threads);
+	}
 public:
 	int Enable_Debug()
 	{

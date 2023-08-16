@@ -11,54 +11,12 @@ Medusa::Medusa(QWidget *parent)
     ui.setupUi(this);
 	Enable_Debug();
 
-	_Model = new QStandardItemModel();
-	ui.tableView->setModel(_Model);
-	ui.tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	ui.tableView->horizontalHeader()->setSectionsClickable(false);
-	ui.tableView->verticalHeader()->setDefaultSectionSize(25);
-	ui.tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-
-	_Model->setColumnCount(5);
-	_Model->setHeaderData(0, Qt::Horizontal, u8"Index");
-	_Model->setHeaderData(1, Qt::Horizontal, u8"PID");
-	_Model->setHeaderData(2, Qt::Horizontal, u8"Name");
-	_Model->setHeaderData(3, Qt::Horizontal, u8"Path");
-	_Model->setHeaderData(4, Qt::Horizontal, u8"Desciption");
-	ui.tableView->setColumnWidth(0, 50);
-	ui.tableView->setColumnWidth(1, 70);
-	ui.tableView->setColumnWidth(2, 180);
-	ui.tableView->setColumnWidth(3, 900);
-	ui.tableView->setColumnWidth(4, 400);
-	ui.tableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-
+	ProcessUI();
+	ProcessRightMenuUI();
 	
 	QTextCodec* codec = QTextCodec::codecForName("UTF-8");
 	QTextCodec::setCodecForLocale(codec);
 
-	_TableView_Action_Inject.setMenu(&_TableView_Menu_Inject);
-	_TableView_Menu_Inject.setTitle("Inject DLL");
-	_TableView_Menu_Inject.addAction("CreateRemoteThread+LoadLibraryA");
-	_TableView_Menu_Inject.addAction("NtCreateRemoteThread+syscall+shellcode+ldrloadlibaby");
-
-
-	_Hook_QAction_Check.setMenu(&_HookCheck);
-	_HookCheck.setTitle("HookScanner");
-	_HookCheck.addAction("R3HookScannerSimple(Y/N)");
-	_HookCheck.addAction("R3HookScanner"); 
-	_HookCheck.addAction("R3QuickCheckALL");
-
-
-	_TableView_Action_Modules.setMenu(&_TableView_Menu_Modules);
-	_TableView_Menu_Modules.setTitle("ModulesView");
-	_TableView_Menu_Modules.addAction("R3ModulesView");
-	_TableView_Menu_Modules.addAction("R0ModulesView(hide check)");
-
-
-
-	ui.tableView->addAction(&_TableView_Action_Inject);
-	ui.tableView->addAction(&_Hook_QAction_Check);
-	ui.tableView->addAction(&_TableView_Action_Modules);
 
 
 	Set_SLOTS();
@@ -81,8 +39,9 @@ void Medusa::Set_SLOTS()
 	connect(ui.tabWidget, SIGNAL(tabBarClicked(int)), SLOT(ChangeTab()));//进程
 
 	connect(&_TableView_Menu_Inject, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
-	connect(&_HookCheck, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
+	connect(&_TableView_Menu_HookCheck, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 	connect(&_TableView_Menu_Modules, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
+	connect(&_TableView_Menu_Threads, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 
 
 	connect(ui.menuMenu, SIGNAL(triggered(QAction*)), SLOT(DriverLoad(QAction*)));
@@ -234,7 +193,43 @@ void Medusa::ProcessRightMenu(QAction* action)
 {
 	if (action->text() == "CreateRemoteThread+LoadLibraryA")
 	{
-		HANDLE handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, 
+		RightMenuDLLInject(action);
+		return;
+	}
+
+	if (action->text() == "R3QuickCheckALL" || 
+		action->text() == "R3HookScanner" || 
+		action->text() == "R3HookScannerSimple(Y/N)")
+	{
+		RightMenuHookScanner(action);
+		return;
+	}
+
+
+	if (action->text() == "R3ModulesView")
+	{
+		RightMenuR3ModulesView(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+	}
+
+	if (action->text() == "R3ThreadView")
+	{
+		RightMenuR3ThreadsView(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+	}
+}
+
+void Medusa::ChangeTab()
+{
+	if (ui.tabWidget->currentIndex() == 0)
+	{
+		GetProcessList();
+	}
+}
+
+void Medusa::RightMenuDLLInject(QAction* action)
+{
+	if (action->text() == "CreateRemoteThread+LoadLibraryA")
+	{
+		HANDLE handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE,
 			_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
 		if (handle != NULL)
 		{
@@ -266,9 +261,12 @@ void Medusa::ProcessRightMenu(QAction* action)
 			QMessageBox::information(this, "dll inject", "unsuccess");
 			CloseHandle(handle);
 		}
-		
-	}
 
+	}
+}
+
+void Medusa::RightMenuHookScanner(QAction* action)
+{
 	if (action->text() == "R3QuickCheckALL")
 	{
 		FileCheck temp_check;
@@ -285,14 +283,14 @@ void Medusa::ProcessRightMenu(QAction* action)
 			{
 				temp_str = temp_str + QString::fromWCharArray(x.Name).toStdString() + "\r\n";
 			}
-			ui.progressBar->setValue(ui.progressBar->value()+1);
+			ui.progressBar->setValue(ui.progressBar->value() + 1);
 		}
 		temp_str = temp_str + "\r\n detected hook";
 		QMessageBox::information(this, "Ret", temp_str.data());
 	}
 	if (action->text() == "R3HookScannerSimple(Y/N)")
 	{
-		if (_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 0 
+		if (_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 0
 			|| _Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 4)
 		{
 			return;
@@ -314,7 +312,7 @@ void Medusa::ProcessRightMenu(QAction* action)
 		{
 			return;
 		}
-		_HookScanner._Model->removeRows(0, _Model->rowCount());
+		_HookScanner._Model->removeRows(0, _HookScanner._Model->rowCount());
 		FileCheck temp_check;
 		std::vector<_CheckDifferent> temp_vector = temp_check.CheckPlain(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
 		int i = 0;
@@ -324,9 +322,9 @@ void Medusa::ProcessRightMenu(QAction* action)
 			_HookScanner._Model->setData(_HookScanner._Model->index(i, 0), i);
 			_HookScanner._Model->setData(_HookScanner._Model->index(i, 1), QString::fromWCharArray(x.Name));
 			std::ostringstream ret;
-			ret << std::hex <<"0x" << x.Addr;
+			ret << std::hex << "0x" << x.Addr;
 			_HookScanner._Model->setData(_HookScanner._Model->index(i, 2), ret.str().data());
-			_HookScanner._Model->setData(_HookScanner._Model->index(i, 3), String_TO_HEX(std::string(x.FileHex,20)).data());
+			_HookScanner._Model->setData(_HookScanner._Model->index(i, 3), String_TO_HEX(std::string(x.FileHex, 20)).data());
 			_HookScanner._Model->setData(_HookScanner._Model->index(i, 4), String_TO_HEX(std::string(x.MemoryHex, 20)).data());
 			_HookScanner._Model->setData(_HookScanner._Model->index(i, 5), QString::fromWCharArray(x.Path));
 			if (x.Fail)
@@ -342,24 +340,11 @@ void Medusa::ProcessRightMenu(QAction* action)
 		}
 		_HookScanner.show();
 	}
-
-
-	if (action->text() == "R3ModulesView")
-	{
-		R3ModulesView(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
-	}
 }
 
-void Medusa::ChangeTab()
+void Medusa::RightMenuR3ModulesView(ULONG64 PID)
 {
-	if (ui.tabWidget->currentIndex() == 0)
-	{
-		GetProcessList();
-	}
-}
-
-void Medusa::R3ModulesView(ULONG64 PID)
-{
+	_Modules._Model->removeRows(0, _Modules._Model->rowCount());
 	std::vector<MODULEENTRY32W> temp_vector =
 		_Modules.GetWin32MoudleList(PID);
 	int i = 0;
@@ -384,9 +369,33 @@ void Medusa::R3ModulesView(ULONG64 PID)
 	_Modules.show();
 }
 
-void Medusa::R0ModulesView(ULONG64 PID)
+void Medusa::RightMenuR0ModulesView(ULONG64 PID)
 {
 	
+}
+
+void Medusa::RightMenuR3ThreadsView(ULONG64 PID)
+{
+	_Threads._Model->removeRows(0, _Threads._Model->rowCount());
+	std::vector<ThreadList> temp_vector = _Threads.GetThreadListR3(PID);
+	int i = 0;
+	for (auto x : temp_vector)
+	{
+		_Threads._Model->setVerticalHeaderItem(i, new QStandardItem);
+		_Threads._Model->setData(_Threads._Model->index(i, 0), i);
+		_Threads._Model->setData(_Threads._Model->index(i, 1), x.TID);
+		std::ostringstream ret;
+		ret << std::hex << "0x" << (ULONG64)x.StartAddr;
+		_Threads._Model->setData(_Threads._Model->index(i, 3), ret.str().data());
+		_Threads._Model->setData(_Threads._Model->index(i, 4), QString::fromWCharArray(x.Name));
+		i++;
+	}
+	_Threads.show();
+}
+
+void Medusa::RightMenuR0ThreadsView(ULONG64 PID)
+{
+
 }
 
 void Medusa::GetProcessList()
@@ -418,20 +427,20 @@ void Medusa::GetProcessList()
 				_Model->setData(_Model->index(i, 2), QString::fromWCharArray(_Process._Process_List_R3.at(j).Name));
 				if (std::wstring(_Process._Process_List_R3.at(j).Path) != L"")
 				{
-					_Model->setData(_Model->index(i, 3), QString::fromWCharArray(_Process._Process_List_R3.at(j).Path));
+					_Model->setData(_Model->index(i, 4), QString::fromWCharArray(_Process._Process_List_R3.at(j).Path));
 					std::wstring retStr;
 					if (_Process.QueryValue(L"FileDescription", _Process._Process_List_R3.at(j).Path, retStr))
 					{
-						_Model->setData(_Model->index(i, 4), QString::fromWCharArray(retStr.data()));
+						_Model->setData(_Model->index(i, 5), QString::fromWCharArray(retStr.data()));
 					}
 				}
 				else
 				{
-					_Model->setData(_Model->index(i, 3), QString::fromWCharArray(x.Path));
+					_Model->setData(_Model->index(i, 4), QString::fromWCharArray(x.Path));
 					std::wstring retStr;
 					if (_Process.QueryValue(L"FileDescription", x.Path, retStr))
 					{
-						_Model->setData(_Model->index(i, 4), QString::fromWCharArray(retStr.data()));
+						_Model->setData(_Model->index(i, 5), QString::fromWCharArray(retStr.data()));
 					}
 				}
 
@@ -442,7 +451,7 @@ void Medusa::GetProcessList()
 				_Model->setData(_Model->index(i, 0), i);
 				_Model->setData(_Model->index(i, 1), x.PID);
 				_Model->setData(_Model->index(i, 2), QString::fromWCharArray(x.Name));
-				_Model->setData(_Model->index(i, 3), QString::fromWCharArray(x.Path));
+				_Model->setData(_Model->index(i, 4), QString::fromWCharArray(x.Path));
 
 
 				if (x.Check == false)
@@ -450,12 +459,12 @@ void Medusa::GetProcessList()
 					_Model->item(i, 0)->setBackground(QColor(Qt::red));
 					_Model->item(i, 1)->setBackground(QColor(Qt::red));
 					_Model->item(i, 2)->setBackground(QColor(Qt::red));
-					_Model->item(i, 3)->setBackground(QColor(Qt::red));
+					_Model->item(i, 4)->setBackground(QColor(Qt::red));
 					std::wstring retStr;
 					if (_Process.QueryValue(L"FileDescription", x.Path, retStr))
 					{
-						_Model->setData(_Model->index(i, 4), QString::fromWCharArray(retStr.data()));
-						_Model->item(i, 4)->setBackground(QColor(Qt::red));
+						_Model->setData(_Model->index(i, 5), QString::fromWCharArray(retStr.data()));
+						_Model->item(i, 5)->setBackground(QColor(Qt::red));
 					}
 				}
 				else
@@ -463,12 +472,12 @@ void Medusa::GetProcessList()
 					_Model->item(i, 0)->setBackground(QColor(Qt::green));
 					_Model->item(i, 1)->setBackground(QColor(Qt::green));
 					_Model->item(i, 2)->setBackground(QColor(Qt::green));
-					_Model->item(i, 3)->setBackground(QColor(Qt::green));
+					_Model->item(i, 4)->setBackground(QColor(Qt::green));
 					std::wstring retStr;
 					if (_Process.QueryValue(L"FileDescription", x.Path, retStr))
 					{
-						_Model->setData(_Model->index(i, 4), QString::fromWCharArray(retStr.data()));
-						_Model->item(i, 4)->setBackground(QColor(Qt::green));
+						_Model->setData(_Model->index(i, 5), QString::fromWCharArray(retStr.data()));
+						_Model->item(i, 5)->setBackground(QColor(Qt::green));
 					}
 				}
 			}
@@ -490,12 +499,12 @@ void Medusa::GetProcessList()
 			_Model->setData(_Model->index(i, 0), i);
 			_Model->setData(_Model->index(i, 1), x.PID);
 			_Model->setData(_Model->index(i, 2), QString::fromWCharArray(x.Name));
-			_Model->setData(_Model->index(i, 3), QString::fromWCharArray(x.Path));
+			_Model->setData(_Model->index(i, 4), QString::fromWCharArray(x.Path));
 
 			std::wstring retStr;
 			if (_Process.QueryValue(L"FileDescription", x.Path, retStr))
 			{
-				_Model->setData(_Model->index(i, 4), QString::fromWCharArray(retStr.data()));
+				_Model->setData(_Model->index(i, 5), QString::fromWCharArray(retStr.data()));
 			}
 			i++;
 		}

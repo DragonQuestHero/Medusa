@@ -13,23 +13,32 @@
 
 #include <vector>
 #include <string>
+#include <sstream>
 
 
-#include "ui_Modules.h"
+#include "ui_Threads.h"
+
+struct ThreadList
+{
+	ULONG64 TID;
+	ULONG64 ETHREAD;
+	ULONG64 StartAddr;
+	WCHAR Name[MAX_PATH];
+};
 
 
-class Modules : public QMainWindow
+class Threads : public QMainWindow
 {
 	Q_OBJECT
 
 public:
-	Modules(QWidget* parent = nullptr);
-	~Modules() = default;
+	Threads(QWidget* parent = nullptr);
+	~Threads() = default;
 public:
-	std::vector<MODULEENTRY32W> GetWin32MoudleList(ULONG64 PID);
+	std::vector<ThreadList> GetThreadListR3(ULONG64 PID);
 public:
 public slots:
 public:
-	Ui::Form_Modules ui;
+	Ui::Form_Threads ui;
 	QStandardItemModel* _Model;
 };

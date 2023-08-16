@@ -132,6 +132,7 @@
     <ClCompile Include="libpeconv\util.cpp" />
     <ClCompile Include="Modules.cc" />
     <ClCompile Include="Process.cc" />
+    <ClCompile Include="Threads.cc" />
     <QtRcc Include="Medusa.qrc" />
     <QtUic Include="HookScanner.ui" />
     <QtMoc Include="Medusa.h" />
@@ -139,10 +140,12 @@
     <ClCompile Include="main.cpp" />
     <QtUic Include="Medusa.ui" />
     <QtUic Include="Modules.ui" />
+    <QtUic Include="Threads.ui" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Driver_Load.h" />
     <ClInclude Include="FileCheck.h" />
+    <QtMoc Include="Threads.h" />
     <QtMoc Include="HookScanner.h" />
     <ClInclude Include="libpeconv\fix_dot_net_ep.h" />
     <ClInclude Include="libpeconv\ntddk.h" />
