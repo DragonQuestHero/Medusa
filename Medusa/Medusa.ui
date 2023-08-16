@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MedusaClass</class>
+ <widget class="QMainWindow" name="MedusaClass">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1758</width>
+    <height>961</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Medusa</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>1751</width>
+      <height>891</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Process</string>
+     </attribute>
+     <widget class="QTableView" name="tableView">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>1731</width>
+        <height>851</height>
+       </rect>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>1731</width>
+        <height>851</height>
+       </size>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::ActionsContextMenu</enum>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Tab 2</string>
+     </attribute>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>15</x>
+      <y>893</y>
+      <width>1051</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QProgressBar" name="progressBar">
+    <property name="geometry">
+     <rect>
+      <x>1410</x>
+      <y>895</y>
+      <width>331</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>100</number>
+    </property>
+    <property name="value">
+     <number>0</number>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1758</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuMenu">
+    <property name="contextMenuPolicy">
+     <enum>Qt::ActionsContextMenu</enum>
+    </property>
+    <property name="title">
+     <string>Menu</string>
+    </property>
+    <widget class="QMenu" name="menuLoad_Driver">
+     <property name="contextMenuPolicy">
+      <enum>Qt::ActionsContextMenu</enum>
+     </property>
+     <property name="title">
+      <string>LoadMedusaDriver</string>
+     </property>
+     <addaction name="actionNtLoad"/>
+     <addaction name="actionNormalLoad"/>
+    </widget>
+    <widget class="QMenu" name="menuLoadOtherDriver">
+     <property name="title">
+      <string>LoadOtherDriver</string>
+     </property>
+     <addaction name="actionNtLoad_2"/>
+     <addaction name="actionNormalLoad_2"/>
+     <addaction name="actionNtUnload"/>
+    </widget>
+    <addaction name="menuLoad_Driver"/>
+    <addaction name="actionUnLoadDriver"/>
+    <addaction name="menuLoadOtherDriver"/>
+   </widget>
+   <addaction name="menuMenu"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <action name="actionNtLoad">
+   <property name="text">
+    <string>NtLoad</string>
+   </property>
+  </action>
+  <action name="actionNormalLoad">
+   <property name="text">
+    <string>NormalLoad</string>
+   </property>
+  </action>
+  <action name="actionUnLoadDriver">
+   <property name="text">
+    <string>UnLoadMedusaDriver</string>
+   </property>
+  </action>
+  <action name="actionNtLoad_2">
+   <property name="text">
+    <string>Nt</string>
+   </property>
+  </action>
+  <action name="actionNormalLoad_2">
+   <property name="text">
+    <string>Normal</string>
+   </property>
+  </action>
+  <action name="actionNtUnload">
+   <property name="text">
+    <string>Unload</string>
+   </property>
+  </action>
+  <action name="actionNormalUnload">
+   <property name="text">
+    <string>NormalUnload</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="Medusa.qrc"/>
+ </resources>
+ <connections/>
+</ui>
