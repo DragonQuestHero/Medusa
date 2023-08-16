@@ -35,6 +35,8 @@ public:
     void Set_SLOTS();
 public slots:
     void ChangeTab();
+	void DriverLoadMenu(QAction*);
+	void HypervisorMenu(QAction*);
 	void ProcessRightMenu(QAction*);
 	void DriverLoad(QAction*);
 	void GetProcessList();

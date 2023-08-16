@@ -41,7 +41,9 @@
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
     <Message Importance="High" Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />
   </Target>
-  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+  </ImportGroup>
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -70,6 +72,9 @@
       </RuntimeLibrary>
     </QtMoc>
     <ClCompile />
+    <ClCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
@@ -101,6 +106,7 @@
     <ClCompile Include="Driver_Load.cc" />
     <ClCompile Include="FileCheck.cc" />
     <ClCompile Include="HookScanner.cc" />
+    <ClCompile Include="Hypervisor.cc" />
     <ClCompile Include="libpeconv\buffer_util.cpp" />
     <ClCompile Include="libpeconv\caves.cpp" />
     <ClCompile Include="libpeconv\delayed_imports_loader.cpp" />
@@ -147,6 +153,7 @@
     <ClInclude Include="FileCheck.h" />
     <QtMoc Include="Threads.h" />
     <QtMoc Include="HookScanner.h" />
+    <ClInclude Include="Hypervisor.h" />
     <ClInclude Include="libpeconv\fix_dot_net_ep.h" />
     <ClInclude Include="libpeconv\ntddk.h" />
     <ClInclude Include="libpeconv\peconv.h" />
@@ -156,6 +163,9 @@
     <ClInclude Include="Process.h" />
   </ItemGroup>
   <ItemGroup>
+    <MASM Include="asm64.asm">
+      <FileType>Document</FileType>
+    </MASM>
     <None Include="SysCall.asm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -163,5 +173,6 @@
     <Import Project="$(QtMsBuild)\qt.targets" />
   </ImportGroup>
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
 </Project>

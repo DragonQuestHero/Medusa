@@ -1,6 +1,7 @@
 #include "Medusa.h"
 
 #include "FileCheck.h"
+#include "Hypervisor.h"
 
 
 
@@ -44,8 +45,68 @@ void Medusa::Set_SLOTS()
 	connect(&_TableView_Menu_Threads, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 
 
-	connect(ui.menuMenu, SIGNAL(triggered(QAction*)), SLOT(DriverLoad(QAction*)));
-	//connect(ui.menuLoad_Driver, SIGNAL(triggered(QAction*)), SLOT(DriverLoad(QAction*)));
+	connect(ui.menuMenu, SIGNAL(triggered(QAction*)), SLOT(DriverLoadMenu(QAction*)));
+	connect(ui.menuHypervisor, SIGNAL(triggered(QAction*)), SLOT(HypervisorMenu(QAction*)));
+}
+
+void Medusa::DriverLoadMenu(QAction* action)
+{
+	if (action->text() == "NtLoad" ||
+		action->text() == "NormalLoad" ||
+		action->text() == "UnLoadMedusaDriver" ||
+		action->text() == "Nt" ||
+		action->text() == "Normal" ||
+		action->text() == "Unload")
+	{
+		DriverLoad(action);
+		return;
+	}
+}
+
+void Medusa::HypervisorMenu(QAction* action)
+{
+	if (action->text() == "R3Check")
+	{
+		Hypervisor _Hypervisor;
+		std::string str = u8"×=detected virtua environment\r\n√=not\r\n";
+		str = str + "[Checking for known hypervisor vendors]:  ";
+		if (_Hypervisor.check_for_known_hypervisor())
+		{
+			str = str + u8"×" + "\r\n";
+		}
+		else
+		{
+			str = str + u8"√" + "\r\n";
+		}
+		str = str + "[Checking highest low function leaf]:  ";
+		if (_Hypervisor.check_highest_low_function_leaf())
+		{
+			str = str + u8"×" + "\r\n";
+		}
+		else
+		{
+			str = str + u8"√" + "\r\n";
+		}
+		str = str + "[Checking invalid leaf]:  ";
+		if (_Hypervisor.check_invalid_leaf())
+		{
+			str = str + u8"×" + "\r\n";
+		}
+		else
+		{
+			str = str + u8"√" + "\r\n";
+		}
+		str = str + "[Profiling CPUID against FYL2XP1]:  ";
+		if (_Hypervisor.take_time_cpuid_against_fyl2xp1())
+		{
+			str = str + u8"×" + "\r\n";
+		}
+		else
+		{
+			str = str + u8"√" + "\r\n";
+		}
+		QMessageBox::information(this, "Ret", str.data());
+	}
 }
 
 void Medusa::DriverLoad(QAction* action)

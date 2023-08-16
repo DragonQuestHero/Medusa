@@ -130,7 +130,15 @@
     <addaction name="actionUnLoadDriver"/>
     <addaction name="menuLoadOtherDriver"/>
    </widget>
+   <widget class="QMenu" name="menuHypervisor">
+    <property name="title">
+     <string>Hypervisor</string>
+    </property>
+    <addaction name="actionR3Check"/>
+    <addaction name="actionR0Check"/>
+   </widget>
    <addaction name="menuMenu"/>
+   <addaction name="menuHypervisor"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -173,6 +181,16 @@
   <action name="actionNormalUnload">
    <property name="text">
     <string>NormalUnload</string>
+   </property>
+  </action>
+  <action name="actionR3Check">
+   <property name="text">
+    <string>R3Check</string>
+   </property>
+  </action>
+  <action name="actionR0Check">
+   <property name="text">
+    <string>R0Check</string>
    </property>
   </action>
  </widget>

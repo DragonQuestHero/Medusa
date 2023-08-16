@@ -148,6 +148,9 @@
     <ClCompile Include="Threads.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Hypervisor.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Process.h">
@@ -173,6 +176,9 @@
     </ClInclude>
     <ClInclude Include="libpeconv\peconv.h">
       <Filter>Header Files\libpeconv</Filter>
+    </ClInclude>
+    <ClInclude Include="Hypervisor.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -204,5 +210,10 @@
     <QtMoc Include="Threads.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="asm64.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
   </ItemGroup>
 </Project>
