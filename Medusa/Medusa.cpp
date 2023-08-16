@@ -283,6 +283,11 @@ void Medusa::ProcessRightMenu(QAction* action)
 	}
 	if (action->text() == "R3HookScannerSimple(Y/N)")
 	{
+		if (_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 0 
+			|| _Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 4)
+		{
+			return;
+		}
 		FileCheck temp_check;
 		if (temp_check.CheckSimple(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID))
 		{
@@ -295,6 +300,11 @@ void Medusa::ProcessRightMenu(QAction* action)
 	}
 	if (action->text() == "R3HookScanner")
 	{
+		if (_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 0
+			|| _Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 4)
+		{
+			return;
+		}
 		_HookScanner._Model->removeRows(0, _Model->rowCount());
 		FileCheck temp_check;
 		std::vector<_CheckDifferent> temp_vector = temp_check.CheckPlain(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
