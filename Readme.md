@@ -27,7 +27,7 @@
 
 ###### -----内核调用PsLookupProcessByProcessId枚举进程ID第三次检查
 
-###### -----内核调用PsLookupThreadByThreadId枚举进程ID第四次检查
+###### -----内核调用PsLookupThreadByThreadId枚举线程ID第四次检查
 
 
 
