@@ -17,6 +17,12 @@
 
 ##### ---应用层虚拟化检测(包括但不限于各类虚拟机以及虚拟化框架及驱动)
 
+<h1 align="center">
+	<img src="1.png" >
+	<br>
+	<br>
+</h1>
+
 #### 已完成(内核部分):
 
 ##### ---进程断链检查 一共4次检查 4次结果汇总 第三次以ObjectTable不为空为标志 第四次即便ObjectTable不为空也依旧加入列表并且标红 4次检查以后绝大部分进程断链方式都会被筛查出
@@ -28,6 +34,12 @@
 ###### -----内核调用PsLookupProcessByProcessId枚举进程ID第三次检查
 
 ###### -----内核调用PsLookupThreadByThreadId枚举线程ID第四次检查
+
+<h1 align="center">
+	<img src="2.png" >
+	<br>
+	<br>
+</h1>
 
 
 
