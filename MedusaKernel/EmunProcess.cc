@@ -120,6 +120,13 @@ bool EmunProcess::EmunProcessALL()
 			{
 				temp_list.Check = true;
 			}
+			PEPROCESS tempep;
+			status = PsLookupProcessByProcessId((HANDLE)temp_list.PID, &tempep);
+			if (NT_SUCCESS(status))
+			{
+				temp_list.EPROCESS = (ULONG64)tempep;
+				ObDereferenceObject(tempep);
+			}
 
 
 			HANDLE handle;
@@ -180,42 +187,8 @@ bool EmunProcess::EmunProcessALL()
 					temp_list.Check = false;
 					RtlZeroMemory(&temp_list, sizeof(PROCESS_LIST));
 					temp_list.PID = i;
-					UNICODE_STRING* temp_unicode;
-					if (NT_SUCCESS(SeLocateProcessImageName(tempep, &temp_unicode)))
-					{
-						do
-						{
-							FILE_OBJECT* process_image_file_object = nullptr;
-							DEVICE_OBJECT* process_image_device_object = nullptr;
-							OBJECT_NAME_INFORMATION* process_image_object_name = nullptr;
-							status = IoGetDeviceObjectPointer(temp_unicode, SYNCHRONIZE,
-								&process_image_file_object, &process_image_device_object);
-							if (!NT_SUCCESS(status))
-							{
-								break;
-							}
-							status = IoQueryFileDosDeviceName(process_image_file_object, &process_image_object_name);
-							if (!NT_SUCCESS(status))
-							{
-								break;
-							}
-							RtlCopyMemory(temp_list.Name,
-								process_image_object_name->Name.Buffer, process_image_object_name->Name.MaximumLength);
-							if (process_image_object_name)
-							{
-								ExFreePool(process_image_object_name);
-							}
-							if (process_image_file_object)
-							{
-								ObDereferenceObject(process_image_file_object);
-							}
-						} while (false);
-						if (!NT_SUCCESS(status))
-						{
-							RtlCopyMemory(temp_list.Name, temp_unicode->Buffer, temp_unicode->MaximumLength);
-						}
-						ExFreePool(temp_unicode);
-					}
+					temp_list.EPROCESS = (ULONG64)tempep;
+					RtlCopyMemory(temp_list.Name, PsGetProcessImageFileName(tempep), 15);
 
 					HANDLE handle;
 					OBJECT_ATTRIBUTES ObjectAttributes;
@@ -241,6 +214,77 @@ bool EmunProcess::EmunProcessALL()
 			}
 		}
 	}
-	return hret;
 
+	EmunProcessSecondCheck();
+	if (_ProcessSecondCheckList.size() == _Process_List.size())
+	{
+		return hret;
+	}
+	else
+	{
+		for (auto x : _ProcessSecondCheckList)
+		{
+			bool found = false;
+			for (auto y : _Process_List)
+			{
+				if (y.PID == x)
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				PROCESS_LIST temp_list;
+				temp_list.Check = false;
+				RtlZeroMemory(&temp_list, sizeof(PROCESS_LIST));
+				temp_list.PID = x;
+				temp_list.EPROCESS = (ULONG64)tempep;
+				status = PsLookupProcessByProcessId((HANDLE)x, &tempep);
+				if (NT_SUCCESS(status))
+				{
+					ObDereferenceObject(tempep);
+					RtlCopyMemory(temp_list.Name, PsGetProcessImageFileName(tempep), 15);
+
+					HANDLE handle;
+					OBJECT_ATTRIBUTES ObjectAttributes;
+					CLIENT_ID clientid;
+					InitializeObjectAttributes(&ObjectAttributes, 0, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, 0, 0);
+					clientid.UniqueProcess = (HANDLE)x;
+					clientid.UniqueThread = 0;
+					if (NT_SUCCESS(ZwOpenProcess(&handle, PROCESS_ALL_ACCESS, &ObjectAttributes, &clientid)))
+					{
+						UNICODE_STRING temp_str;
+						if (Get_Process_Image(handle, &temp_str))
+						{
+							RtlCopyMemory(temp_list.Path, temp_str.Buffer, temp_str.MaximumLength);
+							delete temp_str.Buffer;
+						}
+					}
+				}
+				_Process_List.push_back(temp_list);
+			}
+		}
+	}
+	
+
+	return hret;
+}
+
+void EmunProcess::EmunProcessSecondCheck()
+{
+	_ProcessSecondCheckList.clear();
+
+	PETHREAD tempthd;
+	NTSTATUS status;
+	for (int i = 8; i < 65535; i = i + 4)
+	{
+		status = PsLookupThreadByThreadId((HANDLE)i, &tempthd);
+		if (NT_SUCCESS(status))
+		{
+			ObDereferenceObject(tempthd);
+			ULONG64 PID = (ULONG64)PsGetThreadProcessId(tempthd);
+			_ProcessSecondCheckList.insert(PID);
+		}
+	}
 }

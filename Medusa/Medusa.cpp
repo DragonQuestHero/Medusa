@@ -462,6 +462,9 @@ void Medusa::GetProcessList()
 				_Model->setData(_Model->index(i, 0), i);
 				_Model->setData(_Model->index(i, 1), _Process._Process_List_R3.at(j).PID);
 				_Model->setData(_Model->index(i, 2), QString::fromWCharArray(_Process._Process_List_R3.at(j).Name));
+				std::ostringstream ret;
+				ret << std::hex << "0x" << (ULONG64)x.EPROCESS;
+				_Model->setData(_Model->index(i, 3), ret.str().data());
 				if (std::wstring(_Process._Process_List_R3.at(j).Path) != L"")
 				{
 					_Model->setData(_Model->index(i, 4), QString::fromWCharArray(_Process._Process_List_R3.at(j).Path));
@@ -487,7 +490,10 @@ void Medusa::GetProcessList()
 				_Model->setVerticalHeaderItem(i, new QStandardItem);
 				_Model->setData(_Model->index(i, 0), i);
 				_Model->setData(_Model->index(i, 1), x.PID);
-				_Model->setData(_Model->index(i, 2), QString::fromWCharArray(x.Name));
+				_Model->setData(_Model->index(i, 2), (char*)x.Name);
+				std::ostringstream ret;
+				ret << std::hex << "0x" << (ULONG64)x.EPROCESS;
+				_Model->setData(_Model->index(i, 3), ret.str().data());
 				_Model->setData(_Model->index(i, 4), QString::fromWCharArray(x.Path));
 
 
@@ -496,6 +502,7 @@ void Medusa::GetProcessList()
 					_Model->item(i, 0)->setBackground(QColor(Qt::red));
 					_Model->item(i, 1)->setBackground(QColor(Qt::red));
 					_Model->item(i, 2)->setBackground(QColor(Qt::red));
+					_Model->item(i, 3)->setBackground(QColor(Qt::red));
 					_Model->item(i, 4)->setBackground(QColor(Qt::red));
 					std::wstring retStr;
 					if (_Process.QueryValue(L"FileDescription", x.Path, retStr))
@@ -509,6 +516,7 @@ void Medusa::GetProcessList()
 					_Model->item(i, 0)->setBackground(QColor(Qt::green));
 					_Model->item(i, 1)->setBackground(QColor(Qt::green));
 					_Model->item(i, 2)->setBackground(QColor(Qt::green));
+					_Model->item(i, 3)->setBackground(QColor(Qt::red));
 					_Model->item(i, 4)->setBackground(QColor(Qt::green));
 					std::wstring retStr;
 					if (_Process.QueryValue(L"FileDescription", x.Path, retStr))

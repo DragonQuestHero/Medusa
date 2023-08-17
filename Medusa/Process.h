@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 
+
 #include <QString>
 
 
@@ -17,6 +18,7 @@ struct PROCESS_LIST
 	bool Check;
 	WCHAR Name[MAX_PATH];
 	WCHAR Path[MAX_PATH];
+	ULONG64 EPROCESS;
 };
 
 struct ModuleList

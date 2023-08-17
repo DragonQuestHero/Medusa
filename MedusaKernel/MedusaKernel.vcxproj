@@ -162,6 +162,7 @@
     <ClCompile Include="EmunProcess.cc" />
     <ClCompile Include="IO_Control.cc" />
     <ClCompile Include="Main.cc" />
+    <ClCompile Include="MemoryRW.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CRT\NativeEnums.h" />
@@ -169,6 +170,7 @@
     <ClInclude Include="CRT\PEStructs.h" />
     <ClInclude Include="EmunProcess.h" />
     <ClInclude Include="IO_Control.h" />
+    <ClInclude Include="MemoryRW.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

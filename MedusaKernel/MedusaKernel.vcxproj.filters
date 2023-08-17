@@ -34,6 +34,9 @@
     <ClCompile Include="EmunProcess.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MemoryRW.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IO_Control.h">
@@ -50,6 +53,9 @@
     </ClInclude>
     <ClInclude Include="CRT\PEStructs.h">
       <Filter>Header Files\CRT</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryRW.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

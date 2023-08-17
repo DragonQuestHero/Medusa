@@ -150,12 +150,12 @@
   </widget>
   <action name="actionNtLoad">
    <property name="text">
-    <string>NtLoad</string>
+    <string>NormalLoad</string>
    </property>
   </action>
   <action name="actionNormalLoad">
    <property name="text">
-    <string>NormalLoad</string>
+    <string>NtLoad</string>
    </property>
   </action>
   <action name="actionUnLoadDriver">
