@@ -99,8 +99,9 @@ public:
 	{
 		_TableView_Action_Inject.setMenu(&_TableView_Menu_Inject);
 		_TableView_Menu_Inject.setTitle("Inject DLL");
-		_TableView_Menu_Inject.addAction("CreateRemoteThread+LoadLibraryA");
-		_TableView_Menu_Inject.addAction("NtCreateRemoteThread+syscall+shellcode+ldrloadlibaby");
+		_TableView_Menu_Inject.addAction("R3CreateRemoteThread+LoadLibraryA");
+		_TableView_Menu_Inject.addAction("R3NtCreateRemoteThread+syscall+shellcode+ldrloadlibaby");
+		_TableView_Menu_Inject.addAction("R3APCInject");
 
 
 		_TableView_Action_HookCheck.setMenu(&_TableView_Menu_HookCheck);

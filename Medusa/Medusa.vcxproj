@@ -103,6 +103,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DLLInject.cc" />
     <ClCompile Include="Driver_Load.cc" />
     <ClCompile Include="FileCheck.cc" />
     <ClCompile Include="HookScanner.cc" />
@@ -149,6 +150,7 @@
     <QtUic Include="Threads.ui" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DLLInject.h" />
     <ClInclude Include="Driver_Load.h" />
     <ClInclude Include="FileCheck.h" />
     <QtMoc Include="Threads.h" />

@@ -2,6 +2,7 @@
 
 #include "FileCheck.h"
 #include "Hypervisor.h"
+#include "DLLInject.h"
 
 
 
@@ -252,7 +253,8 @@ void Medusa::DriverLoad(QAction* action)
 
 void Medusa::ProcessRightMenu(QAction* action)
 {
-	if (action->text() == "CreateRemoteThread+LoadLibraryA")
+	if (action->text() == "R3CreateRemoteThread+LoadLibraryA" ||
+		action->text() == "R3APCInject")
 	{
 		RightMenuDLLInject(action);
 		return;
@@ -288,41 +290,15 @@ void Medusa::ChangeTab()
 
 void Medusa::RightMenuDLLInject(QAction* action)
 {
-	if (action->text() == "CreateRemoteThread+LoadLibraryA")
+	if (action->text() == "R3CreateRemoteThread+LoadLibraryA")
 	{
-		HANDLE handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE,
-			_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
-		if (handle != NULL)
-		{
-			QFileDialog file_path;
-			QString temp_str = file_path.getOpenFileName();
-			if (temp_str.size() == 0)
-			{
-				return;
-			}
-			temp_str = QDir::toNativeSeparators(temp_str);
-			int Path_Len = temp_str.length();
-			PVOID New_Get_Addr = VirtualAllocEx(handle, NULL, Path_Len, MEM_COMMIT, PAGE_READWRITE);
-			if (New_Get_Addr)
-			{
-				if (WriteProcessMemory(handle, New_Get_Addr, temp_str.toStdString().data(), Path_Len, 0))
-				{
-					PROC Get_Load_Addr = GetProcAddress(GetModuleHandle(L"kernel32.dll"), "LoadLibraryA");
-					HANDLE New_Hand = CreateRemoteThread(handle, NULL, 0,
-						(LPTHREAD_START_ROUTINE)Get_Load_Addr, New_Get_Addr, 0, NULL);
-					if (New_Hand != NULL)
-					{
-						QMessageBox::information(this, "dll inject", "success");
-						CloseHandle(New_Hand);
-						CloseHandle(handle);
-						return;
-					}
-				}
-			}
-			QMessageBox::information(this, "dll inject", "unsuccess");
-			CloseHandle(handle);
-		}
-
+		DLLInject _DLLInject;
+		_DLLInject.R3CreateThread(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+	}
+	if (action->text() == "R3APCInject")
+	{
+		DLLInject _DLLInject;
+		_DLLInject.R3APCInject(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
 	}
 }
 
