@@ -1,6 +1,6 @@
 #### 美杜莎（希腊语：Μέδουσα、英语：Medusa）是古希腊神话中的蛇发女妖，戈耳工三姐妹之一
 
-[English]
+[English](https://github.com/DragonQuestHero/Medusa/blob/master/Readme-en.md)
 
 ##### 我不在意GDT和IDT到底有没有被修改 也不想重复process hacker已经有的功能 更不在乎某个进程连接了哪个IP
 
