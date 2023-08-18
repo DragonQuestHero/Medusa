@@ -40,6 +40,7 @@ public slots:
 	void ProcessRightMenu(QAction*);
 	void DriverLoad(QAction*);
 	void GetProcessList();
+	void GetKernelModuleList();
 	void RightMenuR3ModulesView(ULONG64 PID);
 	void RightMenuR0ModulesView(ULONG64 PID);
 	void RightMenuDLLInject(QAction*);
@@ -58,6 +59,7 @@ private:
 	Modules _Modules;
 	Threads _Threads;
     QStandardItemModel* _Model;
+	QStandardItemModel* _Model_Driver;
 private:
 	QMenu _TableView_Menu_Inject;
 	QAction _TableView_Action_Inject;
@@ -94,6 +96,26 @@ public:
 		ui.tableView->setColumnWidth(4, 500);
 		ui.tableView->setColumnWidth(5, 400);
 		ui.tableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+		//-----------------------
+		_Model_Driver = new QStandardItemModel();
+		ui.tableView_Driver->setModel(_Model_Driver);
+		ui.tableView_Driver->setEditTriggers(QAbstractItemView::NoEditTriggers);
+		ui.tableView_Driver->horizontalHeader()->setSectionsClickable(false);
+		ui.tableView_Driver->verticalHeader()->setDefaultSectionSize(25);
+		ui.tableView_Driver->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+		_Model_Driver->setColumnCount(5);
+		_Model_Driver->setHeaderData(0, Qt::Horizontal, u8"Index");
+		_Model_Driver->setHeaderData(1, Qt::Horizontal, u8"Name");
+		_Model_Driver->setHeaderData(2, Qt::Horizontal, u8"Addr");
+		_Model_Driver->setHeaderData(3, Qt::Horizontal, u8"Size");
+		_Model_Driver->setHeaderData(4, Qt::Horizontal, u8"Path");
+		ui.tableView_Driver->setColumnWidth(0, 50);
+		ui.tableView_Driver->setColumnWidth(1, 150);
+		ui.tableView_Driver->setColumnWidth(2, 200);
+		ui.tableView_Driver->setColumnWidth(3, 150);
+		ui.tableView_Driver->setColumnWidth(4, 500);
+		ui.tableView_Driver->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	}
 	void ProcessRightMenuUI()
 	{

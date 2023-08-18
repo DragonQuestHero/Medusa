@@ -3,7 +3,7 @@
 #include "FileCheck.h"
 #include "Hypervisor.h"
 #include "DLLInject.h"
-
+#include "KernelModules.h"
 
 
 
@@ -38,7 +38,8 @@ Medusa::Medusa(QWidget *parent)
 
 void Medusa::Set_SLOTS()
 {
-	connect(ui.tabWidget, SIGNAL(tabBarClicked(int)), SLOT(ChangeTab()));//进程
+	connect(ui.tabWidget, SIGNAL(currentChanged(int)), SLOT(ChangeTab()));//进程
+	connect(ui.tableView_Driver, SIGNAL(currentChanged(int)), SLOT(ChangeTab()));//进程
 
 	connect(&_TableView_Menu_Inject, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 	connect(&_TableView_Menu_HookCheck, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
@@ -285,6 +286,10 @@ void Medusa::ChangeTab()
 	if (ui.tabWidget->currentIndex() == 0)
 	{
 		GetProcessList();
+	}
+	else if (ui.tabWidget->currentIndex() == 1)
+	{
+		GetKernelModuleList();
 	}
 }
 
@@ -556,5 +561,39 @@ void Medusa::GetProcessList()
 
 		ui.label->setText(QString((std::string("R3 get process number:") +
 			std::to_string(_Process._Process_List_R3.size())).data()));
+	}
+}
+
+void Medusa::GetKernelModuleList()
+{
+	_Model_Driver->removeRows(0, _Model_Driver->rowCount());
+	if (_Driver_Loaded)
+	{
+	}
+	else
+	{
+		KernelModules _KernelModules;
+		_KernelModules.GetKernelModuleListR3();
+		if (_KernelModules._KernelModuleListR3.size() != 0)
+		{
+			int i = 0;
+			for (auto x: _KernelModules._KernelModuleListR3)
+			{
+				_Model_Driver->setVerticalHeaderItem(i, new QStandardItem);
+				_Model_Driver->setData(_Model_Driver->index(i, 0), i);
+				_Model_Driver->setData(_Model_Driver->index(i, 1), (char*)x.Name);
+				std::ostringstream ret;
+				ret << std::hex << "0x" << (ULONG64)x.Addr;
+				_Model_Driver->setData(_Model_Driver->index(i, 2), ret.str().data());
+				std::ostringstream ret2;
+				ret2 << std::hex << "0x" << (ULONG64)x.Size;
+				_Model_Driver->setData(_Model_Driver->index(i, 3), ret2.str().data());
+				_Model_Driver->setData(_Model_Driver->index(i, 4), (char*)x.Path);
+				i++;
+			}
+			ui.label->setText(QString((std::string("R3 get kernel moduls number:") +
+				std::to_string(_KernelModules._KernelModuleListR3.size())).data()));
+			
+		}
 	}
 }

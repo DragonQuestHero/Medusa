@@ -154,6 +154,9 @@
     <ClCompile Include="DLLInject.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="KernelModules.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Process.h">
@@ -184,6 +187,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DLLInject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelModules.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

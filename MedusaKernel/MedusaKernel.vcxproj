@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClCompile Include="EmunProcess.cc" />
     <ClCompile Include="IO_Control.cc" />
+    <ClCompile Include="KernelModules.cc" />
     <ClCompile Include="Main.cc" />
     <ClCompile Include="MemoryRW.cc" />
   </ItemGroup>
@@ -170,6 +171,7 @@
     <ClInclude Include="CRT\PEStructs.h" />
     <ClInclude Include="EmunProcess.h" />
     <ClInclude Include="IO_Control.h" />
+    <ClInclude Include="KernelModules.h" />
     <ClInclude Include="MemoryRW.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
