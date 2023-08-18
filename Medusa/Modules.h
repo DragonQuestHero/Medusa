@@ -18,6 +18,14 @@
 #include "ui_Modules.h"
 
 
+struct UserModule
+{
+	ULONG64 Addr;
+	ULONG64 Size;
+	WCHAR Name[260];
+	WCHAR Path[260];
+};
+
 class Modules : public QMainWindow
 {
 	Q_OBJECT
@@ -26,7 +34,8 @@ public:
 	Modules(QWidget* parent = nullptr);
 	~Modules() = default;
 public:
-	std::vector<MODULEENTRY32W> GetWin32MoudleList(ULONG64 PID);
+	std::vector<MODULEENTRY32W> GetUserMoudleListR3(ULONG64 PID);
+	std::vector<UserModule> GetUserMoudleListR0(ULONG64 PID);
 public:
 public slots:
 public:

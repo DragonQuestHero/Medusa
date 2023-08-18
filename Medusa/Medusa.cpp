@@ -274,6 +274,10 @@ void Medusa::ProcessRightMenu(QAction* action)
 	{
 		RightMenuR3ModulesView(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
 	}
+	if (action->text() == "R0ModulesView(second check)")
+	{
+		RightMenuR0ModulesView(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+	}
 
 	if (action->text() == "R3ThreadView")
 	{
@@ -389,7 +393,7 @@ void Medusa::RightMenuR3ModulesView(ULONG64 PID)
 {
 	_Modules._Model->removeRows(0, _Modules._Model->rowCount());
 	std::vector<MODULEENTRY32W> temp_vector =
-		_Modules.GetWin32MoudleList(PID);
+		_Modules.GetUserMoudleListR3(PID);
 	int i = 0;
 	for (auto x : temp_vector)
 	{
@@ -402,10 +406,11 @@ void Medusa::RightMenuR3ModulesView(ULONG64 PID)
 		std::ostringstream ret2;
 		ret2 << std::hex << "0x" << x.modBaseSize;
 		_Modules._Model->setData(_Modules._Model->index(i, 3), ret2.str().data());
+		_Modules._Model->setData(_Modules._Model->index(i, 4), QString::fromWCharArray(x.szExePath));
 		std::wstring retStr;
 		if (_Process.QueryValue(L"FileDescription", x.szExePath, retStr))
 		{
-			_Modules._Model->setData(_Modules._Model->index(i, 4), QString::fromWCharArray(retStr.data()));
+			_Modules._Model->setData(_Modules._Model->index(i, 5), QString::fromWCharArray(retStr.data()));
 		}
 		i++;
 	}
@@ -414,7 +419,55 @@ void Medusa::RightMenuR3ModulesView(ULONG64 PID)
 
 void Medusa::RightMenuR0ModulesView(ULONG64 PID)
 {
-	
+	if (_Driver_Loaded)
+	{
+		_Modules._Model->removeRows(0, _Modules._Model->rowCount());
+		std::vector<MODULEENTRY32W> temp_vector = _Modules.GetUserMoudleListR3(PID);
+		std::vector<UserModule> temp_vector2 = _Modules.GetUserMoudleListR0(PID);
+		int i = 0;
+		for (auto x : temp_vector2)
+		{
+			_Modules._Model->setVerticalHeaderItem(i, new QStandardItem);
+			_Modules._Model->setData(_Modules._Model->index(i, 0), i);
+			_Modules._Model->setData(_Modules._Model->index(i, 1), QString::fromWCharArray(x.Name));
+			std::ostringstream ret;
+			ret << std::hex << "0x" << (ULONG64)x.Addr;
+			_Modules._Model->setData(_Modules._Model->index(i, 2), ret.str().data());
+			std::ostringstream ret2;
+			ret2 << std::hex << "0x" << x.Size;
+			_Modules._Model->setData(_Modules._Model->index(i, 3), ret2.str().data());
+			_Modules._Model->setData(_Modules._Model->index(i, 4), QString::fromWCharArray(x.Path));
+			std::wstring retStr;
+			if (_Process.QueryValue(L"FileDescription", x.Path, retStr))
+			{
+				_Modules._Model->setData(_Modules._Model->index(i, 5), QString::fromWCharArray(retStr.data()));
+			}
+			else
+			{
+				_Modules._Model->setData(_Modules._Model->index(i, 5), "");
+			}
+			bool found = false;
+			for (auto y: temp_vector)
+			{
+				if (x.Addr == (ULONG64)y.modBaseAddr)
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				_Modules._Model->item(i, 0)->setBackground(QColor(Qt::red));
+				_Modules._Model->item(i, 1)->setBackground(QColor(Qt::red));
+				_Modules._Model->item(i, 2)->setBackground(QColor(Qt::red));
+				_Modules._Model->item(i, 3)->setBackground(QColor(Qt::red));
+				_Modules._Model->item(i, 4)->setBackground(QColor(Qt::red));
+				_Modules._Model->item(i, 5)->setBackground(QColor(Qt::red));
+			}
+			i++;
+		}
+		_Modules.show();
+	}
 }
 
 void Medusa::RightMenuR3ThreadsView(ULONG64 PID)
@@ -489,7 +542,6 @@ void Medusa::GetProcessList()
 						_Model->setData(_Model->index(i, 5), QString::fromWCharArray(retStr.data()));
 					}
 				}
-
 			}
 			else
 			{

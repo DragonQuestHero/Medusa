@@ -43,6 +43,9 @@
     <ClCompile Include="KernelModules.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Modules.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IO_Control.h">
@@ -64,6 +67,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KernelModules.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

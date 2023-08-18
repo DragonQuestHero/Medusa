@@ -71,7 +71,7 @@ std::vector<ThreadList> Threads::GetThreadListR3(ULONG64 PID)
 					temp_list.StartAddr = (ULONG64)startaddr;
 
 					Modules _Modules;
-					std::vector<MODULEENTRY32W> temp_module_vector = _Modules.GetWin32MoudleList(PID);
+					std::vector<MODULEENTRY32W> temp_module_vector = _Modules.GetUserMoudleListR3(PID);
 					if (temp_module_vector.size() != 0)
 					{
 						for (auto x : temp_module_vector)

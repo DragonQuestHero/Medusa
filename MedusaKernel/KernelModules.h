@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include <ntifs.h>
 #include <intrin.h>
 #include "CRT/NtSysAPI_Func.hpp"

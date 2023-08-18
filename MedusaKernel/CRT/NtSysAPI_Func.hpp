@@ -1004,6 +1004,43 @@ typedef struct _SYSTEM_PROCESS_INFORMATION {
 	SYSTEM_THREADS           Threads[0];
 } SYSTEM_PROCESS_INFORMATION, * PSYSTEM_PROCESS_INFORMATION;
 
+struct _LDRP_CSLIST
+{
+	struct _SINGLE_LIST_ENTRY* Tail;                                        //0x0
+};
+struct _LDR_DDAG_NODE
+{
+	struct _LIST_ENTRY Modules;                                             //0x0
+	void* ServiceTagList;                         //0x10
+	ULONG LoadCount;                                                        //0x18
+	ULONG LoadWhileUnloadingCount;                                          //0x1c
+	ULONG LowestLink;                                                       //0x20
+	struct _LDRP_CSLIST Dependencies;                                       //0x28
+	struct _LDRP_CSLIST IncomingDependencies;                               //0x30
+	ULONG State;                                             //0x38
+	struct _SINGLE_LIST_ENTRY CondenseLink;                                 //0x40
+	ULONG PreorderNumber;                                                   //0x48
+};
+typedef struct _LDR_DATA_TABLE_ENTRYB
+{
+	LIST_ENTRY InLoadOrderLinks;
+	LIST_ENTRY InMemoryOrderLinks;
+	LIST_ENTRY InInitializationOrderLinks;
+	PVOID DllBase;
+	PVOID EntryPoint;
+	ULONG SizeOfImage;
+	UNICODE_STRING FullDllName;
+	UNICODE_STRING BaseDllName;
+	ULONG Flags;
+	USHORT LoadCount;
+	USHORT TlsIndex;
+	LIST_ENTRY HashLinks;
+	ULONG TimeDateStamp;
+	void* EntryPointActivationContext;                //0x88
+	VOID* Lock;                                                             //0x90
+	struct _LDR_DDAG_NODE* DdagNode;                                        //0x98
+} LDR_DATA_TABLE_ENTRYB, * PLDR_DATA_TABLE_ENTRYB;
+
 //-------------------------------------------
 extern "C" POBJECT_TYPE *IoDriverObjectType;
 

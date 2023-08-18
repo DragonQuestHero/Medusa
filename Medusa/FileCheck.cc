@@ -60,7 +60,7 @@ bool FileCheck::CheckSimple(ULONG64 PID)
 	}
 
 	Modules _Module;
-	std::vector<MODULEENTRY32W> temp_vector = _Module.GetWin32MoudleList(PID);
+	std::vector<MODULEENTRY32W> temp_vector = _Module.GetUserMoudleListR3(PID);
 	if (temp_vector.size() == 0)
 	{
 		return false;
@@ -155,7 +155,7 @@ std::vector<_CheckDifferent> FileCheck::CheckPlain(ULONG64 PID)
 	}
 
 	Modules _Module;
-	std::vector<MODULEENTRY32W> temp_vector = _Module.GetWin32MoudleList(PID);
+	std::vector<MODULEENTRY32W> temp_vector = _Module.GetUserMoudleListR3(PID);
 	if (temp_vector.size() == 0)
 	{
 		return temp_vector_check;

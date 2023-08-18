@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "Modules.h"
+
 #define DEVICE_NAME L"\\Device\\IO_Control"
 #define LINK_NAME L"\\??\\IO_Control"
 IO_Control* IO_Control::_This;
@@ -11,6 +13,9 @@ IO_Control* IO_Control::_This;
 
 #define TEST_GetALLKernelModule CTL_CODE(FILE_DEVICE_UNKNOWN,0x7102,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_GetALLKernelModuleNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7103,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
+#define TEST_GetALLUserModule CTL_CODE(FILE_DEVICE_UNKNOWN,0x7104,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define TEST_GetALLUserModuleNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7105,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
 NTSTATUS IO_Control::Create_IO_Control()
 {
@@ -78,14 +83,6 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
-	else if (Io_Control_Code == TEST_GetALLKernelModuleNumber)
-	{
-		_This->_KernelModules.GetKernelModuleListALL(_This->Driver_Object);
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = _This->_KernelModules._KernelModuleList.size();
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
 	else if (Io_Control_Code == TEST_GetALLProcess)
 	{
 		if (Output_Lenght < _This->_EmunProcess._Process_List.size() * sizeof(PROCESS_LIST))
@@ -107,6 +104,14 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
+	else if (Io_Control_Code == TEST_GetALLKernelModuleNumber)
+	{
+		_This->_KernelModules.GetKernelModuleListALL(_This->Driver_Object);
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_KernelModules._KernelModuleList.size();
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
 	else if (Io_Control_Code == TEST_GetALLKernelModule)
 	{
 		if (Output_Lenght < _This->_KernelModules._KernelModuleList.size() * sizeof(KernelModulesVector))
@@ -125,6 +130,36 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		}
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_KernelModules._KernelModuleList.size() * sizeof(KernelModulesVector);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if (Io_Control_Code == TEST_GetALLUserModuleNumber)
+	{
+		Modules _Modules;
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _Modules.GetWin32MoudleList(*(ULONG64*)Input_Buffer).size();
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if (Io_Control_Code == TEST_GetALLUserModule)
+	{
+		Modules _Modules;
+		std::vector<UserModule> temp_vector = _Modules.GetWin32MoudleList(*(ULONG64*)Input_Buffer);
+		if (Output_Lenght < temp_vector.size() * sizeof(UserModule))
+		{
+			pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
+			pIrp->IoStatus.Information = 0;
+			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+			return STATUS_SUCCESS;
+		}
+		int i = 0;
+		for (auto x : temp_vector)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(UserModule), &x, sizeof(UserModule));
+			i++;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = temp_vector.size() * sizeof(UserModule);
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
