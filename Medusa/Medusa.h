@@ -128,9 +128,9 @@ public:
 
 		_TableView_Action_HookCheck.setMenu(&_TableView_Menu_HookCheck);
 		_TableView_Menu_HookCheck.setTitle("HookScanner");
-		_TableView_Menu_HookCheck.addAction("R3HookScannerSimple(Y/N)");
-		_TableView_Menu_HookCheck.addAction("R3HookScanner");
-		_TableView_Menu_HookCheck.addAction("R3QuickCheckALL");
+		_TableView_Menu_HookCheck.addAction("HookScannerSimple(Y/N)");
+		_TableView_Menu_HookCheck.addAction("HookScanner");
+		_TableView_Menu_HookCheck.addAction("QuickCheckALL");
 
 
 		_TableView_Action_Modules.setMenu(&_TableView_Menu_Modules);

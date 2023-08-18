@@ -261,9 +261,9 @@ void Medusa::ProcessRightMenu(QAction* action)
 		return;
 	}
 
-	if (action->text() == "R3QuickCheckALL" || 
-		action->text() == "R3HookScanner" || 
-		action->text() == "R3HookScannerSimple(Y/N)")
+	if (action->text() == "QuickCheckALL" || 
+		action->text() == "HookScanner" || 
+		action->text() == "HookScannerSimple(Y/N)")
 	{
 		RightMenuHookScanner(action);
 		return;
@@ -313,9 +313,9 @@ void Medusa::RightMenuDLLInject(QAction* action)
 
 void Medusa::RightMenuHookScanner(QAction* action)
 {
-	if (action->text() == "R3QuickCheckALL")
+	if (action->text() == "QuickCheckALL")
 	{
-		FileCheck temp_check;
+		FileCheck temp_check(_Driver_Loaded);
 		std::string temp_str;
 		ui.progressBar->setMaximum(_Process._Process_List_R3.size());
 		ui.progressBar->setValue(0);
@@ -324,6 +324,15 @@ void Medusa::RightMenuHookScanner(QAction* action)
 			if (x.PID == 0 || x.PID == 4)
 			{
 				continue;
+			}
+			if (!_Driver_Loaded)
+			{
+				auto proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, x.PID);
+				if (!proc)
+				{
+					temp_str = temp_str + QString::fromWCharArray(x.Name).toStdString() + "-----Insufficient permissions\r\n";
+					continue;
+				}
 			}
 			if (!temp_check.CheckSimple(x.PID))
 			{
@@ -335,14 +344,24 @@ void Medusa::RightMenuHookScanner(QAction* action)
 		temp_str = temp_str + "\r\n detected hook";
 		QMessageBox::information(this, "Ret", temp_str.data());
 	}
-	if (action->text() == "R3HookScannerSimple(Y/N)")
+	if (action->text() == "HookScannerSimple(Y/N)")
 	{
 		if (_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 0
 			|| _Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 4)
 		{
 			return;
 		}
-		FileCheck temp_check;
+		if (!_Driver_Loaded)
+		{
+			auto proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE,
+				_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+			if (!proc)
+			{
+				QMessageBox::information(this, "Ret", "Insufficient permissions");
+				return;
+			}
+		}
+		FileCheck temp_check(_Driver_Loaded);
 		if (temp_check.CheckSimple(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID))
 		{
 			QMessageBox::information(this, "Ret", "not detected hook");
@@ -352,7 +371,7 @@ void Medusa::RightMenuHookScanner(QAction* action)
 			QMessageBox::information(this, "Ret", "detected hook");
 		}
 	}
-	if (action->text() == "R3HookScanner")
+	if (action->text() == "HookScanner")
 	{
 		if (_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 0
 			|| _Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 4)
@@ -360,7 +379,7 @@ void Medusa::RightMenuHookScanner(QAction* action)
 			return;
 		}
 		_HookScanner._Model->removeRows(0, _HookScanner._Model->rowCount());
-		FileCheck temp_check;
+		FileCheck temp_check(_Driver_Loaded);
 		std::vector<_CheckDifferent> temp_vector = temp_check.CheckPlain(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
 		int i = 0;
 		for (auto x : temp_vector)

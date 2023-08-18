@@ -26,14 +26,16 @@ struct _CheckDifferent
 class FileCheck
 {
 public:
-	FileCheck() = default;
+	FileCheck(bool _Driver_Loaded)
+	{
+		_Driver = _Driver_Loaded;
+	}
 	~FileCheck() = default;
 public:
 	bool CheckSimple(ULONG64 PID);
 	std::vector<_CheckDifferent> CheckPlain(ULONG64 PID);
 private:
-
-
+	bool _Driver = false;
 };
 
 

@@ -22,7 +22,7 @@ std::vector<UserModule> Modules::GetWin32MoudleList(ULONG64 PID)
 	ObDereferenceObject(tempep);
 	KeStackAttachProcess(tempep, &kapc);
 	peb = (PPEB)PsGetProcessPeb(tempep);
-	if (!peb)
+	if (!peb || !MmIsAddressValid(peb))
 	{
 		KeUnstackDetachProcess(&kapc);
 		return temp_vector;

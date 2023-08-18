@@ -3,6 +3,7 @@
 #include <functional>
 
 #include "Modules.h"
+#include "MemoryRW.h"
 
 #define DEVICE_NAME L"\\Device\\IO_Control"
 #define LINK_NAME L"\\??\\IO_Control"
@@ -16,6 +17,8 @@ IO_Control* IO_Control::_This;
 
 #define TEST_GetALLUserModule CTL_CODE(FILE_DEVICE_UNKNOWN,0x7104,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_GetALLUserModuleNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7105,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
+#define TEST_GetRWMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7106,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
 NTSTATUS IO_Control::Create_IO_Control()
 {
@@ -71,8 +74,6 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 	ULONG Input_Lenght = irp->Parameters.DeviceIoControl.InputBufferLength;
 	ULONG Output_Lenght = irp->Parameters.DeviceIoControl.OutputBufferLength;
 	char *Input_Buffer = (char*)pIrp->AssociatedIrp.SystemBuffer;
-
-	DbgBreakPoint();
 
 
 	if (Io_Control_Code == TEST_GetALLProcessNumber)
@@ -160,6 +161,14 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		}
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = temp_vector.size() * sizeof(UserModule);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if (Io_Control_Code == TEST_GetRWMemory && Input_Lenght > 0)
+	{
+		NewNtReadWriteVirtualMemory((Message_NtReadWriteVirtualMemory*)Input_Buffer);
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = 0;
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}

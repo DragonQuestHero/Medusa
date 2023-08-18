@@ -28,8 +28,42 @@ DWORD GetSections(char* pe, std::vector<PIMAGE_SECTION_HEADER>& sections) {
 	return count;
 }
 
-DWORD LoadMem(const HANDLE& proc, const MODULEENTRY32W& modEntry, BYTE*& data) {
-	if (!proc || data || !modEntry.modBaseSize) return 0;
+struct Message_NtReadWriteVirtualMemory
+{
+	HANDLE ProcessId;
+	HANDLE ProcessHandle;
+	PVOID BaseAddress;
+	PVOID Buffer;
+	SIZE_T BufferBytes;
+	PSIZE_T ReturnBytes;
+	bool Read;
+};
+#define TEST_GetRWMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7106,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+bool KernelRWMemory(Message_NtReadWriteVirtualMemory *temp_message)
+{
+	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (INVALID_HANDLE_VALUE == m_hDevice)
+	{
+		return false;
+	}
+	IO_STATUS_BLOCK IoStatusBlock = { 0 };
+	NTSTATUS status = ZwDeviceIoControlFile(m_hDevice, nullptr, nullptr, nullptr,
+		&IoStatusBlock, TEST_GetRWMemory,
+		temp_message, sizeof(Message_NtReadWriteVirtualMemory),
+		temp_message, sizeof(Message_NtReadWriteVirtualMemory));
+	if (!NT_SUCCESS(status))
+	{
+		CloseHandle(m_hDevice);
+		return false;
+	}
+	CloseHandle(m_hDevice);
+	return true;
+}
+
+DWORD LoadMem(const HANDLE& proc, const MODULEENTRY32W& modEntry, BYTE*& data,bool _Driver_Loaded,ULONG64 PID)
+{
+	if (data || !modEntry.modBaseSize) return 0;
 	data = new BYTE[modEntry.modBaseSize];
 	SIZE_T size = 0;
 	bool status = false;
@@ -38,29 +72,111 @@ cleanup:
 	if (!status) { delete[] data; data = nullptr; }
 	return size;
 code:
-	if (!ReadProcessMemory(proc, modEntry.modBaseAddr, data, modEntry.modBaseSize, &size)) {
-		if (GetLastError() == ERROR_PARTIAL_COPY) {
+	if (!ReadProcessMemory(proc, modEntry.modBaseAddr, data, modEntry.modBaseSize, &size)) 
+	{
+		if (GetLastError() == ERROR_PARTIAL_COPY) 
+		{
 			if (ReadProcessMemory(proc, modEntry.modBaseAddr+ size, data+ size, modEntry.modBaseSize-size, &size)) { status = true; };
 		}
-		goto cleanup;
-	};
+		else
+		{
+			if (_Driver_Loaded)
+			{
+				Message_NtReadWriteVirtualMemory temp_message = { 0 };
+				temp_message.ProcessId = (HANDLE)PID;
+				temp_message.BaseAddress = modEntry.modBaseAddr;
+				temp_message.Buffer = data;
+				temp_message.BufferBytes = modEntry.modBaseSize;
+				temp_message.ReturnBytes = &size;
+				temp_message.Read = true;
+				if (KernelRWMemory(&temp_message)) { status = true; };
+			}
+			goto cleanup;
+		}
+	}
+	
 	status = true;
 	goto cleanup;
 }
+
+std::string Replace(std::string& str,
+	const std::string& old_value, const std::string& new_value)
+{
+	for (std::string::size_type pos(0); pos != std::string::npos; pos += new_value.length()) {
+		if ((pos = str.find(old_value, pos)) != std::string::npos)
+		{
+			str.replace(pos, old_value.length(), new_value);
+		}
+		else
+		{
+			break;
+		}
+	}
+	return str;
+}
+std::wstring Replace(std::wstring& str,
+	const std::wstring& old_value, const std::wstring& new_value)
+{
+	for (std::wstring::size_type pos(0); pos != std::wstring::npos; pos += new_value.length()) {
+		if ((pos = str.find(old_value, pos)) != std::wstring::npos)
+		{
+			str.replace(pos, old_value.length(), new_value);
+		}
+		else
+		{
+			break;
+		}
+	}
+	return str;
+}
+
+
+
+
+
+
+
+
+
 
 
 
 bool FileCheck::CheckSimple(ULONG64 PID)
 {
 	auto proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, PID);
-	if (!proc)
+	if (!proc && !_Driver)
 	{
-		//QMessageBox::information(nullptr, "Error", (std::string("GetLastError:") + std::to_string(GetLastError())).data());
 		return false;
 	}
 
 	Modules _Module;
-	std::vector<MODULEENTRY32W> temp_vector = _Module.GetUserMoudleListR3(PID);
+	std::vector<MODULEENTRY32W> temp_vector;
+	if (_Driver)
+	{
+		std::vector<UserModule> temp_vc2 = _Module.GetUserMoudleListR0(PID);
+		for (auto x : temp_vc2)
+		{
+			MODULEENTRY32W temp_tr;
+			RtlZeroMemory(&temp_tr, sizeof(MODULEENTRY32W));
+			temp_tr.modBaseAddr = (BYTE*)x.Addr;
+			temp_tr.modBaseSize = x.Size;
+			if (std::wstring(x.Path).find(L"SystemRoot") != std::wstring::npos)
+			{
+				std::wstring temp_wstr = x.Path;
+				temp_wstr = Replace(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
+				RtlCopyMemory(temp_tr.szExePath, temp_wstr.data(), temp_wstr.length() * 2);
+			}
+			else
+			{
+				RtlCopyMemory(temp_tr.szExePath, x.Path, MAX_PATH);
+			}
+			temp_vector.push_back(temp_tr);
+		}
+	}
+	else
+	{
+		temp_vector = _Module.GetUserMoudleListR3(PID);
+	}
 	if (temp_vector.size() == 0)
 	{
 		return false;
@@ -92,7 +208,7 @@ bool FileCheck::CheckSimple(ULONG64 PID)
 
 			std::vector<PIMAGE_SECTION_HEADER> coldSections;
 			if (!GetSections((char*)loaded_pe, coldSections)) break;
-			if (!LoadMem(proc, x, data)) break;
+			if (!LoadMem(proc, x, data,_Driver, PID)) break;
 			std::vector<PIMAGE_SECTION_HEADER> hotSections;
 			if (!GetSections((char*)data, hotSections)) break;
 			if (hotSections.size() != coldSections.size()) break;
@@ -135,6 +251,10 @@ bool FileCheck::CheckSimple(ULONG64 PID)
 			loaded_pe = nullptr;
 		}
 	}
+	if (proc)
+	{
+		CloseHandle(proc);
+	}
 	if (sucss == temp_vector.size())
 	{
 		return true;
@@ -148,20 +268,45 @@ std::vector<_CheckDifferent> FileCheck::CheckPlain(ULONG64 PID)
 	std::vector<_CheckDifferent> temp_vector_check;
 
 	auto proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, PID);
-	if (!proc)
+	if (!proc && !_Driver)
 	{
 		QMessageBox::information(nullptr, "Error", (std::string("GetLastError:") + std::to_string(GetLastError())).data());
 		return temp_vector_check;
 	}
 
 	Modules _Module;
-	std::vector<MODULEENTRY32W> temp_vector = _Module.GetUserMoudleListR3(PID);
+	std::vector<MODULEENTRY32W> temp_vector;
+	if (_Driver)
+	{
+		std::vector<UserModule> temp_vc2 = _Module.GetUserMoudleListR0(PID);
+		for (auto x : temp_vc2)
+		{
+			MODULEENTRY32W temp_tr;
+			RtlZeroMemory(&temp_tr, sizeof(MODULEENTRY32W));
+			temp_tr.modBaseAddr = (BYTE*)x.Addr;
+			temp_tr.modBaseSize = x.Size;
+			if (std::wstring(x.Path).find(L"SystemRoot") != std::wstring::npos)
+			{
+				std::wstring temp_wstr = x.Path;
+				temp_wstr = Replace(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
+				RtlCopyMemory(temp_tr.szExePath, temp_wstr.data(), temp_wstr.length() * 2);
+			}
+			else
+			{
+				RtlCopyMemory(temp_tr.szExePath, x.Path, MAX_PATH);
+			}
+			temp_vector.push_back(temp_tr);
+		}
+	}
+	else
+	{
+		temp_vector = _Module.GetUserMoudleListR3(PID);
+	}
 	if (temp_vector.size() == 0)
 	{
 		return temp_vector_check;
 	}
 
-	int sucss = 0;
 	for (auto x : temp_vector)
 	{
 		BYTE* data = nullptr;
@@ -184,7 +329,7 @@ std::vector<_CheckDifferent> FileCheck::CheckPlain(ULONG64 PID)
 			
 
 			if (!GetSections((char*)loaded_pe, coldSections)) break;
-			if (!LoadMem(proc, x, data)) break;
+			if (!LoadMem(proc, x, data, _Driver, PID)) break;
 			if (!GetSections((char*)data, hotSections)) break;
 			if (hotSections.size() != coldSections.size()) break;
 			already = true;
@@ -252,6 +397,10 @@ std::vector<_CheckDifferent> FileCheck::CheckPlain(ULONG64 PID)
 			peconv::free_pe_buffer(loaded_pe);
 			loaded_pe = nullptr;
 		}
+	}
+	if (proc)
+	{
+		CloseHandle(proc);
 	}
 	return temp_vector_check;
 }
