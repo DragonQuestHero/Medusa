@@ -9,6 +9,9 @@ IO_Control* IO_Control::_This;
 #define TEST_GetALLProcess CTL_CODE(FILE_DEVICE_UNKNOWN,0x7100,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_GetALLProcessNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7101,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
+#define TEST_GetALLKernelModule CTL_CODE(FILE_DEVICE_UNKNOWN,0x7102,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define TEST_GetALLKernelModuleNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7103,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
 NTSTATUS IO_Control::Create_IO_Control()
 {
 	NTSTATUS status = 0;
@@ -65,6 +68,8 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 	char *Input_Buffer = (char*)pIrp->AssociatedIrp.SystemBuffer;
 
 	DbgBreakPoint();
+
+
 	if (Io_Control_Code == TEST_GetALLProcessNumber)
 	{
 		_This->_EmunProcess.EmunProcessALL();
@@ -73,8 +78,15 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
-
-	if (Io_Control_Code == TEST_GetALLProcess)
+	else if (Io_Control_Code == TEST_GetALLKernelModuleNumber)
+	{
+		_This->_KernelModules.GetKernelModuleListALL(_This->Driver_Object);
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_KernelModules._KernelModuleList.size();
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if (Io_Control_Code == TEST_GetALLProcess)
 	{
 		if (Output_Lenght < _This->_EmunProcess._Process_List.size() * sizeof(PROCESS_LIST))
 		{
@@ -92,6 +104,27 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		}
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_EmunProcess._Process_List.size() * sizeof(PROCESS_LIST);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if (Io_Control_Code == TEST_GetALLKernelModule)
+	{
+		if (Output_Lenght < _This->_KernelModules._KernelModuleList.size() * sizeof(KernelModulesVector))
+		{
+			pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
+			pIrp->IoStatus.Information = 0;
+			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+			return STATUS_SUCCESS;
+		}
+
+		int i = 0;
+		for (auto x : _This->_KernelModules._KernelModuleList)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(KernelModulesVector), &x, sizeof(KernelModulesVector));
+			i++;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_KernelModules._KernelModuleList.size() * sizeof(KernelModulesVector);
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}

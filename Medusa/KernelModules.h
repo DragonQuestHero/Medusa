@@ -21,7 +21,7 @@ struct KernelModulesVector
 	ULONG64 Size;
 	WCHAR Name[260];
 	char Path[260];
-	bool Check;
+	USHORT Check;
 };
 
 
@@ -32,8 +32,10 @@ public:
 	~KernelModules() = default;
 public:
 	bool GetKernelModuleListR3();
+	bool GetKernelModuleListR0();
 public:
 	std::vector<KernelModulesVector> _KernelModuleListR3;
+	std::vector<KernelModulesVector> _KernelModuleListR0;
 private:
 
 };

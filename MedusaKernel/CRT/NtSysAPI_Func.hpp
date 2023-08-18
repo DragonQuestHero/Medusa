@@ -1204,6 +1204,16 @@ extern "C" NTSYSAPI NTSTATUS NTAPI ZwFlushInstructionCache(
 	IN OPTIONAL PVOID BaseAddress,
 	IN SIZE_T Length);
 
+extern "C" NTSYSAPI NTSTATUS NTAPI ZwQueryDirectoryObject(
+	IN HANDLE DirectoryHandle,
+	OUT PVOID Buffer,
+	IN ULONG Length,
+	IN BOOLEAN ReturnSingleEntry,
+	IN BOOLEAN RestartScan,
+	IN OUT  PULONG Context,
+	OUT PULONG ReturnLength
+);
+
 //extern "C" NTSYSAPI NTSTATUS NTAPI ObInsertObject(
 //	_In_ PVOID              Object,
 //	_In_opt_ PACCESS_STATE  PassedAccessState,

@@ -12,7 +12,7 @@ struct KernelModulesVector
 	ULONG64 Size;
 	WCHAR Name[260];
 	char Path[260];
-	bool Check;
+	USHORT Check;
 };
 
 
@@ -25,6 +25,7 @@ public:
 	void GetKernelModuleListALL(PDRIVER_OBJECT  pdriver);
 	bool GetKernelModuleList1();
 	std::vector<KernelModulesVector> GetKernelModuleList2(PDRIVER_OBJECT  pdriver);
+	std::vector<KernelModulesVector> GetKernelModuleList3(UNICODE_STRING* Directory);
 public:
 	std::vector<KernelModulesVector> _KernelModuleList;
 private:

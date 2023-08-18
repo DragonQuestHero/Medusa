@@ -327,6 +327,7 @@ void Medusa::RightMenuHookScanner(QAction* action)
 			}
 			ui.progressBar->setValue(ui.progressBar->value() + 1);
 		}
+		ui.progressBar->setValue(_Process._Process_List_R3.size());
 		temp_str = temp_str + "\r\n detected hook";
 		QMessageBox::information(this, "Ret", temp_str.data());
 	}
@@ -569,6 +570,58 @@ void Medusa::GetKernelModuleList()
 	_Model_Driver->removeRows(0, _Model_Driver->rowCount());
 	if (_Driver_Loaded)
 	{
+		KernelModules _KernelModules;
+		_KernelModules.GetKernelModuleListR0();
+		if (_KernelModules._KernelModuleListR0.size() != 0)
+		{
+			int i = 0;
+			for (auto x : _KernelModules._KernelModuleListR0)
+			{
+				_Model_Driver->setVerticalHeaderItem(i, new QStandardItem);
+				_Model_Driver->setData(_Model_Driver->index(i, 0), i);
+				if (x.Check == 1 || x.Check == 2)
+				{
+					_Model_Driver->setData(_Model_Driver->index(i, 1), QString::fromWCharArray((WCHAR*)x.Name));
+				}
+				else
+				{
+					_Model_Driver->setData(_Model_Driver->index(i, 1), (char*)x.Name);
+				}
+				//_Model_Driver->setData(_Model_Driver->index(i, 1), QString::fromWCharArray(x.Name));
+				std::ostringstream ret;
+				ret << std::hex << "0x" << (ULONG64)x.Addr;
+				_Model_Driver->setData(_Model_Driver->index(i, 2), ret.str().data());
+				std::ostringstream ret2;
+				ret2 << std::hex << "0x" << (ULONG64)x.Size;
+				_Model_Driver->setData(_Model_Driver->index(i, 3), ret2.str().data());
+				if (x.Check == 1 || x.Check == 2)
+				{
+					_Model_Driver->setData(_Model_Driver->index(i, 4), QString::fromWCharArray((WCHAR*)x.Path));
+				}
+				else
+				{
+					_Model_Driver->setData(_Model_Driver->index(i, 4), x.Path);
+				}
+				QColor temp_color = QColor(Qt::white);
+				if (x.Check == 1)
+				{
+					temp_color = QColor(Qt::green);
+				}
+				if (x.Check == 2)
+				{
+					temp_color = QColor(Qt::red);
+				}
+				_Model_Driver->item(i, 0)->setBackground(temp_color);
+				_Model_Driver->item(i, 1)->setBackground(temp_color);
+				_Model_Driver->item(i, 2)->setBackground(temp_color);
+				_Model_Driver->item(i, 3)->setBackground(temp_color);
+				_Model_Driver->item(i, 4)->setBackground(temp_color);
+				i++;
+			}
+			ui.label->setText(QString((std::string("R0 get kernel moduls number:") +
+				std::to_string(_KernelModules._KernelModuleListR0.size())).data()));
+
+		}
 	}
 	else
 	{
@@ -593,7 +646,6 @@ void Medusa::GetKernelModuleList()
 			}
 			ui.label->setText(QString((std::string("R3 get kernel moduls number:") +
 				std::to_string(_KernelModules._KernelModuleListR3.size())).data()));
-			
 		}
 	}
 }

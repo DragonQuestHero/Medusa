@@ -50,3 +50,53 @@ bool KernelModules::GetKernelModuleListR3()
 	}
 	return true;
 }
+
+#define TEST_GetALLKernelModule CTL_CODE(FILE_DEVICE_UNKNOWN,0x7102,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define TEST_GetALLKernelModuleNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7103,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+bool KernelModules::GetKernelModuleListR0()
+{
+	_KernelModuleListR0.clear();
+
+	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (INVALID_HANDLE_VALUE == m_hDevice)
+	{
+		return false;
+	}
+
+	do
+	{
+		DWORD process_number = 0;
+		DeviceIoControl(m_hDevice, TEST_GetALLKernelModuleNumber, 0, 0, 0, 0, &process_number, NULL);
+		if (!process_number)
+		{
+			break;
+		}
+
+		DWORD dwRet = 0;
+		KernelModulesVector* temp_list = (KernelModulesVector*)new char[process_number * sizeof(KernelModulesVector)];
+		if (!temp_list)
+		{
+			break;
+		}
+
+		DeviceIoControl(m_hDevice, TEST_GetALLKernelModule, 0, 0, temp_list, sizeof(KernelModulesVector) * process_number, &dwRet, NULL);
+		if (dwRet)
+		{
+			for (int i = 0; i < process_number; i++)
+			{
+				_KernelModuleListR0.push_back(temp_list[i]);
+			}
+		}
+		delete temp_list;
+
+		return true;
+	} while (false);
+
+
+
+
+
+	CloseHandle(m_hDevice);
+	return false;
+}

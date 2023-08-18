@@ -86,8 +86,8 @@ bool FileCheck::CheckSimple(ULONG64 PID)
 			loaded_pe = peconv::load_pe_module(buffer, bufsize, v_size, false, true);
 			peconv::free_unaligned(buffer);
 			if (!loaded_pe) break;
-			/*bool is64b = peconv::is64bit(loaded_pe);
-			if (!is64b) break;*/
+			bool is64b = peconv::is64bit(loaded_pe);
+			if (!is64b) break;
 			
 
 			std::vector<PIMAGE_SECTION_HEADER> coldSections;
@@ -179,8 +179,8 @@ std::vector<_CheckDifferent> FileCheck::CheckPlain(ULONG64 PID)
 			loaded_pe = peconv::load_pe_module(buffer, bufsize, v_size, false, true);
 			peconv::free_unaligned(buffer);
 			if (!loaded_pe) break;
-			/*bool is64b = peconv::is64bit(loaded_pe);
-			if (!is64b) return temp_vector_check;*/
+			bool is64b = peconv::is64bit(loaded_pe);
+			if (!is64b) return temp_vector_check;
 			
 
 			if (!GetSections((char*)loaded_pe, coldSections)) break;
@@ -234,8 +234,8 @@ std::vector<_CheckDifferent> FileCheck::CheckPlain(ULONG64 PID)
 					RtlCopyMemory(temp__CheckDifferent.Name, x.szModule, 256);
 					RtlCopyMemory(temp__CheckDifferent.Path, x.szExePath, MAX_PATH);
 					temp__CheckDifferent.Addr = (ULONG64)x.modBaseAddr + temp_header->VirtualAddress + j;
-					RtlCopyMemory(temp__CheckDifferent.FileHex, loaded_pe + temp_header2->VirtualAddress + j - 5, 20);
-					RtlCopyMemory(temp__CheckDifferent.FileHex, data + temp_header->VirtualAddress + j - 5, 20);
+					RtlCopyMemory(temp__CheckDifferent.FileHex, (loaded_pe + temp_header2->VirtualAddress + j), 20);
+					RtlCopyMemory(temp__CheckDifferent.MemoryHex, (data + temp_header->VirtualAddress + j), 20);
 					temp_vector_check.push_back(temp__CheckDifferent);
 					j = j + 19;
 					continue;

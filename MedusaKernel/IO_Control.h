@@ -3,6 +3,7 @@
 #include <intrin.h>
 
 #include "EmunProcess.h"
+#include "KernelModules.h"
 
 class IO_Control
 {
@@ -27,5 +28,6 @@ private:
 	UNICODE_STRING Link_Name;
 private:
 	EmunProcess _EmunProcess;
+	KernelModules _KernelModules;
 };
 

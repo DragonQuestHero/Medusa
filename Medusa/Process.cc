@@ -23,12 +23,10 @@ std::vector<ModuleList> Process::GetModuleListR3(ULONG64 PID)
 	}
 
 	do {
-
 		ModuleList temp_list;
 		RtlCopyMemory(temp_list.Name, me32.szModule, MAX_MODULE_NAME32 + 1);
 		RtlCopyMemory(temp_list.Path, me32.szExePath, MAX_PATH);
 		temp_vector.push_back(temp_list);
-
 	} while (Module32Next(hModuleSnap, &me32));
 	CloseHandle(hModuleSnap);
 	return temp_vector;
