@@ -278,6 +278,10 @@ void Medusa::ProcessRightMenu(QAction* action)
 	{
 		RightMenuR0ModulesView(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
 	}
+	if (action->text() == "R3ModuleScanner")
+	{
+		RightMenuR3ModuleScanner(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+	}
 
 	if (action->text() == "R3ThreadView")
 	{
@@ -481,6 +485,32 @@ void Medusa::RightMenuR0ModulesView(ULONG64 PID)
 		}
 		_Modules.show();
 	}
+}
+
+void Medusa::RightMenuR3ModuleScanner(ULONG64 PID)
+{
+	auto proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, PID);
+	if (!proc)
+	{
+		QMessageBox::information(this, "Ret", "permissions error");
+		return;
+	}
+	_Modules._Model->removeRows(0, _Modules._Model->rowCount());
+	std::vector<UserModule> temp_vector = _Modules.R3ModuleScanner(PID, proc);
+	int i = 0;
+	for (auto x : temp_vector)
+	{
+		_Modules._Model->setVerticalHeaderItem(i, new QStandardItem);
+		_Modules._Model->setData(_Modules._Model->index(i, 0), i);
+		std::ostringstream ret;
+		ret << std::hex << "0x" << (ULONG64)x.Addr;
+		_Modules._Model->setData(_Modules._Model->index(i, 2), ret.str().data());
+		std::ostringstream ret2;
+		ret2 << std::hex << "0x" << x.Size;
+		_Modules._Model->setData(_Modules._Model->index(i, 3), ret2.str().data());
+		i++;
+	}
+	_Modules.show();
 }
 
 void Medusa::RightMenuR3ThreadsView(ULONG64 PID)

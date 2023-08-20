@@ -1,5 +1,5 @@
 #include "Modules.h"
-
+#include "ntdll.h"
 
 
 Modules::Modules(QWidget* parent)
@@ -62,7 +62,6 @@ std::vector<MODULEENTRY32W> Modules::GetUserMoudleListR3(ULONG64 PID)
 
 #define TEST_GetALLUserModule CTL_CODE(FILE_DEVICE_UNKNOWN,0x7104,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_GetALLUserModuleNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7105,METHOD_BUFFERED ,FILE_ANY_ACCESS)
-
 std::vector<UserModule> Modules::GetUserMoudleListR0(ULONG64 PID)
 {
 	std::vector<UserModule> temp_vector;
@@ -100,5 +99,51 @@ std::vector<UserModule> Modules::GetUserMoudleListR0(ULONG64 PID)
 		delete temp_list;
 	} while (false);
 	CloseHandle(m_hDevice);
+	return temp_vector;
+}
+
+
+std::vector<UserModule> Modules::R3ModuleScanner(ULONG64 PID,HANDLE handle)
+{
+	std::vector<UserModule> temp_vector;
+	MEMORY_BASIC_INFORMATION base_info;
+	SIZE_T ReturnLength;
+	void* base_addr = 0;
+	while (NT_SUCCESS(
+		NtQueryVirtualMemory(handle, base_addr, MemoryBasicInformation,
+			&base_info, sizeof(MEMORY_BASIC_INFORMATION), &ReturnLength)))
+	{
+		if (base_info.Protect & 0xf0 && base_info.Type != MEM_IMAGE && base_info.RegionSize > PAGE_SIZE)
+		{
+			for (int i = 0; i < base_info.RegionSize; i++)
+			{
+				USHORT magic = 0;
+				SIZE_T size = 0;
+				if (ReadProcessMemory(handle, (char*)base_addr+i, &magic, 2, &size))
+				{
+					if (magic == 0x5A4D && base_info.RegionSize - i > PAGE_SIZE)//除非情况很极端
+					{
+						void* memory_p = new char[PAGE_SIZE];
+						if (ReadProcessMemory(handle, (char*)base_addr+i, memory_p, PAGE_SIZE, &size))
+						{
+							PIMAGE_NT_HEADERS nt_header = RtlImageNtHeader((void*)memory_p);
+							if (nt_header)
+							{
+								UserModule temp_list;
+								RtlZeroMemory(&temp_list, sizeof(UserModule));
+								temp_list.Addr = (ULONG64)((char*)base_addr + i);
+								temp_list.Size = nt_header->OptionalHeader.SizeOfImage;
+								temp_vector.push_back(temp_list);
+								delete memory_p;
+								break;
+							}
+						}
+						delete memory_p;
+					}
+				}
+			}
+		}
+		base_addr = (void*)((ULONG64)base_addr + base_info.RegionSize);
+	}
 	return temp_vector;
 }

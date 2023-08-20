@@ -38,15 +38,19 @@ public slots:
 	void DriverLoadMenu(QAction*);
 	void HypervisorMenu(QAction*);
 	void ProcessRightMenu(QAction*);
-	void DriverLoad(QAction*);
+public:
 	void GetProcessList();
 	void GetKernelModuleList();
-	void RightMenuR3ModulesView(ULONG64 PID);
-	void RightMenuR0ModulesView(ULONG64 PID);
+	void DriverLoad(QAction*);
 	void RightMenuDLLInject(QAction*);
 	void RightMenuHookScanner(QAction*);
+public:
 	void RightMenuR3ThreadsView(ULONG64 PID);
 	void RightMenuR0ThreadsView(ULONG64 PID);
+public:
+	void RightMenuR3ModulesView(ULONG64 PID);
+	void RightMenuR0ModulesView(ULONG64 PID);
+	void RightMenuR3ModuleScanner(ULONG64 PID);
 private:
 	bool _Driver_Loaded = false;
 private:
@@ -134,9 +138,10 @@ public:
 
 
 		_TableView_Action_Modules.setMenu(&_TableView_Menu_Modules);
-		_TableView_Menu_Modules.setTitle("ModulesView");
+		_TableView_Menu_Modules.setTitle("Modules");
 		_TableView_Menu_Modules.addAction("R3ModulesView");
 		_TableView_Menu_Modules.addAction("R0ModulesView(second check)");
+		_TableView_Menu_Modules.addAction("R3ModuleScanner");
 
 		_TableView_Action_Threads.setMenu(&_TableView_Menu_Threads);
 		_TableView_Menu_Threads.setTitle("ThreadView");
