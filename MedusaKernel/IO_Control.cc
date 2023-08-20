@@ -20,6 +20,9 @@ IO_Control* IO_Control::_This;
 
 #define TEST_GetRWMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7106,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
+#define TEST_GetALLThreads CTL_CODE(FILE_DEVICE_UNKNOWN,0x7107,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define TEST_GetALLThreadsNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7108,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
 NTSTATUS IO_Control::Create_IO_Control()
 {
 	NTSTATUS status = 0;
@@ -43,10 +46,13 @@ NTSTATUS IO_Control::Create_IO_Control()
 		return status;
 	}
 
-	DbgPrint("Create Device and Link SUCCESS!\n");
 
 	Driver_Object->MajorFunction[IRP_MJ_CREATE] = IO_Control::IO_Default;
 	Driver_Object->MajorFunction[IRP_MJ_DEVICE_CONTROL] = IO_Control::Code_Control_Center;
+
+
+	_Threads.InitWin32StartAddressOffset();
+
 
 	return STATUS_SUCCESS;
 }
@@ -172,10 +178,39 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
+	else if (Io_Control_Code == TEST_GetALLThreadsNumber)
+	{
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_Threads.GetThreadListR0(*(ULONG64*)Input_Buffer).size();
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if (Io_Control_Code == TEST_GetALLThreads)
+	{
+		std::vector<ThreadList> temp_vector = _This->_Threads.GetThreadListR0(*(ULONG64*)Input_Buffer);
+		if (Output_Lenght < temp_vector.size() * sizeof(ThreadList))
+		{
+			pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
+			pIrp->IoStatus.Information = 0;
+			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+			return STATUS_SUCCESS;
+		}
+		int i = 0;
+		for (auto x : temp_vector)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(ThreadList), &x, sizeof(ThreadList));
+			i++;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = temp_vector.size() * sizeof(ThreadList);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
 
+
+	
 	pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
 	pIrp->IoStatus.Information = 0;
 	IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-
 	return STATUS_SUCCESS;
 }

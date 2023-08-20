@@ -141,12 +141,12 @@ std::wstring Replace(std::wstring& str,
 
 
 
-bool FileCheck::CheckSimple(ULONG64 PID)
+int FileCheck::CheckSimple(ULONG64 PID)
 {
 	auto proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, PID);
 	if (!proc && !_Driver)
 	{
-		return false;
+		return -1;
 	}
 
 	Modules _Module;
@@ -179,7 +179,7 @@ bool FileCheck::CheckSimple(ULONG64 PID)
 	}
 	if (temp_vector.size() == 0)
 	{
-		return false;
+		return -1;
 	}
 
 	int sucss = 0;
@@ -257,9 +257,9 @@ bool FileCheck::CheckSimple(ULONG64 PID)
 	}
 	if (sucss == temp_vector.size())
 	{
-		return true;
+		return 1;
 	}
-	return false;
+	return 0;
 }
 
 

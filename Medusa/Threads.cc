@@ -98,3 +98,45 @@ std::vector<ThreadList> Threads::GetThreadListR3(ULONG64 PID)
 
 	return temp_vector;
 }
+
+#define TEST_GetALLThreads CTL_CODE(FILE_DEVICE_UNKNOWN,0x7107,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define TEST_GetALLThreadsNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7108,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+std::vector<ThreadList> Threads::GetThreadListR0(ULONG64 PID)
+{
+	std::vector<ThreadList> temp_vector;
+
+	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (INVALID_HANDLE_VALUE == m_hDevice)
+	{
+		return temp_vector;
+	}
+	do
+	{
+		DWORD process_number = 0;
+		DeviceIoControl(m_hDevice, TEST_GetALLThreadsNumber, &PID, 8, 0, 0, &process_number, NULL);
+		if (!process_number)
+		{
+			break;
+		}
+
+		DWORD dwRet = 0;
+		ThreadList* temp_list = (ThreadList*)new char[process_number * sizeof(ThreadList)];
+		if (!temp_list)
+		{
+			break;
+		}
+
+		DeviceIoControl(m_hDevice, TEST_GetALLThreads, &PID, 8, temp_list, sizeof(ThreadList) * process_number, &dwRet, NULL);
+		if (dwRet)
+		{
+			for (int i = 0; i < process_number; i++)
+			{
+				temp_vector.push_back(temp_list[i]);
+			}
+		}
+		delete temp_list;
+	} while (false);
+	CloseHandle(m_hDevice);
+	return temp_vector;
+}

@@ -283,6 +283,10 @@ void Medusa::ProcessRightMenu(QAction* action)
 	{
 		RightMenuR3ThreadsView(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
 	}
+	if (action->text() == "R0ThreadView(second check)")
+	{
+		RightMenuR0ThreadsView(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+	}
 }
 
 void Medusa::ChangeTab()
@@ -325,23 +329,18 @@ void Medusa::RightMenuHookScanner(QAction* action)
 			{
 				continue;
 			}
-			if (!_Driver_Loaded)
+			int temp_ret = temp_check.CheckSimple(x.PID);
+			if (temp_ret == -1)
 			{
-				auto proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, x.PID);
-				if (!proc)
-				{
-					temp_str = temp_str + QString::fromWCharArray(x.Name).toStdString() + "-----Insufficient permissions\r\n";
-					continue;
-				}
+				temp_str = temp_str + QString::fromWCharArray(x.Name).toStdString() + "-----Insufficient permissions or file miss\r\n";
 			}
-			if (!temp_check.CheckSimple(x.PID))
+			if (temp_ret == 0)
 			{
-				temp_str = temp_str + QString::fromWCharArray(x.Name).toStdString() + "\r\n";
+				temp_str = temp_str + QString::fromWCharArray(x.Name).toStdString() + "-----detected hook\r\n";
 			}
 			ui.progressBar->setValue(ui.progressBar->value() + 1);
 		}
 		ui.progressBar->setValue(_Process._Process_List_R3.size());
-		temp_str = temp_str + "\r\n detected hook";
 		QMessageBox::information(this, "Ret", temp_str.data());
 	}
 	if (action->text() == "HookScannerSimple(Y/N)")
@@ -351,24 +350,19 @@ void Medusa::RightMenuHookScanner(QAction* action)
 		{
 			return;
 		}
-		if (!_Driver_Loaded)
-		{
-			auto proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE,
-				_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
-			if (!proc)
-			{
-				QMessageBox::information(this, "Ret", "Insufficient permissions");
-				return;
-			}
-		}
 		FileCheck temp_check(_Driver_Loaded);
-		if (temp_check.CheckSimple(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID))
+		int temp_ret = temp_check.CheckSimple(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		if (temp_ret == 1)
 		{
 			QMessageBox::information(this, "Ret", "not detected hook");
 		}
-		else
+		else if (temp_ret == 0)
 		{
 			QMessageBox::information(this, "Ret", "detected hook");
+		}
+		else
+		{
+			QMessageBox::information(this, "Ret", "Insufficient permissions or file miss");
 		}
 	}
 	if (action->text() == "HookScanner")
@@ -510,7 +504,45 @@ void Medusa::RightMenuR3ThreadsView(ULONG64 PID)
 
 void Medusa::RightMenuR0ThreadsView(ULONG64 PID)
 {
-
+	if (_Driver_Loaded)
+	{
+		_Threads._Model->removeRows(0, _Threads._Model->rowCount());
+		std::vector<ThreadList> temp_vector = _Threads.GetThreadListR0(PID);
+		std::vector<ThreadList> temp_vector2 = _Threads.GetThreadListR3(PID);
+		int i = 0;
+		for (auto x : temp_vector)
+		{
+			bool found = false;
+			for (auto y : temp_vector2)
+			{
+				if (x.TID == y.TID)
+				{
+					found = true;
+					break;
+				}
+			}
+			_Threads._Model->setVerticalHeaderItem(i, new QStandardItem);
+			_Threads._Model->setData(_Threads._Model->index(i, 0), i);
+			_Threads._Model->setData(_Threads._Model->index(i, 1), x.TID);
+			std::ostringstream ret2;
+			ret2 << std::hex << "0x" << (ULONG64)x.ETHREAD;
+			_Threads._Model->setData(_Threads._Model->index(i, 2), ret2.str().data());
+			std::ostringstream ret;
+			ret << std::hex << "0x" << (ULONG64)x.StartAddr;
+			_Threads._Model->setData(_Threads._Model->index(i, 3), ret.str().data());
+			_Threads._Model->setData(_Threads._Model->index(i, 4), QString::fromWCharArray(x.Name));
+			if (!found)
+			{
+				_Threads._Model->item(i, 0)->setBackground(QColor(Qt::red));
+				_Threads._Model->item(i, 1)->setBackground(QColor(Qt::red));
+				_Threads._Model->item(i, 2)->setBackground(QColor(Qt::red));
+				_Threads._Model->item(i, 3)->setBackground(QColor(Qt::red));
+				_Threads._Model->item(i, 4)->setBackground(QColor(Qt::red));
+			}
+			i++;
+		}
+		_Threads.show();
+	}
 }
 
 void Medusa::GetProcessList()

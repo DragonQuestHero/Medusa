@@ -4,6 +4,7 @@
 
 #include "EmunProcess.h"
 #include "KernelModules.h"
+#include "Threads.h"
 
 
 class IO_Control
@@ -30,5 +31,6 @@ private:
 private:
 	EmunProcess _EmunProcess;
 	KernelModules _KernelModules;
+	Threads _Threads;
 };
 

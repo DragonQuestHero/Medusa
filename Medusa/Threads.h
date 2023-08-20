@@ -36,6 +36,7 @@ public:
 	~Threads() = default;
 public:
 	std::vector<ThreadList> GetThreadListR3(ULONG64 PID);
+	std::vector<ThreadList> GetThreadListR0(ULONG64 PID);
 public:
 public slots:
 public:

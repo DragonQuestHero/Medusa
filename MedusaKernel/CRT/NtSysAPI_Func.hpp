@@ -1129,6 +1129,14 @@ extern "C" NTSYSAPI NTSTATUS NTAPI NtQueryInformationThread(
 	OUT PULONG ReturnLength OPTIONAL
 );
 
+extern "C" NTSYSAPI NTSTATUS NTAPI ZwQueryInformationThread(
+	IN HANDLE ThreadHandle,
+	IN THREADINFOCLASS ThreadInformationClass,
+	OUT PVOID ThreadInformation,
+	IN ULONG ThreadInformationLength,
+	OUT PULONG ReturnLength OPTIONAL
+);
+
 extern "C" NTKERNELAPI PVOID NTAPI PsGetProcessWow64Process(IN PEPROCESS Process);
 
 extern "C" NTKERNELAPI PPEB NTAPI PsGetProcessPeb(IN PEPROCESS Process);
@@ -1251,6 +1259,19 @@ extern "C" NTSYSAPI NTSTATUS NTAPI ZwQueryDirectoryObject(
 	OUT PULONG ReturnLength
 );
 
+extern "C" NTSYSAPI NTSTATUS NtOpenThread(
+	_Out_ PHANDLE            ThreadHandle,
+	_In_  ACCESS_MASK        DesiredAccess,
+	_In_  POBJECT_ATTRIBUTES ObjectAttributes,
+	_In_  PCLIENT_ID         ClientId
+);
+
+extern "C" NTSYSAPI NTSTATUS ZwOpenThread(
+	_Out_ PHANDLE            ThreadHandle,
+	_In_  ACCESS_MASK        DesiredAccess,
+	_In_  POBJECT_ATTRIBUTES ObjectAttributes,
+	_In_  PCLIENT_ID         ClientId
+);
 //extern "C" NTSYSAPI NTSTATUS NTAPI ObInsertObject(
 //	_In_ PVOID              Object,
 //	_In_opt_ PACCESS_STATE  PassedAccessState,

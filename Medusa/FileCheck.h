@@ -32,7 +32,7 @@ public:
 	}
 	~FileCheck() = default;
 public:
-	bool CheckSimple(ULONG64 PID);
+	int CheckSimple(ULONG64 PID);
 	std::vector<_CheckDifferent> CheckPlain(ULONG64 PID);
 private:
 	bool _Driver = false;
