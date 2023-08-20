@@ -8,9 +8,11 @@
 
 #### Completed (application layer):
 
-##### ---Process thread module enumeration list
+##### ---Process thread module kernel driver enumeration list
 
 ##### ---File memory code segment comparison (hook scan)
+
+###### -----
 
 ##### ---Application layer virtualization detection (including but not limited to various types of virtual machines and virtualization frameworks and drivers)
 
@@ -37,6 +39,24 @@
 	<br>
 	<br>
 </h1>
+
+##### ---kernel module unlink check
+
+<h1 align="center">
+	<img src="3.png" >
+	<br>
+	<br>
+</h1>
+
+##### ---process module check
+
+###### -----user mode enumerate frist
+
+###### -----PEB linklist enumerate for the second time
+
+###### -----
+
+##### ---threads check on kernel
 
 ###### The code is open source. If there is existing code, I will only sew and upload the release after the basic functions are complete.
 
