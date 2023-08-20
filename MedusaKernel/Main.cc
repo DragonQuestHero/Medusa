@@ -20,7 +20,6 @@ void DriverUnload(PDRIVER_OBJECT drive_object)
 extern "C" NTSTATUS DriverMain(PDRIVER_OBJECT drive_object, PUNICODE_STRING path)
 {
 	drive_object->DriverUnload = DriverUnload;
-	DbgBreakPoint();
 
 	_IO_Control = new IO_Control(drive_object);
 	_IO_Control->Create_IO_Control();
