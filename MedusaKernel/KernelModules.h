@@ -25,6 +25,7 @@ public:
 	bool GetKernelModuleList1();
 	std::vector<KernelModulesVector> GetKernelModuleList2(PDRIVER_OBJECT  pdriver);
 	std::vector<KernelModulesVector> GetKernelModuleList3(UNICODE_STRING* Directory);
+	bool IsAddressInDriversList(ULONG64 Address);
 public:
 	std::vector<KernelModulesVector> _KernelModuleList;
 private:

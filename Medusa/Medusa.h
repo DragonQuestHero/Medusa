@@ -108,17 +108,19 @@ public:
 		ui.tableView_Driver->verticalHeader()->setDefaultSectionSize(25);
 		ui.tableView_Driver->setSelectionBehavior(QAbstractItemView::SelectRows);
 
-		_Model_Driver->setColumnCount(5);
+		_Model_Driver->setColumnCount(6);
 		_Model_Driver->setHeaderData(0, Qt::Horizontal, u8"Index");
 		_Model_Driver->setHeaderData(1, Qt::Horizontal, u8"Name");
 		_Model_Driver->setHeaderData(2, Qt::Horizontal, u8"Addr");
 		_Model_Driver->setHeaderData(3, Qt::Horizontal, u8"Size");
 		_Model_Driver->setHeaderData(4, Qt::Horizontal, u8"Path");
+		_Model_Driver->setHeaderData(5, Qt::Horizontal, u8"Desciption");
 		ui.tableView_Driver->setColumnWidth(0, 50);
 		ui.tableView_Driver->setColumnWidth(1, 150);
 		ui.tableView_Driver->setColumnWidth(2, 200);
 		ui.tableView_Driver->setColumnWidth(3, 150);
-		ui.tableView_Driver->setColumnWidth(4, 500);
+		ui.tableView_Driver->setColumnWidth(4, 400);
+		ui.tableView_Driver->setColumnWidth(5, 500);
 		ui.tableView_Driver->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	}
 	void ProcessRightMenuUI()
@@ -192,5 +194,56 @@ public:
 		for (std::string::size_type i = 0; i < s.length(); ++i)
 			ret << std::hex << std::setfill('0') << std::setw(2) << (upper_case ? std::uppercase : std::nouppercase) << (int)(unsigned char)s[i] << " ";
 		return ret.str();
+	}
+	bool C_TO_W(std::string str, std::wstring& result)
+	{
+		DWORD strsize = MultiByteToWideChar(CP_ACP, 0, str.data(), -1, NULL, 0);
+		wchar_t* pwstr = new wchar_t[strsize];
+		MultiByteToWideChar(CP_ACP, 0, str.data(), -1, pwstr, strsize);
+		result = pwstr;
+		delete[] pwstr;
+		return true;
+	}
+	std::wstring C_TO_W(std::string str)
+	{
+		std::wstring result;
+		DWORD strsize = MultiByteToWideChar(CP_ACP, 0, str.data(), -1, NULL, 0);
+		wchar_t* pwstr = new wchar_t[strsize];
+		MultiByteToWideChar(CP_ACP, 0, str.data(), -1, pwstr, strsize);
+		result = pwstr;
+		delete[] pwstr;
+		return result;
+	}
+	bool W_TO_C(std::wstring str, std::string& result)
+	{
+		DWORD strsize = WideCharToMultiByte(CP_ACP, 0, str.data(), -1, NULL, 0, NULL, NULL);
+		char* pstr = new char[strsize];
+		WideCharToMultiByte(CP_ACP, 0, str.data(), -1, pstr, strsize, NULL, NULL);
+		result = pstr;
+		return true;
+	}
+	std::string W_TO_C(std::wstring str)
+	{
+		std::string result;
+		DWORD strsize = WideCharToMultiByte(CP_ACP, 0, str.data(), -1, NULL, 0, NULL, NULL);
+		char* pstr = new char[strsize];
+		WideCharToMultiByte(CP_ACP, 0, str.data(), -1, pstr, strsize, NULL, NULL);
+		result = pstr;
+		return result;
+	}
+	std::wstring Replace(std::wstring& str,
+		const std::wstring& old_value, const std::wstring& new_value)
+	{
+		for (std::wstring::size_type pos(0); pos != std::wstring::npos; pos += new_value.length()) {
+			if ((pos = str.find(old_value, pos)) != std::wstring::npos)
+			{
+				str.replace(pos, old_value.length(), new_value);
+			}
+			else
+			{
+				break;
+			}
+		}
+		return str;
 	}
 };

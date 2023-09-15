@@ -7,6 +7,12 @@
 #include "IO_Control.h"
 
 
+#ifdef __DEBUG
+#include "Test.h"
+#endif // DEBUG
+
+
+
 IO_Control *_IO_Control;
 
 void DriverUnload(PDRIVER_OBJECT drive_object)
@@ -24,6 +30,9 @@ extern "C" NTSTATUS DriverMain(PDRIVER_OBJECT drive_object, PUNICODE_STRING path
 	_IO_Control = new IO_Control(drive_object);
 	_IO_Control->Create_IO_Control();
 
+#ifdef __DEBUG
+	TestWalkStack();
+#endif // DEBUG
 	//DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "%s", temp.data());
 
 	

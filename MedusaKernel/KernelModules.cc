@@ -219,3 +219,13 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList3(UNICODE_STR
 	return temp_vector;
 }
 
+
+bool KernelModules::IsAddressInDriversList(ULONG64 Address)
+{
+	for (auto x : _KernelModuleList)
+	{
+		if (Address >= x.Addr && Address < x.Addr + x.Size)
+			return true;
+	}
+	return false;
+}

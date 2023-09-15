@@ -22,6 +22,8 @@ public:
 public:
 	bool InitWin32StartAddressOffset();
 	std::vector<ThreadList> GetThreadListR0(ULONG64 PID);
+	bool StackWalkThread(ULONG64 TID);
 private:
+	ULONG64 StartAddressOffset;
 	ULONG64 Win32StartAddressOffset;
 };

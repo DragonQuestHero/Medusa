@@ -4,6 +4,7 @@
 
 bool Threads::InitWin32StartAddressOffset()
 {
+	bool first = false;
 	HANDLE thread_handle;
 	OBJECT_ATTRIBUTES ObjectAttributes;
 	InitializeObjectAttributes(&ObjectAttributes, 0, 0, 0, 0);
@@ -21,7 +22,14 @@ bool Threads::InitWin32StartAddressOffset()
 				ULONG64 temp_win32start = *(ULONG64*)((char*)temp_thread + i);
 				if (temp_win32start == (ULONG64)startaddr)
 				{
-					Win32StartAddressOffset = i;
+					if (first)
+					{
+						StartAddressOffset = i;
+					}
+					else
+					{
+						Win32StartAddressOffset = i;
+					}
 					/*ZwClose(thread_handle);//故意不跳出去
 					return true;*/
 				}
@@ -71,4 +79,101 @@ std::vector<ThreadList> Threads::GetThreadListR0(ULONG64 PID)
 	}
 
 	return temp_vector;
+}
+
+
+bool Threads::StackWalkThread(ULONG64 TID)
+{
+	PETHREAD tempthd = nullptr;
+	NTSTATUS status = PsLookupThreadByThreadId((HANDLE)TID, &tempthd);
+	if (!NT_SUCCESS(status))
+	{
+		return false;
+	}
+	ObDereferenceObject(tempthd);
+
+	
+	PEPROCESS tempeps;
+	ULONG64 PID = (ULONG64)PsGetThreadProcessId(tempthd);
+	status = PsLookupProcessByProcessId((HANDLE)PID, &tempeps);
+	if (!NT_SUCCESS(status))
+	{
+		return false;
+	}
+	ObDereferenceObject(tempeps);
+
+	if (PsIsThreadTerminating(tempthd))
+		return false;
+
+
+	status = PsSuspendProcess(tempeps);
+	if (!NT_SUCCESS(status))
+	{
+		return false;
+	}
+
+
+	auto CurrentThread = (ULONG64)PsGetCurrentThread();
+	void* temp_stack = nullptr;
+
+	auto CurrentStack = (ULONG64)PsGetCurrentThreadStackBase();
+	ULONG ThreadStackBaseOffset = NULL;
+	while (*(ULONG64*)(CurrentThread + ThreadStackBaseOffset) != CurrentStack)
+		ThreadStackBaseOffset += 8;
+
+	CurrentStack = (ULONG64)PsGetCurrentThreadStackLimit();
+	ULONG ThreadStackLimitOffset = NULL;
+	while (*(uint64_t*)(CurrentThread + ThreadStackLimitOffset) != CurrentStack)
+		ThreadStackLimitOffset += 8;
+
+
+	CurrentStack = (ULONG64)IoGetInitialStack();
+	ULONG InitialThreadStackOffset = NULL;
+	while (*(uint64_t*)(CurrentThread + InitialThreadStackOffset) != CurrentStack)
+		InitialThreadStackOffset += 8;
+
+	auto StackBase = *(uint64_t*)((uint64_t)tempthd + ThreadStackBaseOffset);
+	auto StackLimit = *(uint64_t*)((uint64_t)tempthd + ThreadStackLimitOffset);
+	auto InitialStack = *(uint64_t*)((uint64_t)tempthd + InitialThreadStackOffset);
+	
+	ULONG CurrentStackLocationOffset = 0;
+	while (CurrentStackLocationOffset < 0x2F8)
+	{
+		if (CurrentStackLocationOffset != InitialThreadStackOffset &&
+			*(uint64_t*)((uint64_t)tempthd + CurrentStackLocationOffset) < StackBase &&
+			*(uint64_t*)((uint64_t)tempthd + CurrentStackLocationOffset) > StackLimit)
+		{
+			break;
+		}
+		CurrentStackLocationOffset += 8;
+	}
+
+	auto CurrentStackLocation = *(uint64_t*)((uint64_t)tempthd + CurrentStackLocationOffset);
+	if (!StackBase || !StackLimit || !InitialStack || !CurrentStackLocation)
+	{
+		PsResumeProcess(tempeps);
+		return false;
+	}
+	
+	KAPC_STATE ApcState;
+	KeStackAttachProcess(tempeps, &ApcState);
+	auto CurrentStackSize = StackBase - CurrentStackLocation;
+	if (CurrentStackLocation > StackLimit && CurrentStackLocation < StackBase)
+	{
+		if (MmIsAddressValid((PVOID)CurrentStackLocation) && MmIsAddressValid((PVOID)(CurrentStackLocation + CurrentStackSize-0x8)))
+		{
+			temp_stack = ExAllocatePool(NonPagedPool, CurrentStackSize);
+			RtlCopyMemory(temp_stack, (PVOID)CurrentStackLocation, CurrentStackSize-0x8);
+		}
+	}
+	KeUnstackDetachProcess(&ApcState);
+
+	if (temp_stack)
+	{
+		ExFreePool(temp_stack);
+	}
+	PsResumeProcess(tempeps);
+
+	//todo KeResumeThread
+	
 }

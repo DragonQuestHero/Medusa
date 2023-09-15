@@ -147,7 +147,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>__KERNEL_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__KERNEL_MODE;__DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>false</TreatWarningAsError>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
@@ -165,6 +165,7 @@
     <ClCompile Include="Main.cc" />
     <ClCompile Include="MemoryRW.cc" />
     <ClCompile Include="Modules.cc" />
+    <ClCompile Include="Test.cc" />
     <ClCompile Include="Threads.cc" />
   </ItemGroup>
   <ItemGroup>
@@ -176,6 +177,7 @@
     <ClInclude Include="KernelModules.h" />
     <ClInclude Include="MemoryRW.h" />
     <ClInclude Include="Modules.h" />
+    <ClInclude Include="Test.h" />
     <ClInclude Include="Threads.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

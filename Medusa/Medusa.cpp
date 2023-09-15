@@ -735,6 +735,11 @@ void Medusa::GetKernelModuleList()
 				{
 					_Model_Driver->setData(_Model_Driver->index(i, 4), x.Path);
 				}
+				std::wstring retStr;
+				if (_Process.QueryValue(L"FileDescription", (WCHAR*)x.Path, retStr))
+				{
+					_Model_Driver->setData(_Model_Driver->index(i, 5), QString::fromWCharArray(retStr.data()));
+				}
 				QColor temp_color = QColor(Qt::white);
 				if (x.Check == 1)
 				{
@@ -749,6 +754,7 @@ void Medusa::GetKernelModuleList()
 				_Model_Driver->item(i, 2)->setBackground(temp_color);
 				_Model_Driver->item(i, 3)->setBackground(temp_color);
 				_Model_Driver->item(i, 4)->setBackground(temp_color);
+				_Model_Driver->item(i, 5)->setBackground(temp_color);
 				i++;
 			}
 			ui.label->setText(QString((std::string("R0 get kernel moduls number:") +
@@ -775,6 +781,17 @@ void Medusa::GetKernelModuleList()
 				ret2 << std::hex << "0x" << (ULONG64)x.Size;
 				_Model_Driver->setData(_Model_Driver->index(i, 3), ret2.str().data());
 				_Model_Driver->setData(_Model_Driver->index(i, 4), (char*)x.Path);
+
+				std::wstring temp_wstr = C_TO_W(x.Path);
+				if (temp_wstr.find(L"SystemRoot") != std::wstring::npos)
+				{
+					temp_wstr = Replace(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
+				}
+				std::wstring retStr;
+				if (_Process.QueryValue(L"FileDescription", temp_wstr.data(), retStr))
+				{
+					_Model_Driver->setData(_Model_Driver->index(i, 5), QString::fromWCharArray(retStr.data()));
+				}
 				i++;
 			}
 			ui.label->setText(QString((std::string("R3 get kernel moduls number:") +

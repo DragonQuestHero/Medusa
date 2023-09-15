@@ -1272,6 +1272,14 @@ extern "C" NTSYSAPI NTSTATUS ZwOpenThread(
 	_In_  POBJECT_ATTRIBUTES ObjectAttributes,
 	_In_  PCLIENT_ID         ClientId
 );
+
+extern "C" NTKERNELAPI PVOID NTAPI PsGetCurrentThreadStackBase();
+
+extern "C" NTKERNELAPI PVOID NTAPI PsGetCurrentThreadStackLimit();
+
+extern "C" NTSYSAPI NTSTATUS NTAPI PsSuspendProcess(PEPROCESS Process);
+
+extern "C" NTSYSAPI NTSTATUS NTAPI PsResumeProcess(PEPROCESS Process);
 //extern "C" NTSYSAPI NTSTATUS NTAPI ObInsertObject(
 //	_In_ PVOID              Object,
 //	_In_opt_ PACCESS_STATE  PassedAccessState,
