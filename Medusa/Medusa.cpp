@@ -7,6 +7,7 @@
 
 
 
+
 Medusa::Medusa(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -49,6 +50,7 @@ void Medusa::Set_SLOTS()
 
 	connect(ui.menuMenu, SIGNAL(triggered(QAction*)), SLOT(DriverLoadMenu(QAction*)));
 	connect(ui.menuHypervisor, SIGNAL(triggered(QAction*)), SLOT(HypervisorMenu(QAction*)));
+	connect(ui.menuPDB, SIGNAL(triggered(QAction*)), SLOT(PdbMenu(QAction*)));
 }
 
 void Medusa::DriverLoadMenu(QAction* action)
@@ -108,6 +110,20 @@ void Medusa::HypervisorMenu(QAction* action)
 			str = str + u8"¡Ì" + "\r\n";
 		}
 		QMessageBox::information(this, "Ret", str.data());
+	}
+}
+
+void Medusa::PdbMenu(QAction* action)
+{
+	if (action->text() == "Download ntos" ||
+		action->text() == "NormalLoad" ||
+		action->text() == "UnLoadMedusaDriver" ||
+		action->text() == "Nt" ||
+		action->text() == "Normal" ||
+		action->text() == "Unload")
+	{
+		_NtosPdb.DownLoadNtos();
+		return;
 	}
 }
 

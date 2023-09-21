@@ -8,7 +8,6 @@
 #include <string>
 #include <fstream>
 #include <vector>
-#include "md5.h"
 #pragma comment(lib, "DbgHelp.lib")
 #pragma comment(lib, "Urlmon.lib")
 
@@ -62,6 +61,13 @@ std::string EzPdbDownload(
 	IN std::string pePath,
 	IN OPTIONAL std::string pdbDownloadPath = "",
 	IN OPTIONAL std::string symbolServer = "https://msdl.microsoft.com/download/symbols/");
+
+std::string EzPdbDownload2(
+	IN std::string pePath,
+	IN OPTIONAL std::string pdbDownloadPath = "",
+	IN OPTIONAL std::string symbolServer = "https://msdl.microsoft.com/download/symbols/");
+
+std::string GetPdbPath(std::string pePath);
 
 bool EzPdbLoad(IN std::string pdbPath, OUT PEZPDB Pdb);
 

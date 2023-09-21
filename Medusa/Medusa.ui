@@ -156,8 +156,15 @@
     <addaction name="actionR3Check"/>
     <addaction name="actionR0Check"/>
    </widget>
+   <widget class="QMenu" name="menuPDB">
+    <property name="title">
+     <string>PDB</string>
+    </property>
+    <addaction name="actionDownload_ntos"/>
+   </widget>
    <addaction name="menuMenu"/>
    <addaction name="menuHypervisor"/>
+   <addaction name="menuPDB"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -210,6 +217,11 @@
   <action name="actionR0Check">
    <property name="text">
     <string>R0Check</string>
+   </property>
+  </action>
+  <action name="actionDownload_ntos">
+   <property name="text">
+    <string>Download ntos</string>
    </property>
   </action>
  </widget>

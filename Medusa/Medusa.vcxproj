@@ -105,6 +105,7 @@
   <ItemGroup>
     <ClCompile Include="DLLInject.cc" />
     <ClCompile Include="Driver_Load.cc" />
+    <ClCompile Include="EzPdb\EzPdb.cpp" />
     <ClCompile Include="FileCheck.cc" />
     <ClCompile Include="HookScanner.cc" />
     <ClCompile Include="Hypervisor.cc" />
@@ -139,6 +140,7 @@
     <ClCompile Include="libpeconv\tls_parser.cpp" />
     <ClCompile Include="libpeconv\util.cpp" />
     <ClCompile Include="Modules.cc" />
+    <ClCompile Include="PDBInfo.cc" />
     <ClCompile Include="Process.cc" />
     <ClCompile Include="Threads.cc" />
     <QtRcc Include="Medusa.qrc" />
@@ -153,6 +155,7 @@
   <ItemGroup>
     <ClInclude Include="DLLInject.h" />
     <ClInclude Include="Driver_Load.h" />
+    <ClInclude Include="EzPdb\EzPdb.h" />
     <ClInclude Include="FileCheck.h" />
     <QtMoc Include="Threads.h" />
     <QtMoc Include="HookScanner.h" />
@@ -164,6 +167,7 @@
     <QtMoc Include="Modules.h" />
     <ClInclude Include="ntdll.h" />
     <ClInclude Include="ntstatus.h" />
+    <ClInclude Include="PDBInfo.h" />
     <ClInclude Include="Process.h" />
   </ItemGroup>
   <ItemGroup>

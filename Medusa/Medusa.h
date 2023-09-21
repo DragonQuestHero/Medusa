@@ -19,6 +19,8 @@
 #include "HookScanner.h"
 #include "Modules.h"
 #include "Threads.h"
+#include "PDBInfo.h"
+
 
 
 #include "Process.h"
@@ -37,6 +39,7 @@ public slots:
     void ChangeTab();
 	void DriverLoadMenu(QAction*);
 	void HypervisorMenu(QAction*);
+	void PdbMenu(QAction*);
 	void ProcessRightMenu(QAction*);
 public:
 	void GetProcessList();
@@ -57,6 +60,7 @@ private:
     Process _Process;
 	Driver_Load _Driver_Load;
 	Driver_Load _Driver_Load_Other;
+	PDBInfo _NtosPdb;
 private:
     Ui::MedusaClass ui;
 	HookScanner _HookScanner;

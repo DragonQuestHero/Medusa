@@ -27,6 +27,9 @@
     <Filter Include="Header Files\libpeconv">
       <UniqueIdentifier>{0afe83bd-6701-40d9-9e50-7f53611abc5f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\EzPdb">
+      <UniqueIdentifier>{d4e90fcb-fc70-4376-ae7e-85d9b11cc21b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="Medusa.qrc">
@@ -157,6 +160,12 @@
     <ClCompile Include="KernelModules.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EzPdb\EzPdb.cpp">
+      <Filter>Header Files\EzPdb</Filter>
+    </ClCompile>
+    <ClCompile Include="PDBInfo.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Process.h">
@@ -190,6 +199,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KernelModules.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EzPdb\EzPdb.h">
+      <Filter>Header Files\EzPdb</Filter>
+    </ClInclude>
+    <ClInclude Include="PDBInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
