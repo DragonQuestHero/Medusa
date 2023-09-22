@@ -506,18 +506,18 @@ bool EzPdbLoad(IN std::string pdbPath, OUT PEZPDB Pdb)
 		return false;
 	}
 
-	// open current process
-	HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, GetCurrentProcessId());
-	if (!hProcess)
-	{
-		CloseHandle(hPdbFile);
-		return false;
-	}
+	//// open current process
+	//HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, GetCurrentProcessId());
+	//if (!hProcess)
+	//{
+	//	CloseHandle(hPdbFile);
+	//	return false;
+	//}
 
 	// Initializes the symbol handler for a process
-	if (!SymInitialize(hProcess, pdbPath.c_str(), FALSE))
+	if (!SymInitialize(GetCurrentProcess(), pdbPath.c_str(), FALSE))
 	{
-		CloseHandle(hProcess);
+		//CloseHandle(hProcess);
 		CloseHandle(hPdbFile);
 		return false;
 	}
@@ -525,19 +525,20 @@ bool EzPdbLoad(IN std::string pdbPath, OUT PEZPDB Pdb)
 	SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS | SYMOPT_AUTO_PUBLICS | SYMOPT_DEBUG | SYMOPT_LOAD_ANYTHING);
 	//SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS | SYMOPT_AUTO_PUBLICS | SYMOPT_LOAD_ANYTHING);
 
-	DWORD64 SymbolTable = SymLoadModuleEx(hProcess, NULL, pdbPath.c_str(), NULL, EZ_PDB_BASE_OF_DLL, pdbSize, NULL, NULL);
+	DWORD64 SymbolTable = SymLoadModuleEx(GetCurrentProcess(), NULL, pdbPath.c_str(), NULL, EZ_PDB_BASE_OF_DLL, pdbSize, NULL, NULL);
 	if (!SymbolTable)
 	{
-		SymCleanup(hProcess);
-		CloseHandle(hProcess);
+		SymCleanup(GetCurrentProcess());
+		//CloseHandle(hProcess);
 		CloseHandle(hPdbFile);
 		return false;
 	}
 
 	Pdb->hPdbFile = hPdbFile;
-	Pdb->hProcess = hProcess;
+	Pdb->hProcess = GetCurrentProcess();
 	return true;
 }
+
 
 // get function / global variable rva
 // return -1 if failed
@@ -619,6 +620,7 @@ failed:
 	free(SymInfo);
 	return  (ULONG)-1;
 }
+
 
 // get struct size, failed return -1
 ULONG EzPdbGetStructSize(IN PEZPDB Pdb, IN std::string StructName)

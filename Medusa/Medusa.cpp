@@ -115,14 +115,19 @@ void Medusa::HypervisorMenu(QAction* action)
 
 void Medusa::PdbMenu(QAction* action)
 {
-	if (action->text() == "Download ntos" ||
-		action->text() == "NormalLoad" ||
-		action->text() == "UnLoadMedusaDriver" ||
-		action->text() == "Nt" ||
-		action->text() == "Normal" ||
-		action->text() == "Unload")
+	if (action->text() == "Down&Load ntos")
 	{
-		_NtosPdb.DownLoadNtos();
+		_PDBView._PDBInfo.DownLoadNtos();
+		return;
+	}
+	if (action->text() == "Unload Symbol")
+	{
+		_PDBView._PDBInfo.UnLoad();
+		return;
+	}
+	if (action->text() == "PdbView")
+	{
+		_PDBView.show();
 		return;
 	}
 }

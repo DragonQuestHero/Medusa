@@ -161,6 +161,8 @@
      <string>PDB</string>
     </property>
     <addaction name="actionDownload_ntos"/>
+    <addaction name="actionUnload_Symbol"/>
+    <addaction name="actionPdbView"/>
    </widget>
    <addaction name="menuMenu"/>
    <addaction name="menuHypervisor"/>
@@ -221,7 +223,17 @@
   </action>
   <action name="actionDownload_ntos">
    <property name="text">
-    <string>Download ntos</string>
+    <string>Down&amp;Load ntos</string>
+   </property>
+  </action>
+  <action name="actionUnload_Symbol">
+   <property name="text">
+    <string>Unload Symbol</string>
+   </property>
+  </action>
+  <action name="actionPdbView">
+   <property name="text">
+    <string>PdbView</string>
    </property>
   </action>
  </widget>

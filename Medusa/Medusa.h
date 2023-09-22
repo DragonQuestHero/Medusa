@@ -19,7 +19,7 @@
 #include "HookScanner.h"
 #include "Modules.h"
 #include "Threads.h"
-#include "PDBInfo.h"
+#include "PDBView.h"
 
 
 
@@ -60,12 +60,14 @@ private:
     Process _Process;
 	Driver_Load _Driver_Load;
 	Driver_Load _Driver_Load_Other;
-	PDBInfo _NtosPdb;
 private:
     Ui::MedusaClass ui;
+private:
 	HookScanner _HookScanner;
 	Modules _Modules;
 	Threads _Threads;
+	PDBView _PDBView;
+private:
     QStandardItemModel* _Model;
 	QStandardItemModel* _Model_Driver;
 private:

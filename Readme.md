@@ -22,7 +22,27 @@
 ##### ---应用层虚拟化检测(包括但不限于各类虚拟机以及虚拟化框架及驱动)
 
 <h1 align="center">
-	<img src="1.png" >
+	<img src="IMG/1.png" >
+	<br>
+	<br>
+</h1>
+
+##### ---符号文件查询
+
+<h1 align="center">
+	<img src="IMG/4.png" >
+	<br>
+	<br>
+</h1>
+
+<h1 align="center">
+	<img src="IMG/6.png" >
+	<br>
+	<br>
+</h1>
+
+<h1 align="center">
+	<img src="IMG/5.png" >
 	<br>
 	<br>
 </h1>
@@ -40,7 +60,7 @@
 ###### -----内核调用PsLookupThreadByThreadId枚举线程ID第四次检查
 
 <h1 align="center">
-	<img src="2.png" >
+	<img src="IMG/2.png" >
 	<br>
 	<br>
 </h1>
@@ -49,7 +69,7 @@
 ##### ---驱动断链检查
 
 <h1 align="center">
-	<img src="3.png" >
+	<img src="IMG/3.png" >
 	<br>
 	<br>
 </h1>

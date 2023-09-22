@@ -76,6 +76,12 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Link>
+      <AdditionalDependencies>ntdll.lib;Shlwapi.lib;Bcrypt.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -95,7 +101,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>MaxSpeed</Optimization>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -141,6 +147,7 @@
     <ClCompile Include="libpeconv\util.cpp" />
     <ClCompile Include="Modules.cc" />
     <ClCompile Include="PDBInfo.cc" />
+    <ClCompile Include="PDBView.cc" />
     <ClCompile Include="Process.cc" />
     <ClCompile Include="Threads.cc" />
     <QtRcc Include="Medusa.qrc" />
@@ -150,6 +157,7 @@
     <ClCompile Include="main.cpp" />
     <QtUic Include="Medusa.ui" />
     <QtUic Include="Modules.ui" />
+    <QtUic Include="PDBView.ui" />
     <QtUic Include="Threads.ui" />
   </ItemGroup>
   <ItemGroup>
@@ -168,6 +176,7 @@
     <ClInclude Include="ntdll.h" />
     <ClInclude Include="ntstatus.h" />
     <ClInclude Include="PDBInfo.h" />
+    <QtMoc Include="PDBView.h" />
     <ClInclude Include="Process.h" />
   </ItemGroup>
   <ItemGroup>

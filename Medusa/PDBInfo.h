@@ -2,6 +2,19 @@
 #include "EzPdb/EzPdb.h"
 
 
+struct NTOSSYMBOL
+{
+	ULONG64 RVA;
+	ULONG64 Addr;
+	std::string Name;
+};
+
+struct SYMBOLSTRUCT
+{
+	ULONG64 Offset;
+	std::string Name;
+};
+
 class PDBInfo
 {
 public:
@@ -9,8 +22,15 @@ public:
 	~PDBInfo() = default;
 public:
 	bool DownLoadNtos();
+	bool GetALL();
+	void UnLoad();
+	std::vector<SYMBOLSTRUCT> PdbGetStruct(IN PEZPDB Pdb, IN std::string StructName);
 public:
 	EZPDB _Pdb;
+	std::vector<NTOSSYMBOL> _Symbol;
+	ULONG64 _BaseAddr;
+private:
+	
 private:
 	std::vector<std::string> Split(const std::string& p,
 		const std::string& regex)
@@ -48,7 +68,6 @@ private:
 		}
 		return str;
 	}
-
 	std::string Replace_ALL(std::string& str,
 		const std::string& old_value, const std::string& new_value)
 	{
@@ -64,6 +83,15 @@ private:
 			}
 		}
 		return str;
+	}
+	std::string W_TO_C(std::wstring str)
+	{
+		std::string result;
+		DWORD strsize = WideCharToMultiByte(CP_ACP, 0, str.data(), -1, NULL, 0, NULL, NULL);
+		char* pstr = new char[strsize];
+		WideCharToMultiByte(CP_ACP, 0, str.data(), -1, pstr, strsize, NULL, NULL);
+		result = pstr;
+		return result;
 	}
 };
 
