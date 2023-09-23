@@ -190,6 +190,8 @@
     <addaction name="actionPdbView"/>
     <addaction name="actionDown_Load_file"/>
     <addaction name="actionPdbView_2"/>
+    <addaction name="actionUse_microsoft_server"/>
+    <addaction name="actionUse_order_server"/>
    </widget>
    <addaction name="menuMenu"/>
    <addaction name="menuHypervisor"/>
@@ -276,6 +278,16 @@
   <action name="actionSendPDBInfo">
    <property name="text">
     <string>SendPDBInfo</string>
+   </property>
+  </action>
+  <action name="actionUse_microsoft_server">
+   <property name="text">
+    <string>use microsoft server √</string>
+   </property>
+  </action>
+  <action name="actionUse_order_server">
+   <property name="text">
+    <string>use order server ×</string>
    </property>
   </action>
  </widget>

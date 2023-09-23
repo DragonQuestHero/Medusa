@@ -51,6 +51,7 @@ public:
 	std::vector<NTOSSYMBOL> _Symbol;
 	ULONG64 _BaseAddr;
 	MedusaPDBInfo _MedusaPDBInfo;
+	std::string _SymbolServer = "https://msdl.microsoft.com/download/symbols/";
 private:
 	
 private:

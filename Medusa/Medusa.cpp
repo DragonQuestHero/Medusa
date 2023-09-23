@@ -123,10 +123,18 @@ void Medusa::PdbMenu(QAction* action)
 	if (action->text() == "Down&Load ntos")
 	{
 		_PDBView._PDBInfo.UnLoad();
+		ui.label->setText("downloding pdb files..........................");
+		ui.progressBar->setMaximum(100);
+		ui.progressBar->setValue(5);
+		QCoreApplication::processEvents();
 		if (!_PDBView._PDBInfo.DownLoadNtos())
 		{
+			ui.label->setText("");
 			QMessageBox::information(this, "error", "error download pdb");
+			return;
 		}
+		ui.progressBar->setValue(100);
+		ui.label->setText("downlode pdb susscess");
 		return;
 	}
 	if (action->text() == "Down&Load file")
@@ -139,10 +147,18 @@ void Medusa::PdbMenu(QAction* action)
 			return;
 		}
 		temp_str = QDir::toNativeSeparators(temp_str);
+		ui.label->setText("downloding pdb files..........................");
+		ui.progressBar->setMaximum(100);
+		ui.progressBar->setValue(5);
+		QCoreApplication::processEvents();
 		if (!_PDBView._PDBInfo.DownLoad(temp_str.toStdString(),false))
 		{
+			ui.label->setText("");
 			QMessageBox::information(this, "error", "error download pdb");
+			return;
 		}
+		ui.progressBar->setValue(100);
+		ui.label->setText("downlode pdb susscess");
 		return;
 	}
 	if (action->text() == "Down&Load file with baseaddr")
@@ -171,6 +187,18 @@ void Medusa::PdbMenu(QAction* action)
 		_PDBView._Model->removeRows(0, _PDBView._Model->rowCount());
 		_PDBView.show();
 		return;
+	}
+	if (action->text().toStdString().find("use microsoft server") != std::string::npos)
+	{
+		action->setText(u8"use microsoft server ¡Ì");
+		ui.actionUse_order_server->setText(u8"use order server ¡Á");
+		_PDBView._PDBInfo._SymbolServer = "https://msdl.microsoft.com/download/symbols/";
+	}
+	if (action->text().toStdString().find("use order server") != std::string::npos)
+	{
+		action->setText(u8"use order server ¡Ì");
+		ui.actionUse_microsoft_server->setText(u8"use microsoft server ¡Á");
+		_PDBView._PDBInfo._SymbolServer = "https://msdl.szdyg.cn/download/symbols/";
 	}
 }
 

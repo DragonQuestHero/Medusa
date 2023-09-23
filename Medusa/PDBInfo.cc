@@ -21,17 +21,20 @@ bool PDBInfo::DownLoadNtos()
 		}
 	}
 	
-
-	std::string symbolpath = std::getenv("_NT_SYMBOL_PATH");
-	if (symbolpath.find("SRV") != std::string::npos)
+	std::string symbolpath;
+	if (std::getenv("_NT_SYMBOL_PATH"))
 	{
-		std::vector<std::string> temp_vector = Split(symbolpath, "*");
-		for (auto x : temp_vector)
+		symbolpath = std::getenv("_NT_SYMBOL_PATH");
+		if (symbolpath.find("SRV") != std::string::npos)
 		{
-			if (PathFileExistsA(x.c_str()))
+			std::vector<std::string> temp_vector = Split(symbolpath, "*");
+			for (auto x : temp_vector)
 			{
-				symbolpath = x;
-				break;
+				if (PathFileExistsA(x.c_str()))
+				{
+					symbolpath = x;
+					break;
+				}
 			}
 		}
 	}
@@ -48,16 +51,16 @@ bool PDBInfo::DownLoadNtos()
 	{
 		if (symbolpath.length() > 0)
 		{
-			std::string temp_path = EzPdbDownload2(std::string(std::getenv("systemroot")) + "\\System32\\ntoskrnl.exe", symbolpath);
-			if (EzPdbLoad(ntos_pdb_path, &_Pdb))
+			std::string temp_path = EzPdbDownload2(std::string(std::getenv("systemroot")) + "\\System32\\ntoskrnl.exe", symbolpath,_SymbolServer);
+			if (EzPdbLoad(temp_path, &_Pdb))
 			{
 				return true;
 			}
 		}
 		else
 		{
-			std::string temp_path = EzPdbDownload(std::string(std::getenv("systemroot")) + "\\System32\\ntoskrnl.exe");
-			if (EzPdbLoad(ntos_pdb_path, &_Pdb))
+			std::string temp_path = EzPdbDownload(std::string(std::getenv("systemroot")) + "\\System32\\ntoskrnl.exe", "",_SymbolServer);
+			if (EzPdbLoad(temp_path, &_Pdb))
 			{
 				return true;
 			}
@@ -142,7 +145,7 @@ bool PDBInfo::DownLoad(std::string path, bool use_bassaddr)
 	{
 		if (symbolpath.length() > 0)
 		{
-			std::string temp_path = EzPdbDownload2(path, symbolpath);
+			std::string temp_path = EzPdbDownload2(path, symbolpath, _SymbolServer);
 			if (EzPdbLoad(temp_path, &_Pdb))
 			{
 				return true;
@@ -150,7 +153,7 @@ bool PDBInfo::DownLoad(std::string path, bool use_bassaddr)
 		}
 		else
 		{
-			std::string temp_path = EzPdbDownload(path);
+			std::string temp_path = EzPdbDownload(path, _SymbolServer);
 			if (EzPdbLoad(temp_path, &_Pdb))
 			{
 				return true;
