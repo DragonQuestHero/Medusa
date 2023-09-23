@@ -45,7 +45,7 @@ public:
 	bool GetALL();
 	void UnLoad();
 	std::vector<SYMBOLSTRUCT> PdbGetStruct(IN PEZPDB Pdb, IN std::string StructName);
-	bool GetMedusaPDBInfo();
+	bool SendMedusaPDBInfo();
 public:
 	EZPDB _Pdb;
 	std::vector<NTOSSYMBOL> _Symbol;

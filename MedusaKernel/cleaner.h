@@ -76,7 +76,7 @@ namespace cleaner {
 			return NULL;
 
 
-		status = NtQuerySystemInformation(SystemModuleInformation, 0, bytes, &bytes);
+		status = ZwQuerySystemInformation(SystemModuleInformation, 0, bytes, &bytes);
 
 		if (bytes == 0)
 			return NULL;
@@ -84,7 +84,7 @@ namespace cleaner {
 		pMods = (PRTL_PROCESS_MODULES)ExAllocatePoolWithTag(NonPagedPool, bytes, 0x454E4F45); // 'ENON'
 		RtlZeroMemory(pMods, bytes);
 
-		status = NtQuerySystemInformation(SystemModuleInformation, pMods, bytes, &bytes);
+		status = ZwQuerySystemInformation(SystemModuleInformation, pMods, bytes, &bytes);
 
 		if (NT_SUCCESS(status))
 		{
@@ -384,7 +384,7 @@ namespace cleaner {
 
 		unsigned long long ntoskrnl_address = 0;
 		unsigned long ntoskrnl_size = 0;
-		PVOID ntoskrnl_address = get_kernel_base(&ntoskrnl_size);
+		ntoskrnl_address = (ULONG64)get_kernel_base(&ntoskrnl_size);
 		//utils::get_module_base_address("ntoskrnl.exe", ntoskrnl_address, ntoskrnl_size);
 		//DbgPrintEx(0, 0, "[%s] ntoskrnl address 0x%llx, size %ld\n", __FUNCTION__, ntoskrnl_address, ntoskrnl_size);
 		if (ntoskrnl_address == 0 || ntoskrnl_size == 0) return status;
@@ -403,7 +403,7 @@ namespace cleaner {
 			"xxx????x????xxx");
 		if (PiDDBLock == 0) return status;
 		PiDDBLock = reinterpret_cast<unsigned long long>(reinterpret_cast<char*>(PiDDBLock) + 7 + *reinterpret_cast<int*>(reinterpret_cast<char*>(PiDDBLock) + 3));
-		DbgPrintEx(0, 0, "[%s] PiDDBLock address 0x%llx\n", __FUNCTION__, PiDDBLock);
+		//DbgPrintEx(0, 0, "[%s] PiDDBLock address 0x%llx\n", __FUNCTION__, PiDDBLock);
 
 		/*
 		 * PiLookupInDDBCache proc near
@@ -419,7 +419,7 @@ namespace cleaner {
 		if (PiDDBCacheTable == 0) return status;
 		PiDDBCacheTable += 3;
 		PiDDBCacheTable = reinterpret_cast<unsigned long long>(reinterpret_cast<char*>(PiDDBCacheTable) + 7 + *reinterpret_cast<int*>(reinterpret_cast<char*>(PiDDBCacheTable) + 3));
-		DbgPrintEx(0, 0, "[%s] PiDDBCacheTable address 0x%llx \n", __FUNCTION__, PiDDBCacheTable);
+		//DbgPrintEx(0, 0, "[%s] PiDDBCacheTable address 0x%llx \n", __FUNCTION__, PiDDBCacheTable);
 
 		piddb_cache_entry in_entry{ };
 		in_entry.stamp = stamp;
@@ -461,7 +461,7 @@ namespace cleaner {
 
 		unsigned long long ntoskrnl_address = 0;
 		unsigned long ntoskrnl_size = 0;
-		PVOID ntoskrnl_address = get_kernel_base(&ntoskrnl_size);
+		ntoskrnl_address = (ULONG64)get_kernel_base(&ntoskrnl_size);
 		//utils::get_module_base_address("ntoskrnl.exe", ntoskrnl_address, ntoskrnl_size);
 		//DbgPrintEx(0, 0, "[%s] ntoskrnl address 0x%llx, size %ld\n", __FUNCTION__, ntoskrnl_address, ntoskrnl_size);
 		if (ntoskrnl_address == 0 || ntoskrnl_size == 0) return status;
@@ -479,7 +479,7 @@ namespace cleaner {
 			"xxx????xxx");
 		if (MmUnloadedDrivers == 0) return status;
 		MmUnloadedDrivers = reinterpret_cast<unsigned long long>(reinterpret_cast<char*>(MmUnloadedDrivers) + 7 + *reinterpret_cast<int*>(reinterpret_cast<char*>(MmUnloadedDrivers) + 3));
-		DbgPrintEx(0, 0, "[%s] MmUnloadedDrivers address 0x%llx\n", __FUNCTION__, MmUnloadedDrivers);
+		//DbgPrintEx(0, 0, "[%s] MmUnloadedDrivers address 0x%llx\n", __FUNCTION__, MmUnloadedDrivers);
 
 		/*
 		 * MiRememberUnloadedDriver proc near

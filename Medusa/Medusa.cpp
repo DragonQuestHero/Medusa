@@ -15,7 +15,10 @@ Medusa::Medusa(QWidget *parent)
 	Enable_Debug();
 
 	ProcessUI();
+	DriverUI();
+	UnloadDriverUI();
 	ProcessRightMenuUI();
+	DriverRightMenuUI();
 	
 	QTextCodec* codec = QTextCodec::codecForName("UTF-8");
 	QTextCodec::setCodecForLocale(codec);
@@ -47,6 +50,8 @@ void Medusa::Set_SLOTS()
 	connect(&_TableView_Menu_Modules, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 	connect(&_TableView_Menu_Threads, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 
+
+	connect(&_TableView_Menu_DriverClear, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));
 
 	connect(ui.menuMenu, SIGNAL(triggered(QAction*)), SLOT(DriverLoadMenu(QAction*)));
 	connect(ui.menuHypervisor, SIGNAL(triggered(QAction*)), SLOT(HypervisorMenu(QAction*)));
@@ -308,6 +313,13 @@ void Medusa::DriverLoad(QAction* action)
 			}
 		}
 	}
+
+	if (action->text() == "SendPDBInfo")
+	{
+		if (_PDBView._PDBInfo.SendMedusaPDBInfo())
+		{
+		}
+	}
 }
 
 void Medusa::ProcessRightMenu(QAction* action)
@@ -351,6 +363,11 @@ void Medusa::ProcessRightMenu(QAction* action)
 	}
 }
 
+void Medusa::DriverRightMenu(QAction* action)
+{
+	
+}
+
 void Medusa::ChangeTab()
 {
 	if (ui.tabWidget->currentIndex() == 0)
@@ -360,6 +377,10 @@ void Medusa::ChangeTab()
 	else if (ui.tabWidget->currentIndex() == 1)
 	{
 		GetKernelModuleList();
+	}
+	else if (ui.tabWidget->currentIndex() == 2)
+	{
+		GetUnLoadKernelModuleList();
 	}
 }
 
@@ -778,7 +799,7 @@ void Medusa::GetKernelModuleList()
 				{
 					_Model_Driver->setData(_Model_Driver->index(i, 1), (char*)x.Name);
 				}
-				//_Model_Driver->setData(_Model_Driver->index(i, 1), QString::fromWCharArray(x.Name));
+				
 				std::ostringstream ret;
 				ret << std::hex << "0x" << (ULONG64)x.Addr;
 				_Model_Driver->setData(_Model_Driver->index(i, 2), ret.str().data());
@@ -793,10 +814,33 @@ void Medusa::GetKernelModuleList()
 				{
 					_Model_Driver->setData(_Model_Driver->index(i, 4), x.Path);
 				}
-				std::wstring retStr;
-				if (_Process.QueryValue(L"FileDescription", (WCHAR*)x.Path, retStr))
+				if (x.Check == 1 || x.Check == 2)
 				{
-					_Model_Driver->setData(_Model_Driver->index(i, 5), QString::fromWCharArray(retStr.data()));
+					std::wstring retStr;
+					std::wstring temp_wstr = (WCHAR*)x.Path;
+					temp_wstr = ReplaceStr(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
+					if (_Process.QueryValue(L"FileDescription", temp_wstr.data(), retStr))
+					{
+						_Model_Driver->setData(_Model_Driver->index(i, 5), QString::fromWCharArray(retStr.data()));
+					}
+					else
+					{
+						_Model_Driver->setData(_Model_Driver->index(i, 5), "");
+					}
+				}
+				else
+				{
+					std::wstring retStr;
+					std::wstring temp_wstr = C_TO_W(x.Path);
+					temp_wstr = ReplaceStr(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
+					if (_Process.QueryValue(L"FileDescription", temp_wstr.data(), retStr))
+					{
+						_Model_Driver->setData(_Model_Driver->index(i, 5), QString::fromWCharArray(retStr.data()));
+					}
+					else
+					{
+						_Model_Driver->setData(_Model_Driver->index(i, 5), "");
+					}
 				}
 				QColor temp_color = QColor(Qt::white);
 				if (x.Check == 1)
@@ -843,7 +887,7 @@ void Medusa::GetKernelModuleList()
 				std::wstring temp_wstr = C_TO_W(x.Path);
 				if (temp_wstr.find(L"SystemRoot") != std::wstring::npos)
 				{
-					temp_wstr = Replace(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
+					temp_wstr = ReplaceStr(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
 				}
 				std::wstring retStr;
 				if (_Process.QueryValue(L"FileDescription", temp_wstr.data(), retStr))
@@ -855,5 +899,51 @@ void Medusa::GetKernelModuleList()
 			ui.label->setText(QString((std::string("R3 get kernel moduls number:") +
 				std::to_string(_KernelModules._KernelModuleListR3.size())).data()));
 		}
+	}
+}
+
+void Medusa::GetUnLoadKernelModuleList()
+{
+	_Model_UnloadDriver->removeRows(0, _Model_UnloadDriver->rowCount());
+	KernelModules _KernelModules;
+	_KernelModules.GetUnLoadKernelModuleListR0();
+	if (!_KernelModules._KernelUnLoadModuleListR0.size())
+	{
+		return;
+	}
+	int i = 0;
+	for (auto x : _KernelModules._KernelUnLoadModuleListR0)
+	{
+		_Model_UnloadDriver->setVerticalHeaderItem(i, new QStandardItem);
+		_Model_UnloadDriver->setData(_Model_UnloadDriver->index(i, 0), i);
+		_Model_UnloadDriver->setData(_Model_UnloadDriver->index(i, 1), QString::fromWCharArray((WCHAR*)x.Name));
+
+		std::ostringstream ret;
+		ret << std::hex << "0x" << (ULONG64)x.Addr;
+		_Model_UnloadDriver->setData(_Model_UnloadDriver->index(i, 2), ret.str().data());
+		std::ostringstream ret2;
+		ret2 << std::hex << "0x" << (ULONG64)x.Size;
+		_Model_UnloadDriver->setData(_Model_UnloadDriver->index(i, 3), ret2.str().data());
+		std::ostringstream ret3;
+		ret3 << std::hex << "0x" << (ULONG64)x.UnLoadTime;
+		_Model_UnloadDriver->setData(_Model_UnloadDriver->index(i, 4), ret3.str().data());
+
+
+		QColor temp_color = QColor(Qt::white);
+		if (x.Check == 1)
+		{
+			temp_color = QColor(Qt::red);
+		}
+		if (x.Check == 2)
+		{
+			temp_color = QColor(Qt::red);
+		}
+		_Model_UnloadDriver->item(i, 0)->setBackground(temp_color);
+		_Model_UnloadDriver->item(i, 1)->setBackground(temp_color);
+		_Model_UnloadDriver->item(i, 2)->setBackground(temp_color);
+		_Model_UnloadDriver->item(i, 3)->setBackground(temp_color);
+		_Model_UnloadDriver->item(i, 4)->setBackground(temp_color);
+
+		i++;
 	}
 }

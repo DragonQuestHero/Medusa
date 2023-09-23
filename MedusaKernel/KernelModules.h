@@ -4,6 +4,10 @@
 #include "CRT/NtSysAPI_Func.hpp"
 
 #include <vector>
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include <algorithm>
 
 struct KernelModulesVector
 {
@@ -14,6 +18,14 @@ struct KernelModulesVector
 	USHORT Check;
 };
 
+struct KernelUnloadModules
+{
+	ULONG64 Addr;
+	ULONG64 Size;
+	ULONG64 UnLoadTime;
+	WCHAR Name[260];
+	USHORT Check;
+};
 
 class KernelModules
 {
@@ -26,10 +38,17 @@ public:
 	std::vector<KernelModulesVector> GetKernelModuleList2(PDRIVER_OBJECT  pdriver);
 	std::vector<KernelModulesVector> GetKernelModuleList3(UNICODE_STRING* Directory);
 	bool IsAddressInDriversList(ULONG64 Address);
+	bool GetUnLoadKernelModuleList(MedusaPDBInfo *_MedusaPDBInfo, PDRIVER_OBJECT);
 public:
 	std::vector<KernelModulesVector> _KernelModuleList;
+	std::vector<KernelUnloadModules> _UnLoadKernelModuleList;
 private:
-
+	std::wstring Case_Upper(const std::wstring& str)
+	{
+		std::wstring result = str;
+		std::transform(result.begin(), result.end(), result.begin(), toupper);
+		return result;
+	}
 };
 
 

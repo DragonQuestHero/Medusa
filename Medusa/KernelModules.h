@@ -24,6 +24,14 @@ struct KernelModulesVector
 	USHORT Check;
 };
 
+struct KernelUnloadModules
+{
+	ULONG64 Addr;
+	ULONG64 Size;
+	ULONG64 UnLoadTime;
+	WCHAR Name[260];
+	USHORT Check;
+};
 
 class KernelModules
 {
@@ -33,9 +41,11 @@ public:
 public:
 	bool GetKernelModuleListR3();
 	bool GetKernelModuleListR0();
+	bool GetUnLoadKernelModuleListR0();
 public:
 	std::vector<KernelModulesVector> _KernelModuleListR3;
 	std::vector<KernelModulesVector> _KernelModuleListR0;
+	std::vector<KernelUnloadModules> _KernelUnLoadModuleListR0;
 private:
 
 };

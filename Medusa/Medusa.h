@@ -41,9 +41,11 @@ public slots:
 	void HypervisorMenu(QAction*);
 	void PdbMenu(QAction*);
 	void ProcessRightMenu(QAction*);
+	void DriverRightMenu(QAction*);
 public:
 	void GetProcessList();
 	void GetKernelModuleList();
+	void GetUnLoadKernelModuleList();
 	void DriverLoad(QAction*);
 	void RightMenuDLLInject(QAction*);
 	void RightMenuHookScanner(QAction*);
@@ -70,6 +72,7 @@ private:
 private:
     QStandardItemModel* _Model;
 	QStandardItemModel* _Model_Driver;
+	QStandardItemModel* _Model_UnloadDriver;
 private:
 	QMenu _TableView_Menu_Inject;
 	QAction _TableView_Action_Inject;
@@ -84,6 +87,11 @@ private:
 	QAction _TableView_Action_Threads;
 
 	QAction _TableView_Action_HideProcess;
+
+	QAction _TableView_Action_HideDriver;
+
+	QMenu _TableView_Menu_DriverClear;
+	QAction _TableView_Action_DriverClear;
 public:
 	void ProcessUI()
 	{
@@ -108,7 +116,9 @@ public:
 		ui.tableView->setColumnWidth(4, 500);
 		ui.tableView->setColumnWidth(5, 400);
 		ui.tableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-		//-----------------------
+	}
+	void DriverUI()
+	{
 		_Model_Driver = new QStandardItemModel();
 		ui.tableView_Driver->setModel(_Model_Driver);
 		ui.tableView_Driver->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -130,6 +140,28 @@ public:
 		ui.tableView_Driver->setColumnWidth(4, 400);
 		ui.tableView_Driver->setColumnWidth(5, 500);
 		ui.tableView_Driver->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	}
+	void UnloadDriverUI()
+	{
+		_Model_UnloadDriver = new QStandardItemModel();
+		ui.tableView_UnloadDriver->setModel(_Model_UnloadDriver);
+		ui.tableView_UnloadDriver->setEditTriggers(QAbstractItemView::NoEditTriggers);
+		ui.tableView_UnloadDriver->horizontalHeader()->setSectionsClickable(false);
+		ui.tableView_UnloadDriver->verticalHeader()->setDefaultSectionSize(25);
+		ui.tableView_UnloadDriver->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+		_Model_UnloadDriver->setColumnCount(5);
+		_Model_UnloadDriver->setHeaderData(0, Qt::Horizontal, u8"Index");
+		_Model_UnloadDriver->setHeaderData(1, Qt::Horizontal, u8"Name");
+		_Model_UnloadDriver->setHeaderData(2, Qt::Horizontal, u8"Addr");
+		_Model_UnloadDriver->setHeaderData(3, Qt::Horizontal, u8"Size");
+		_Model_UnloadDriver->setHeaderData(4, Qt::Horizontal, u8"UnLoadTime");
+		ui.tableView_UnloadDriver->setColumnWidth(0, 50);
+		ui.tableView_UnloadDriver->setColumnWidth(1, 600);
+		ui.tableView_UnloadDriver->setColumnWidth(2, 200);
+		ui.tableView_UnloadDriver->setColumnWidth(3, 150);
+		ui.tableView_UnloadDriver->setColumnWidth(4, 200);
+		ui.tableView_UnloadDriver->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	}
 	void ProcessRightMenuUI()
 	{
@@ -165,6 +197,18 @@ public:
 		ui.tableView->addAction(&_TableView_Action_Modules);
 		ui.tableView->addAction(&_TableView_Action_Threads);
 		ui.tableView->addAction(&_TableView_Action_HideProcess);
+	}
+	void DriverRightMenuUI()
+	{
+		_TableView_Action_HideDriver.setText("HideDriver");
+
+		_TableView_Action_DriverClear.setMenu(&_TableView_Menu_DriverClear);
+		_TableView_Menu_DriverClear.setTitle("DriverClear");
+		_TableView_Menu_DriverClear.addAction("ClearLoadInfo");
+		_TableView_Menu_DriverClear.addAction("ClearLoadInfo(usepdb)");
+
+		ui.tableView_Driver->addAction(&_TableView_Action_HideDriver);
+		ui.tableView_Driver->addAction(&_TableView_Action_DriverClear);
 	}
 public:
 	int Enable_Debug()
@@ -240,7 +284,7 @@ public:
 		result = pstr;
 		return result;
 	}
-	std::wstring Replace(std::wstring& str,
+	std::wstring ReplaceStr(std::wstring& str,
 		const std::wstring& old_value, const std::wstring& new_value)
 	{
 		for (std::wstring::size_type pos(0); pos != std::wstring::npos; pos += new_value.length()) {

@@ -23,6 +23,13 @@ IO_Control* IO_Control::_This;
 #define TEST_GetALLThreads CTL_CODE(FILE_DEVICE_UNKNOWN,0x7107,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_GetALLThreadsNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7108,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
+#define TEST_GetPDBInfo CTL_CODE(FILE_DEVICE_UNKNOWN,0x7109,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
+//#define TEST_GetUnLoadDriver CTL_CODE(FILE_DEVICE_UNKNOWN,0x7110,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
+#define TEST_GetUnLoadKernelModule CTL_CODE(FILE_DEVICE_UNKNOWN,0x7111,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define TEST_GetUnLoadKernelModuleNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7112,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
 NTSTATUS IO_Control::Create_IO_Control()
 {
 	NTSTATUS status = 0;
@@ -79,7 +86,7 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 	ULONG Io_Control_Code = irp->Parameters.DeviceIoControl.IoControlCode;
 	ULONG Input_Lenght = irp->Parameters.DeviceIoControl.InputBufferLength;
 	ULONG Output_Lenght = irp->Parameters.DeviceIoControl.OutputBufferLength;
-	char *Input_Buffer = (char*)pIrp->AssociatedIrp.SystemBuffer;
+	char* Input_Buffer = (char*)pIrp->AssociatedIrp.SystemBuffer;
 
 
 	if (Io_Control_Code == TEST_GetALLProcessNumber)
@@ -101,7 +108,7 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		}
 
 		int i = 0;
-		for (auto x: _This->_EmunProcess._Process_List)
+		for (auto x : _This->_EmunProcess._Process_List)
 		{
 			RtlCopyMemory(Input_Buffer + i * sizeof(PROCESS_LIST), &x, sizeof(PROCESS_LIST));
 			i++;
@@ -206,11 +213,55 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
+	else if (Io_Control_Code == TEST_GetPDBInfo)
+	{
+		RtlCopyMemory(&_This->_MedusaPDBInfo, Input_Buffer, sizeof(MedusaPDBInfo));
+		if (_This->_MedusaPDBInfo.CiEaCacheLookasideList &&
+			_This->_MedusaPDBInfo.HashCacheLock &&
+			_This->_MedusaPDBInfo.KernelHashBucketList &&
+			_This->_MedusaPDBInfo.MiProcessLoaderEntry &&
+			_This->_MedusaPDBInfo.MmLastUnloadedDriver &&
+			_This->_MedusaPDBInfo.MmUnloadedDrivers &&
+			_This->_MedusaPDBInfo.PiDDBCacheTable &&
+			_This->_MedusaPDBInfo.PiDDBLock)
+		{
+			_This->_PdbChecked = true;
+		}
+	}
+	else if (Io_Control_Code == TEST_GetUnLoadKernelModuleNumber)
+	{
+		_This->_KernelModules.GetUnLoadKernelModuleList(nullptr, _This->Driver_Object);
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_KernelModules._UnLoadKernelModuleList.size();
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if (Io_Control_Code == TEST_GetUnLoadKernelModule)
+	{
+		if (Output_Lenght < _This->_KernelModules._UnLoadKernelModuleList.size() * sizeof(KernelUnloadModules))
+		{
+			pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
+			pIrp->IoStatus.Information = 0;
+			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+			return STATUS_SUCCESS;
+		}
+
+		int i = 0;
+		for (auto x : _This->_KernelModules._UnLoadKernelModuleList)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(KernelUnloadModules), &x, sizeof(KernelUnloadModules));
+			i++;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_KernelModules._UnLoadKernelModuleList.size() * sizeof(KernelUnloadModules);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
 
 
-	
 	pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
 	pIrp->IoStatus.Information = 0;
 	IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 	return STATUS_SUCCESS;
+
 }

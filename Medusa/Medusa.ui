@@ -160,6 +160,7 @@
      </property>
      <addaction name="actionNtLoad"/>
      <addaction name="actionNormalLoad"/>
+     <addaction name="actionSendPDBInfo"/>
     </widget>
     <widget class="QMenu" name="menuLoadOtherDriver">
      <property name="title">
@@ -270,6 +271,11 @@
   <action name="actionPdbView_2">
    <property name="text">
     <string>PdbView</string>
+   </property>
+  </action>
+  <action name="actionSendPDBInfo">
+   <property name="text">
+    <string>SendPDBInfo</string>
    </property>
   </action>
  </widget>

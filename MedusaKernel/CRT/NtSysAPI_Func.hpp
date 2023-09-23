@@ -1540,3 +1540,14 @@ typedef NTSTATUS(NTAPI* _NtCreateDebugObject)(
 #define NtSysAPI_NtProtectVirtualMemory_X64_Win10_ALL 0x0050
 
 
+struct MedusaPDBInfo
+{
+	ULONG64 MiProcessLoaderEntry;
+	ULONG64 PiDDBLock;
+	ULONG64 PiDDBCacheTable;
+	ULONG64 MmUnloadedDrivers;
+	ULONG64 MmLastUnloadedDriver;
+	ULONG64 KernelHashBucketList;
+	ULONG64 HashCacheLock;
+	ULONG64 CiEaCacheLookasideList;
+};

@@ -1,4 +1,8 @@
 #include "KernelModules.h"
+#include "cleaner.h"
+
+
+
 
 void KernelModules::GetKernelModuleListALL(PDRIVER_OBJECT  pdriver)
 {
@@ -62,6 +66,10 @@ bool KernelModules::GetKernelModuleList1()
 std::vector<KernelModulesVector> KernelModules::GetKernelModuleList2(PDRIVER_OBJECT  pdriver)
 {
 	std::vector<KernelModulesVector> temp_vector;
+	if (!pdriver)
+	{
+		return temp_vector;
+	}
 	PLDR_DATA_TABLE_ENTRY		pentry = (PLDR_DATA_TABLE_ENTRY)pdriver->DriverSection;
 	PLDR_DATA_TABLE_ENTRY		first = pentry;
 	do
@@ -228,4 +236,217 @@ bool KernelModules::IsAddressInDriversList(ULONG64 Address)
 			return true;
 	}
 	return false;
+}
+
+
+bool KernelModules::GetUnLoadKernelModuleList(MedusaPDBInfo* _MedusaPDBInfo, PDRIVER_OBJECT  pdriver)
+{
+	_UnLoadKernelModuleList.clear();
+	std::vector<KernelModulesVector> temp_vector = GetKernelModuleList2(pdriver);
+
+	if (_MedusaPDBInfo)
+	{
+
+	}
+	else
+	{
+		bool status = false;
+		do 
+		{
+			unsigned long long ntoskrnl_address = 0;
+			unsigned long ntoskrnl_size = 0;
+			ntoskrnl_address = (ULONG64)cleaner::get_kernel_base(&ntoskrnl_size);
+			if (ntoskrnl_address == 0 || ntoskrnl_size == 0) break;
+			unsigned long long MmUnloadedDrivers = cleaner::find_pattern_image(ntoskrnl_address,
+				"\x4C\x8B\x15\x00\x00\x00\x00\x4C\x8B\xC9",
+				"xxx????xxx");
+			if (MmUnloadedDrivers == 0) break;
+			MmUnloadedDrivers = reinterpret_cast<unsigned long long>(reinterpret_cast<char*>(MmUnloadedDrivers) + 7 + *reinterpret_cast<int*>(reinterpret_cast<char*>(MmUnloadedDrivers) + 3));
+
+			unsigned long long MmLastUnloadedDriver = cleaner::find_pattern_image(ntoskrnl_address,
+				"\x8B\x05\x00\x00\x00\x00\x83\xF8\x32",
+				"xx????xxx");
+			if (MmLastUnloadedDriver == 0) break;
+			MmLastUnloadedDriver =
+				reinterpret_cast<unsigned long long>(reinterpret_cast<char*>(MmLastUnloadedDriver)
+					+ 6 + *reinterpret_cast<int*>(reinterpret_cast<char*>(MmLastUnloadedDriver) + 2));
+
+			cleaner::punloader_information unloaders = *(cleaner::punloader_information*)MmUnloadedDrivers;
+			unsigned long* unloaders_count = (unsigned long*)MmLastUnloadedDriver;
+			if (MmIsAddressValid(unloaders) == FALSE || MmIsAddressValid(unloaders_count) == FALSE) break;
+
+			static ERESOURCE PsLoadedModuleResource;
+			if (ExAcquireResourceExclusiveLite(&PsLoadedModuleResource, TRUE))
+			{
+				for (unsigned long i = 0; i < *unloaders_count && i < cleaner::max_unloader_driver; i++)
+				{
+					cleaner::unloader_information& t = unloaders[i];
+
+					KernelUnloadModules temp_list;
+					RtlZeroMemory(&temp_list, sizeof(KernelUnloadModules));
+					temp_list.Addr = (ULONG64)t.module_start;
+					temp_list.Size = (ULONG64)t.module_end - (ULONG64)t.module_start;
+					temp_list.UnLoadTime = t.unload_time;
+					RtlCopyMemory(temp_list.Name, t.name.Buffer, t.name.MaximumLength);
+					_UnLoadKernelModuleList.push_back(temp_list);
+				}
+				ExReleaseResourceLite(&PsLoadedModuleResource);
+			}
+			status = true;
+		} while (false);
+
+
+		{
+			bool status = false;
+
+			unsigned long long ci_address = 0;
+			unsigned long ci_size = 0;
+			cleaner::get_module_base_address("CI.dll", ci_address, ci_size);
+			if (ci_address == 0 || ci_size == 0) return status;
+			unsigned long long HashCacheLock = 0;
+			unsigned long long KernelHashBucketList = cleaner::find_pattern_image(ci_address,
+				"\x48\x8B\x1D\x00\x00\x00\x00\xEB\x00\xF7\x43\x40\x00\x20\x00\x00",
+				"xxx????x?xxxxxxx");
+			if (KernelHashBucketList == 0) return status;
+			else HashCacheLock = KernelHashBucketList - 0x13;
+
+			KernelHashBucketList = reinterpret_cast<unsigned long long>(reinterpret_cast<char*>(KernelHashBucketList) 
+				+ 7 + *reinterpret_cast<int*>(reinterpret_cast<char*>(KernelHashBucketList) + 3));
+			HashCacheLock = reinterpret_cast<unsigned long long>(reinterpret_cast<char*>(HashCacheLock) 
+				+ 7 + *reinterpret_cast<int*>(reinterpret_cast<char*>(HashCacheLock) + 3));
+			if (ExAcquireResourceExclusiveLite((PERESOURCE)HashCacheLock, TRUE))
+			{
+				cleaner::phash_bucket_entry current_entry = ((cleaner::phash_bucket_entry)KernelHashBucketList)->next;
+				cleaner::phash_bucket_entry prev_entry = (cleaner::phash_bucket_entry)KernelHashBucketList;
+
+				while (current_entry)
+				{
+					KernelUnloadModules temp_list;
+					RtlZeroMemory(&temp_list, sizeof(KernelUnloadModules));
+					RtlCopyMemory(temp_list.Name, current_entry->name.Buffer, current_entry->name.MaximumLength);
+					bool found = false;
+					for (auto x : temp_vector)
+					{
+						std::wstring temp1 = Case_Upper(temp_list.Name);
+						std::wstring temp2 = Case_Upper(x.Name);
+						if (temp1.find(temp2) != std::string::npos)
+						{
+							found = true;
+							break;
+						}
+					}
+					for (auto x : _UnLoadKernelModuleList)
+					{
+						std::wstring temp1 = Case_Upper(temp_list.Name);
+						std::wstring temp2 = Case_Upper(x.Name);
+						if (temp1.find(temp2) != std::string::npos)
+						{
+							found = true;
+							break;
+						}
+					}
+					if (!found)
+					{
+						_UnLoadKernelModuleList.push_back(temp_list);
+					}
+					prev_entry = current_entry;
+					current_entry = current_entry->next;
+				}
+
+				ExReleaseResourceLite((PERESOURCE)HashCacheLock);
+			}
+		}
+
+
+
+
+		
+		{
+			unsigned long long ntoskrnl_address = 0;
+			unsigned long ntoskrnl_size = 0;
+			ntoskrnl_address = (ULONG64)cleaner::get_kernel_base(&ntoskrnl_size);
+			if (ntoskrnl_address == 0 || ntoskrnl_size == 0) return status;
+			unsigned long long PiDDBLock = cleaner::find_pattern_image(ntoskrnl_address,
+				"\x48\x8D\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x4C\x8B\x8C",
+				"xxx????x????xxx");
+			if (PiDDBLock == 0) return status;
+			PiDDBLock = reinterpret_cast<unsigned long long>(reinterpret_cast<char*>(PiDDBLock) 
+				+ 7 + *reinterpret_cast<int*>(reinterpret_cast<char*>(PiDDBLock) + 3));
+			unsigned long long PiDDBCacheTable = cleaner::find_pattern_image(ntoskrnl_address,
+				"\x66\x03\xD2\x48\x8D\x0D",
+				"xxxxxx");
+			if (PiDDBCacheTable == 0) return status;
+			PiDDBCacheTable += 3;
+			PiDDBCacheTable = reinterpret_cast<unsigned long long>(reinterpret_cast<char*>(PiDDBCacheTable) 
+				+ 7 + *reinterpret_cast<int*>(reinterpret_cast<char*>(PiDDBCacheTable) + 3));
+			
+			
+
+
+			if (ExAcquireResourceExclusiveLite((PERESOURCE)PiDDBLock, TRUE))
+			{
+				PRTL_AVL_TABLE PiDDBCacheTable2 = (PRTL_AVL_TABLE)PiDDBCacheTable;
+				PVOID FirstNode = PiDDBCacheTable2->BalancedRoot.RightChild;
+
+				cleaner::piddb_cache_entry* FirstEntry = (cleaner::piddb_cache_entry*)
+					((DWORD64)FirstNode + sizeof(RTL_BALANCED_LINKS));
+				PLIST_ENTRY Head = FirstEntry->list.Flink;
+				PLIST_ENTRY TempList = (PLIST_ENTRY)FirstEntry;
+
+				while (true)
+				{
+					TempList = TempList->Flink;
+					if (TempList->Flink == Head) { break; }
+					cleaner::piddb_cache_entry* Entry = (cleaner::piddb_cache_entry*)TempList;
+					
+
+
+
+					KernelUnloadModules temp_list;
+					RtlZeroMemory(&temp_list, sizeof(KernelUnloadModules));
+					//temp_list.UnLoadTime = Entry->stamp;
+					RtlCopyMemory(temp_list.Name, Entry->name.Buffer, Entry->name.MaximumLength);
+					bool found = false;
+					for (auto x : temp_vector)
+					{
+						std::wstring temp1 = Case_Upper(temp_list.Name);
+						std::wstring temp2 = Case_Upper(x.Name);
+						if (temp1.find(temp2) != std::string::npos)
+						{
+							found = true;
+							break;
+						}
+					}
+					for (auto x : _UnLoadKernelModuleList)
+					{
+						std::wstring temp1 = Case_Upper(temp_list.Name);
+						std::wstring temp2 = Case_Upper(x.Name);
+						if (temp1.find(temp2) != std::string::npos)
+						{
+							found = true;
+							break;
+						}
+					}
+					if (!found)
+					{
+						_UnLoadKernelModuleList.push_back(temp_list);
+					}
+				}
+				ExReleaseResourceLite((PERESOURCE)PiDDBLock);
+			}
+		}
+
+
+		for (auto x : _UnLoadKernelModuleList)
+		{
+			if (MmIsAddressValid((void*)x.Addr))
+			{
+				x.Check = 1;
+			}
+		}
+
+
+
+		return status;
+	}
 }

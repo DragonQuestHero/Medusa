@@ -276,7 +276,8 @@ void PDBInfo::UnLoad()
 }
 
 
-bool PDBInfo::GetMedusaPDBInfo()
+#define TEST_GetPDBInfo CTL_CODE(FILE_DEVICE_UNKNOWN,0x7109,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+bool PDBInfo::SendMedusaPDBInfo()
 {
 	_BaseAddr = 0;
 	_Symbol.clear();
@@ -337,4 +338,21 @@ bool PDBInfo::GetMedusaPDBInfo()
 	_BaseAddr = 0;
 	_Symbol.clear();
 	UnLoad();
+
+
+	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (INVALID_HANDLE_VALUE == m_hDevice)
+	{
+		return false;
+	}
+
+	ULONG dwRet = 0;
+	if (DeviceIoControl(m_hDevice, TEST_GetPDBInfo, &_MedusaPDBInfo, sizeof(MedusaPDBInfo), 0, 0, &dwRet, NULL))
+	{
+		CloseHandle(m_hDevice);
+		return true;
+	}
+	CloseHandle(m_hDevice);
+	return false;
 }

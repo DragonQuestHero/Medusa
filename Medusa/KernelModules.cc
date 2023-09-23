@@ -90,6 +90,58 @@ bool KernelModules::GetKernelModuleListR0()
 		}
 		delete temp_list;
 
+		CloseHandle(m_hDevice);
+		return true;
+	} while (false);
+
+
+
+
+
+	CloseHandle(m_hDevice);
+	return false;
+}
+
+#define TEST_GetUnLoadKernelModule CTL_CODE(FILE_DEVICE_UNKNOWN,0x7111,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define TEST_GetUnLoadKernelModuleNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7112,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+bool KernelModules::GetUnLoadKernelModuleListR0()
+{
+	_KernelUnLoadModuleListR0.clear();
+
+	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (INVALID_HANDLE_VALUE == m_hDevice)
+	{
+		return false;
+	}
+
+	do
+	{
+		DWORD process_number = 0;
+		DeviceIoControl(m_hDevice, TEST_GetUnLoadKernelModuleNumber, 0, 0, 0, 0, &process_number, NULL);
+		if (!process_number)
+		{
+			break;
+		}
+
+		DWORD dwRet = 0;
+		KernelUnloadModules* temp_list = (KernelUnloadModules*)new char[process_number * sizeof(KernelUnloadModules)];
+		if (!temp_list)
+		{
+			break;
+		}
+
+		DeviceIoControl(m_hDevice, TEST_GetUnLoadKernelModule, 0, 0, temp_list, sizeof(KernelUnloadModules) * process_number, &dwRet, NULL);
+		if (dwRet)
+		{
+			for (int i = 0; i < process_number; i++)
+			{
+				_KernelUnLoadModuleListR0.push_back(temp_list[i]);
+			}
+		}
+		delete temp_list;
+
+		CloseHandle(m_hDevice);
 		return true;
 	} while (false);
 

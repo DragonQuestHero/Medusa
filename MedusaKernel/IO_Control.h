@@ -7,6 +7,7 @@
 #include "Threads.h"
 
 
+
 class IO_Control
 {
 public:
@@ -23,6 +24,9 @@ private:
 	static IO_Control* _This;
 	static NTSTATUS IO_Default(PDEVICE_OBJECT  DeviceObject, PIRP  pIrp);
 	static NTSTATUS Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIrp);
+public:
+	MedusaPDBInfo _MedusaPDBInfo;
+	bool _PdbChecked = false;
 private:
 	DRIVER_OBJECT *Driver_Object = nullptr;
 	DEVICE_OBJECT *Device_Object = nullptr;
