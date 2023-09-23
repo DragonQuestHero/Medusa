@@ -645,10 +645,16 @@ ULONG EzPdbGetStructSize(IN PEZPDB Pdb, IN std::string StructName)
 VOID EzPdbUnload(IN PEZPDB Pdb)
 {
 	// 清理工作
-	SymUnloadModule64(Pdb->hProcess, EZ_PDB_BASE_OF_DLL);
-	SymCleanup(Pdb->hProcess);
-	CloseHandle(Pdb->hProcess);
-	CloseHandle(Pdb->hPdbFile);
+	if (Pdb->hProcess)
+	{
+		SymUnloadModule64(Pdb->hProcess, EZ_PDB_BASE_OF_DLL);
+		SymCleanup(Pdb->hProcess);
+		CloseHandle(Pdb->hProcess);
+	}
+	if (Pdb->hPdbFile)
+	{
+		CloseHandle(Pdb->hPdbFile);
+	}
 }
 
 

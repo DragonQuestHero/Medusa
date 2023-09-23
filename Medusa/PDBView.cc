@@ -118,8 +118,7 @@ void PDBView::Serch()
 		int i = 0;
 		for (auto x : _PDBInfo._Symbol)
 		{
-			if (x.Name.find(ui.lineEdit_3->text().toStdString()) != std::string::npos ||
-				ui.lineEdit_3->text().toStdString() == x.Name)
+			if (x.Name.find(ui.lineEdit_3->text().toStdString()) != std::string::npos)
 			{
 				_Model->setVerticalHeaderItem(i, new QStandardItem);
 				_Model->setData(_Model->index(i, 0), i);

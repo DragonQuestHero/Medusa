@@ -79,13 +79,13 @@ bool PDBInfo::DownLoad(std::string path, bool use_bassaddr)
 		char ext[_MAX_EXT];
 
 		_splitpath(path.data(), drive, dir, fname, ext);
-		if (std::string(ext) == ".sys")
+		//if (std::string(ext) == ".sys")
 		{
 			KernelModules _KernelModules;
 			_KernelModules.GetKernelModuleListR3();
 			for (auto x : _KernelModules._KernelModuleListR3)
 			{
-				if (std::string((char*)x.Name) == std::string(fname) + ext)
+				if (Case_Upper((char*)x.Name) == Case_Upper(std::string(fname) + ext))
 				{
 					_BaseAddr = x.Addr;
 					break;
@@ -94,7 +94,7 @@ bool PDBInfo::DownLoad(std::string path, bool use_bassaddr)
 		}
 
 
-		if (std::string(ext) == ".dll")
+		if (!_BaseAddr)
 		{
 			Modules _Modules;
 			std::vector<MODULEENTRY32W> temp_vector = _Modules.GetUserMoudleListR3(GetCurrentProcessId());
@@ -273,4 +273,68 @@ failed:
 void PDBInfo::UnLoad()
 {
 	EzPdbUnload(&_Pdb);
+}
+
+
+bool PDBInfo::GetMedusaPDBInfo()
+{
+	_BaseAddr = 0;
+	_Symbol.clear();
+	UnLoad();
+
+	if (!DownLoadNtos())
+	{
+		return false;
+	}
+	GetALL();
+	for (auto x : _Symbol)
+	{
+		if (x.Name.find("MiProcessLoaderEntry") != std::string::npos)
+		{
+			_MedusaPDBInfo.MiProcessLoaderEntry = x.Addr;
+		}
+		if (x.Name.find("PiDDBLock") != std::string::npos)
+		{
+			_MedusaPDBInfo.PiDDBLock = x.Addr;
+		}
+		if (x.Name.find("PiDDBCacheTable") != std::string::npos)
+		{
+			_MedusaPDBInfo.PiDDBCacheTable = x.Addr;
+		}
+		if (x.Name.find("MmUnloadedDrivers") != std::string::npos)
+		{
+			_MedusaPDBInfo.MmUnloadedDrivers = x.Addr;
+		}
+		if (x.Name.find("MmLastUnloadedDriver") != std::string::npos)
+		{
+			_MedusaPDBInfo.MmLastUnloadedDriver = x.Addr;
+		}
+	}
+
+	_BaseAddr = 0;
+	_Symbol.clear();
+	UnLoad();
+	if (!DownLoad(std::getenv("systemroot") + std::string("\\System32\\CI.dll"), true))
+	{
+		return false;
+	}
+	GetALL();
+	for (auto x : _Symbol)
+	{
+		if (x.Name.find("g_KernelHashBucketList") != std::string::npos)
+		{
+			_MedusaPDBInfo.KernelHashBucketList = x.Addr;
+		}
+		if (x.Name.find("g_HashCacheLock") != std::string::npos)
+		{
+			_MedusaPDBInfo.HashCacheLock = x.Addr;
+		}
+		if (x.Name.find("g_CiEaCacheLookasideList") != std::string::npos)
+		{
+			_MedusaPDBInfo.CiEaCacheLookasideList = x.Addr;
+		}
+	}
+	_BaseAddr = 0;
+	_Symbol.clear();
+	UnLoad();
 }

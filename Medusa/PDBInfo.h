@@ -1,6 +1,9 @@
 #pragma once
 #include "EzPdb/EzPdb.h"
 
+#include <sstream>
+#include <iomanip>
+#include <algorithm>
 
 struct NTOSSYMBOL
 {
@@ -15,10 +18,26 @@ struct SYMBOLSTRUCT
 	std::string Name;
 };
 
+struct MedusaPDBInfo
+{
+	ULONG64 MiProcessLoaderEntry;
+	ULONG64 PiDDBLock;
+	ULONG64 PiDDBCacheTable;
+	ULONG64 MmUnloadedDrivers;
+	ULONG64 MmLastUnloadedDriver;
+	ULONG64 KernelHashBucketList;
+	ULONG64 HashCacheLock;
+	ULONG64 CiEaCacheLookasideList;
+};
+
 class PDBInfo
 {
 public:
-	PDBInfo() = default;
+	PDBInfo()
+	{
+		RtlZeroMemory(&_Pdb, sizeof(EZPDB));
+		RtlZeroMemory(&_MedusaPDBInfo, sizeof(MedusaPDBInfo));
+	}
 	~PDBInfo() = default;
 public:
 	bool DownLoadNtos();
@@ -26,10 +45,12 @@ public:
 	bool GetALL();
 	void UnLoad();
 	std::vector<SYMBOLSTRUCT> PdbGetStruct(IN PEZPDB Pdb, IN std::string StructName);
+	bool GetMedusaPDBInfo();
 public:
 	EZPDB _Pdb;
 	std::vector<NTOSSYMBOL> _Symbol;
 	ULONG64 _BaseAddr;
+	MedusaPDBInfo _MedusaPDBInfo;
 private:
 	
 private:
@@ -92,6 +113,12 @@ private:
 		char* pstr = new char[strsize];
 		WideCharToMultiByte(CP_ACP, 0, str.data(), -1, pstr, strsize, NULL, NULL);
 		result = pstr;
+		return result;
+	}
+	std::string Case_Upper(const std::string& str)
+	{
+		std::string result = str;
+		std::transform(result.begin(), result.end(), result.begin(), toupper);
 		return result;
 	}
 };

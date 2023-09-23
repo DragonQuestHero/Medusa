@@ -169,6 +169,7 @@
     <ClCompile Include="Threads.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cleaner.h" />
     <ClInclude Include="CRT\NativeEnums.h" />
     <ClInclude Include="CRT\NtSysAPI_Func.hpp" />
     <ClInclude Include="CRT\PEStructs.h" />
