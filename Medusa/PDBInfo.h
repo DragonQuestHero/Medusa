@@ -22,6 +22,7 @@ public:
 	~PDBInfo() = default;
 public:
 	bool DownLoadNtos();
+	bool DownLoad(std::string, bool);
 	bool GetALL();
 	void UnLoad();
 	std::vector<SYMBOLSTRUCT> PdbGetStruct(IN PEZPDB Pdb, IN std::string StructName);

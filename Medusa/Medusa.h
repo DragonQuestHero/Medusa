@@ -82,6 +82,8 @@ private:
 
 	QMenu _TableView_Menu_Threads;
 	QAction _TableView_Action_Threads;
+
+	QAction _TableView_Action_HideProcess;
 public:
 	void ProcessUI()
 	{
@@ -134,7 +136,7 @@ public:
 		_TableView_Action_Inject.setMenu(&_TableView_Menu_Inject);
 		_TableView_Menu_Inject.setTitle("Inject DLL");
 		_TableView_Menu_Inject.addAction("R3CreateRemoteThread+LoadLibraryA");
-		_TableView_Menu_Inject.addAction("R3NtCreateRemoteThread+syscall+shellcode+ldrloadlibaby");
+		//_TableView_Menu_Inject.addAction("R3NtCreateRemoteThread+syscall+shellcode+ldrloadlibaby");
 		_TableView_Menu_Inject.addAction("R3APCInject");
 
 
@@ -142,7 +144,7 @@ public:
 		_TableView_Menu_HookCheck.setTitle("HookScanner");
 		_TableView_Menu_HookCheck.addAction("HookScannerSimple(Y/N)");
 		_TableView_Menu_HookCheck.addAction("HookScanner");
-		_TableView_Menu_HookCheck.addAction("QuickCheckALL");
+		_TableView_Menu_HookCheck.addAction("QuickCheckALLProcess");
 
 
 		_TableView_Action_Modules.setMenu(&_TableView_Menu_Modules);
@@ -156,12 +158,13 @@ public:
 		_TableView_Menu_Threads.addAction("R3ThreadView");
 		_TableView_Menu_Threads.addAction("R0ThreadView(second check)");
 
-
+		_TableView_Action_HideProcess.setText("HideProcess");
 
 		ui.tableView->addAction(&_TableView_Action_Inject);
 		ui.tableView->addAction(&_TableView_Action_HookCheck);
 		ui.tableView->addAction(&_TableView_Action_Modules);
 		ui.tableView->addAction(&_TableView_Action_Threads);
+		ui.tableView->addAction(&_TableView_Action_HideProcess);
 	}
 public:
 	int Enable_Debug()

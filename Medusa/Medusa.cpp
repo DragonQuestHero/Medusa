@@ -117,7 +117,43 @@ void Medusa::PdbMenu(QAction* action)
 {
 	if (action->text() == "Down&Load ntos")
 	{
-		_PDBView._PDBInfo.DownLoadNtos();
+		_PDBView._PDBInfo.UnLoad();
+		if (!_PDBView._PDBInfo.DownLoadNtos())
+		{
+			QMessageBox::information(this, "error", "error download pdb");
+		}
+		return;
+	}
+	if (action->text() == "Down&Load file")
+	{
+		_PDBView._PDBInfo.UnLoad();
+		QFileDialog file_path;
+		QString temp_str = file_path.getOpenFileName();
+		if (temp_str.size() == 0)
+		{
+			return;
+		}
+		temp_str = QDir::toNativeSeparators(temp_str);
+		if (!_PDBView._PDBInfo.DownLoad(temp_str.toStdString(),false))
+		{
+			QMessageBox::information(this, "error", "error download pdb");
+		}
+		return;
+	}
+	if (action->text() == "Down&Load file with baseaddr")
+	{
+		_PDBView._PDBInfo.UnLoad();
+		QFileDialog file_path;
+		QString temp_str = file_path.getOpenFileName();
+		if (temp_str.size() == 0)
+		{
+			return;
+		}
+		temp_str = QDir::toNativeSeparators(temp_str);
+		if (!_PDBView._PDBInfo.DownLoad(temp_str.toStdString(), true))
+		{
+			QMessageBox::information(this, "error", "error download pdb");
+		}
 		return;
 	}
 	if (action->text() == "Unload Symbol")
@@ -127,6 +163,7 @@ void Medusa::PdbMenu(QAction* action)
 	}
 	if (action->text() == "PdbView")
 	{
+		_PDBView._Model->removeRows(0, _PDBView._Model->rowCount());
 		_PDBView.show();
 		return;
 	}
@@ -282,7 +319,7 @@ void Medusa::ProcessRightMenu(QAction* action)
 		return;
 	}
 
-	if (action->text() == "QuickCheckALL" || 
+	if (action->text() == "QuickCheckALLProcess" || 
 		action->text() == "HookScanner" || 
 		action->text() == "HookScannerSimple(Y/N)")
 	{

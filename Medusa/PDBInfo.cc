@@ -2,10 +2,14 @@
 #include <Shlwapi.h>
 
 #include "KernelModules.h"
+#include "Modules.h"
 
 
 bool PDBInfo::DownLoadNtos()
 {
+	_BaseAddr = 0;
+	_Symbol.clear();
+
 	KernelModules _KernelModules;
 	_KernelModules.GetKernelModuleListR3();
 	for (auto x : _KernelModules._KernelModuleListR3)
@@ -62,6 +66,100 @@ bool PDBInfo::DownLoadNtos()
 	return false;
 }
 
+bool PDBInfo::DownLoad(std::string path, bool use_bassaddr)
+{
+	_BaseAddr = 0;
+	_Symbol.clear();
+
+	if (use_bassaddr)
+	{
+		char drive[_MAX_DRIVE];
+		char dir[_MAX_DIR];
+		char fname[_MAX_FNAME];
+		char ext[_MAX_EXT];
+
+		_splitpath(path.data(), drive, dir, fname, ext);
+		if (std::string(ext) == ".sys")
+		{
+			KernelModules _KernelModules;
+			_KernelModules.GetKernelModuleListR3();
+			for (auto x : _KernelModules._KernelModuleListR3)
+			{
+				if (std::string((char*)x.Name) == std::string(fname) + ext)
+				{
+					_BaseAddr = x.Addr;
+					break;
+				}
+			}
+		}
+
+
+		if (std::string(ext) == ".dll")
+		{
+			Modules _Modules;
+			std::vector<MODULEENTRY32W> temp_vector = _Modules.GetUserMoudleListR3(GetCurrentProcessId());
+			bool found = false;
+			for (auto x : temp_vector)
+			{
+				if (path == W_TO_C(x.szExePath))
+				{
+					_BaseAddr = (ULONG64)x.modBaseAddr;
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				_BaseAddr = (ULONG64)LoadLibraryA(path.data());
+			}
+		}
+	}
+
+	
+
+	std::string symbolpath = std::getenv("_NT_SYMBOL_PATH");
+	if (symbolpath.find("SRV") != std::string::npos)
+	{
+		std::vector<std::string> temp_vector = Split(symbolpath, "*");
+		for (auto x : temp_vector)
+		{
+			if (PathFileExistsA(x.c_str()))
+			{
+				symbolpath = x;
+				break;
+			}
+		}
+	}
+	std::string pdb_path = symbolpath + "\\" + GetPdbPath(path);
+	if (PathFileExistsA(pdb_path.c_str()))
+	{
+		if (EzPdbLoad(pdb_path, &_Pdb))
+		{
+			return true;
+		}
+	}
+	else
+	{
+		if (symbolpath.length() > 0)
+		{
+			std::string temp_path = EzPdbDownload2(path, symbolpath);
+			if (EzPdbLoad(temp_path, &_Pdb))
+			{
+				return true;
+			}
+		}
+		else
+		{
+			std::string temp_path = EzPdbDownload(path);
+			if (EzPdbLoad(temp_path, &_Pdb))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 
 struct MyStruct
 {
@@ -69,6 +167,18 @@ struct MyStruct
 	std::vector<NTOSSYMBOL>* temp_vector;
 };
 
+std::string GBK_To_UTF8(char* p)
+{
+	DWORD strsize = MultiByteToWideChar(CP_ACP, 0, p, -1, NULL, 0);
+	wchar_t* pwstr = new wchar_t[strsize];
+	MultiByteToWideChar(CP_ACP, 0, p, -1, pwstr, strsize);
+	strsize = WideCharToMultiByte(CP_UTF8, 0, pwstr, -1, NULL, 0, NULL, NULL);
+	WideCharToMultiByte(CP_UTF8, 0, pwstr, -1, p, strsize, NULL, NULL);
+	std::string str = p;
+	delete[] pwstr;
+	pwstr = NULL;
+	return str;
+}
 BOOL PsymEnumeratesymbolsCallback(
 	PSYMBOL_INFO pSymInfo,
 	ULONG SymbolSize,
@@ -79,7 +189,7 @@ BOOL PsymEnumeratesymbolsCallback(
 	NTOSSYMBOL temp_list;
 	RtlZeroMemory(&temp_list, sizeof(NTOSSYMBOL));
 	temp_list.Addr = pSymInfo->Address - pSymInfo->ModBase + _MyStruct->_BaseAddr;
-	temp_list.Name = pSymInfo->Name;
+	temp_list.Name = GBK_To_UTF8(pSymInfo->Name);//默认中文环境
 	temp_list.RVA = pSymInfo->Address - pSymInfo->ModBase;
 	_MyStruct->temp_vector->push_back(temp_list);
 	return TRUE;

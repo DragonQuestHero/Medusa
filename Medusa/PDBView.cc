@@ -89,6 +89,7 @@ void PDBView::Serch()
 			ret << std::hex << "0x" << (ULONG64)RVA;
 			_Model->setData(_Model->index(0, 4), ret.str().data());
 		}
+		return;
 	}
 	if (ui.lineEdit_2->text() != "")
 	{
@@ -106,13 +107,19 @@ void PDBView::Serch()
 			_Model->setData(_Model->index(i, 4), ret.str().data());
 			i++;
 		}
+		return;
 	}
 	if (ui.lineEdit_3->text() != "")
 	{
+		if (!_PDBInfo._Symbol.size())
+		{
+			_PDBInfo.GetALL();
+		}
 		int i = 0;
 		for (auto x : _PDBInfo._Symbol)
 		{
-			if (x.Name.find(ui.lineEdit_3->text().toStdString()) !=std::string::npos)
+			if (x.Name.find(ui.lineEdit_3->text().toStdString()) != std::string::npos ||
+				ui.lineEdit_3->text().toStdString() == x.Name)
 			{
 				_Model->setVerticalHeaderItem(i, new QStandardItem);
 				_Model->setData(_Model->index(i, 0), i);

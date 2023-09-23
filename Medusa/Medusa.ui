@@ -163,6 +163,8 @@
     <addaction name="actionDownload_ntos"/>
     <addaction name="actionUnload_Symbol"/>
     <addaction name="actionPdbView"/>
+    <addaction name="actionDown_Load_file"/>
+    <addaction name="actionPdbView_2"/>
    </widget>
    <addaction name="menuMenu"/>
    <addaction name="menuHypervisor"/>
@@ -232,6 +234,16 @@
    </property>
   </action>
   <action name="actionPdbView">
+   <property name="text">
+    <string>Down&amp;Load file</string>
+   </property>
+  </action>
+  <action name="actionDown_Load_file">
+   <property name="text">
+    <string>Down&amp;Load file with baseaddr</string>
+   </property>
+  </action>
+  <action name="actionPdbView_2">
    <property name="text">
     <string>PdbView</string>
    </property>
