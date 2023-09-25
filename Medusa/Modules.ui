@@ -10,6 +10,9 @@
     <height>633</height>
    </rect>
   </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::ActionsContextMenu</enum>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -21,6 +24,9 @@
      <width>911</width>
      <height>631</height>
     </rect>
+   </property>
+   <property name="contextMenuPolicy">
+    <enum>Qt::ActionsContextMenu</enum>
    </property>
   </widget>
  </widget>

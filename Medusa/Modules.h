@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QTextCodec>
+#include <QMenu>
 
 #include <fstream>
 #include <windows.h>
@@ -39,7 +40,12 @@ public:
 	std::vector<UserModule> R3ModuleScanner(ULONG64 PID, HANDLE handle);
 public:
 public slots:
+	void Dump(bool);
 public:
 	Ui::Form_Modules ui;
 	QStandardItemModel* _Model;
+	QMenu _TableView_Menu_Dump;
+	QAction _TableView_Action_Dump;
+private:
+	ULONG64 _PID;
 };

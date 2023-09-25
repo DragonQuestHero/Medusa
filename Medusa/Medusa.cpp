@@ -43,7 +43,7 @@ Medusa::Medusa(QWidget *parent)
 void Medusa::Set_SLOTS()
 {
 	connect(ui.tabWidget, SIGNAL(currentChanged(int)), SLOT(ChangeTab()));//进程
-	connect(ui.tableView_Driver, SIGNAL(currentChanged(int)), SLOT(ChangeTab()));//进程
+	//connect(ui.tableView_Driver, SIGNAL(currentChanged(int)), SLOT(ChangeTab()));//进程
 
 	connect(&_TableView_Menu_Inject, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 	connect(&_TableView_Menu_HookCheck, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
@@ -604,16 +604,17 @@ void Medusa::RightMenuR3ModuleScanner(ULONG64 PID)
 	}
 	_Modules._Model->removeRows(0, _Modules._Model->rowCount());
 	std::vector<UserModule> temp_vector = _Modules.R3ModuleScanner(PID, proc);
+	CloseHandle(proc);
 	int i = 0;
 	for (auto x : temp_vector)
 	{
 		_Modules._Model->setVerticalHeaderItem(i, new QStandardItem);
 		_Modules._Model->setData(_Modules._Model->index(i, 0), i);
 		std::ostringstream ret;
-		ret << std::hex << "0x" << (ULONG64)x.Addr;
+		ret << std::hex << (ULONG64)x.Addr;
 		_Modules._Model->setData(_Modules._Model->index(i, 2), ret.str().data());
 		std::ostringstream ret2;
-		ret2 << std::hex << "0x" << x.Size;
+		ret2 << std::hex << x.Size;
 		_Modules._Model->setData(_Modules._Model->index(i, 3), ret2.str().data());
 		if (std::wstring(x.Name) == L"shellcode")
 		{

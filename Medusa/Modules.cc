@@ -28,11 +28,53 @@ Modules::Modules(QWidget* parent)
 	ui.tableView->setColumnWidth(4, 150);
 	ui.tableView->setColumnWidth(5, 400);
 
-	//this->setWindowFlags(Qt::FramelessWindowHint);
+
+	_TableView_Action_Dump.setText("Dump");
+	ui.tableView->addAction(&_TableView_Action_Dump);
+	connect(&_TableView_Action_Dump, SIGNAL(triggered(bool)), SLOT(Dump(bool)));//进程鼠标右键菜单
+}
+
+void Modules::Dump(bool)
+{
+	auto proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, _PID);
+	if (!proc)
+	{
+		return;
+	}
+	std::string addr_str = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString().toStdString();
+	ULONG64 addr = strtoll(addr_str.data(), 0, 16);
+	std::string size_str = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 3).data().toString().toStdString();
+	ULONG64 size = strtoll(size_str.data(), 0, 16);
+
+	char* temp_memory = new char[size];
+	if (temp_memory)
+	{
+		SIZE_T temp_size = 0;
+		if (ReadProcessMemory(proc, (char*)addr, temp_memory, size, &temp_size))
+		{
+			std::fstream temp_file(addr_str, std::ios::out | std::ios::binary);
+			if (temp_file.is_open())
+			{
+				temp_file << std::string(temp_memory, size);
+				temp_file.close();
+				QMessageBox::information(this, "Ret", "susscss");
+			}
+			
+		}
+		else
+		{
+		}
+	}
+	else
+	{
+		QMessageBox::information(this, "Ret", "alloc memory error");
+	}
+	CloseHandle(proc);
 }
 
 std::vector<MODULEENTRY32W> Modules::GetUserMoudleListR3(ULONG64 PID)
 {
+	_PID = PID;
 	std::vector<MODULEENTRY32W> temp_vector;
 
 	HANDLE        hModuleSnap = INVALID_HANDLE_VALUE;
@@ -64,6 +106,7 @@ std::vector<MODULEENTRY32W> Modules::GetUserMoudleListR3(ULONG64 PID)
 #define TEST_GetALLUserModuleNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7105,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 std::vector<UserModule> Modules::GetUserMoudleListR0(ULONG64 PID)
 {
+	_PID = PID;
 	std::vector<UserModule> temp_vector;
 
 	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
@@ -105,6 +148,7 @@ std::vector<UserModule> Modules::GetUserMoudleListR0(ULONG64 PID)
 
 std::vector<UserModule> Modules::R3ModuleScanner(ULONG64 PID,HANDLE handle)
 {
+	_PID = PID;
 	std::vector<UserModule> temp_vector;
 	MEMORY_BASIC_INFORMATION base_info;
 	SIZE_T ReturnLength;
@@ -113,9 +157,9 @@ std::vector<UserModule> Modules::R3ModuleScanner(ULONG64 PID,HANDLE handle)
 		NtQueryVirtualMemory(handle, base_addr, MemoryBasicInformation,
 			&base_info, sizeof(MEMORY_BASIC_INFORMATION), &ReturnLength)))
 	{
+		bool found = false;
 		if (base_info.Protect & 0xf0 && base_info.Type != MEM_IMAGE && base_info.RegionSize > PAGE_SIZE)
 		{
-			bool found = false;
 			for (int i = 0; i < base_info.RegionSize; i++)
 			{
 				USHORT magic = 0;
@@ -144,15 +188,15 @@ std::vector<UserModule> Modules::R3ModuleScanner(ULONG64 PID,HANDLE handle)
 					}
 				}
 			}
-			if (!found)
-			{
-				UserModule temp_list;
-				RtlZeroMemory(&temp_list, sizeof(UserModule));
-				temp_list.Addr = (ULONG64)((char*)base_addr);
-				temp_list.Size = base_info.RegionSize;
-				RtlCopyMemory(temp_list.Name, L"shellcode", 20);
-				temp_vector.push_back(temp_list);
-			}
+		}
+		if (base_info.Protect & 0xf0 && base_info.Type != MEM_IMAGE && !found)
+		{
+			UserModule temp_list;
+			RtlZeroMemory(&temp_list, sizeof(UserModule));
+			temp_list.Addr = (ULONG64)((char*)base_addr);
+			temp_list.Size = base_info.RegionSize;
+			RtlCopyMemory(temp_list.Name, L"shellcode", 20);
+			temp_vector.push_back(temp_list);
 		}
 		base_addr = (void*)((ULONG64)base_addr + base_info.RegionSize);
 	}
