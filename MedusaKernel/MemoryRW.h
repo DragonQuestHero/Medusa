@@ -4,6 +4,7 @@
 
 #include "CRT/NtSysAPI_Func.hpp"
 
+#include <string>
 
 struct Message_NtReadWriteVirtualMemory
 {
@@ -17,3 +18,5 @@ struct Message_NtReadWriteVirtualMemory
 };
 
 NTSTATUS NewNtReadWriteVirtualMemory(Message_NtReadWriteVirtualMemory* message);
+bool KernelSafeReadMemoryIPI(ULONG64 addr, void* Buffer, ULONG64 Size);
+bool KernelSafeReadMemoryDPC(ULONG64 addr, void* Buffer, ULONG64 Size);

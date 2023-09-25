@@ -615,6 +615,11 @@ void Medusa::RightMenuR3ModuleScanner(ULONG64 PID)
 		std::ostringstream ret2;
 		ret2 << std::hex << "0x" << x.Size;
 		_Modules._Model->setData(_Modules._Model->index(i, 3), ret2.str().data());
+		if (std::wstring(x.Name) == L"shellcode")
+		{
+			_Modules._Model->setData(_Modules._Model->index(i, 1), u8"RWX");
+			_Modules._Model->item(i, 0)->setBackground(QColor(Qt::red));
+		}
 		i++;
 	}
 	_Modules.show();
@@ -836,17 +841,24 @@ void Medusa::GetKernelModuleList()
 				_Model_Driver->setData(_Model_Driver->index(i, 3), ret2.str().data());
 				if (x.Check == 1 || x.Check == 2)
 				{
-					_Model_Driver->setData(_Model_Driver->index(i, 4), QString::fromWCharArray((WCHAR*)x.Path));
+					std::wstring temp_wstr = (WCHAR*)x.Path;
+					temp_wstr = ReplaceStr(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
+					temp_wstr = ReplaceStr(temp_wstr, L"\\??\\", L"");
+					_Model_Driver->setData(_Model_Driver->index(i, 4), QString::fromWCharArray(temp_wstr.data()));
 				}
 				else
 				{
-					_Model_Driver->setData(_Model_Driver->index(i, 4), x.Path);
+					std::string temp_str = x.Path;
+					temp_str = ReplaceStr2(temp_str, "\\SystemRoot\\", "C:\\Windows\\");
+					temp_str = ReplaceStr2(temp_str, "\\??\\", "");
+					_Model_Driver->setData(_Model_Driver->index(i, 4), temp_str.data());
 				}
 				if (x.Check == 1 || x.Check == 2)
 				{
 					std::wstring retStr;
 					std::wstring temp_wstr = (WCHAR*)x.Path;
 					temp_wstr = ReplaceStr(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
+					temp_wstr = ReplaceStr(temp_wstr, L"\\??\\", L"");
 					if (_Process.QueryValue(L"FileDescription", temp_wstr.data(), retStr))
 					{
 						_Model_Driver->setData(_Model_Driver->index(i, 5), QString::fromWCharArray(retStr.data()));
@@ -861,6 +873,7 @@ void Medusa::GetKernelModuleList()
 					std::wstring retStr;
 					std::wstring temp_wstr = C_TO_W(x.Path);
 					temp_wstr = ReplaceStr(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
+					temp_wstr = ReplaceStr(temp_wstr, L"\\??\\", L"");
 					if (_Process.QueryValue(L"FileDescription", temp_wstr.data(), retStr))
 					{
 						_Model_Driver->setData(_Model_Driver->index(i, 5), QString::fromWCharArray(retStr.data()));
@@ -910,12 +923,17 @@ void Medusa::GetKernelModuleList()
 				std::ostringstream ret2;
 				ret2 << std::hex << "0x" << (ULONG64)x.Size;
 				_Model_Driver->setData(_Model_Driver->index(i, 3), ret2.str().data());
-				_Model_Driver->setData(_Model_Driver->index(i, 4), (char*)x.Path);
+
+				std::string temp_str = x.Path;
+				temp_str = ReplaceStr2(temp_str, "\\SystemRoot\\", "C:\\Windows\\");
+				temp_str = ReplaceStr2(temp_str, "\\??\\", "");
+				_Model_Driver->setData(_Model_Driver->index(i, 4), temp_str.data());
 
 				std::wstring temp_wstr = C_TO_W(x.Path);
 				if (temp_wstr.find(L"SystemRoot") != std::wstring::npos)
 				{
 					temp_wstr = ReplaceStr(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
+					temp_wstr = ReplaceStr(temp_wstr, L"\\??\\", L"");
 				}
 				std::wstring retStr;
 				if (_Process.QueryValue(L"FileDescription", temp_wstr.data(), retStr))

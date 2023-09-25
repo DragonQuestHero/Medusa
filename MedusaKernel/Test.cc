@@ -1,4 +1,5 @@
 #include "Test.h"
+#include "MemoryRW.h"
 
 
 
@@ -19,4 +20,12 @@ void TestWalkStack()
 			_Threads.StackWalkThread(i);
 		}
 	}
+}
+
+void TestReadKernelMemory()
+{
+	DbgBreakPoint();
+	ULONG64 temp = 0;
+	KernelSafeReadMemoryIPI((ULONG64)&TestReadKernelMemory, &temp, 8);
+	int a = 1;
 }

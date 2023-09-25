@@ -115,6 +115,7 @@ std::vector<UserModule> Modules::R3ModuleScanner(ULONG64 PID,HANDLE handle)
 	{
 		if (base_info.Protect & 0xf0 && base_info.Type != MEM_IMAGE && base_info.RegionSize > PAGE_SIZE)
 		{
+			bool found = false;
 			for (int i = 0; i < base_info.RegionSize; i++)
 			{
 				USHORT magic = 0;
@@ -134,6 +135,7 @@ std::vector<UserModule> Modules::R3ModuleScanner(ULONG64 PID,HANDLE handle)
 								temp_list.Addr = (ULONG64)((char*)base_addr + i);
 								temp_list.Size = nt_header->OptionalHeader.SizeOfImage;
 								temp_vector.push_back(temp_list);
+								found = true;
 								delete memory_p;
 								break;
 							}
@@ -141,6 +143,15 @@ std::vector<UserModule> Modules::R3ModuleScanner(ULONG64 PID,HANDLE handle)
 						delete memory_p;
 					}
 				}
+			}
+			if (!found)
+			{
+				UserModule temp_list;
+				RtlZeroMemory(&temp_list, sizeof(UserModule));
+				temp_list.Addr = (ULONG64)((char*)base_addr);
+				temp_list.Size = base_info.RegionSize;
+				RtlCopyMemory(temp_list.Name, L"shellcode", 20);
+				temp_vector.push_back(temp_list);
 			}
 		}
 		base_addr = (void*)((ULONG64)base_addr + base_info.RegionSize);

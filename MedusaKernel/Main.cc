@@ -32,6 +32,7 @@ extern "C" NTSTATUS DriverMain(PDRIVER_OBJECT drive_object, PUNICODE_STRING path
 
 #ifdef __DEBUG
 	//TestWalkStack();
+	//TestReadKernelMemory();
 #endif // DEBUG
 	//DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "%s", temp.data());
 
