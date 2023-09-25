@@ -59,7 +59,6 @@ void Modules::Dump(bool)
 				temp_file.close();
 				QMessageBox::information(this, "Ret", "susscss");
 			}
-			
 		}
 		else
 		{

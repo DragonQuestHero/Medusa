@@ -353,7 +353,8 @@ void Medusa::DriverLoad(QAction* action)
 void Medusa::ProcessRightMenu(QAction* action)
 {
 	if (action->text() == "R3CreateRemoteThread+LoadLibraryA" ||
-		action->text() == "R3APCInject")
+		action->text() == "R3APCInject" ||
+		action->text() == "R3MapInject")
 	{
 		RightMenuDLLInject(action);
 		return;
@@ -423,6 +424,11 @@ void Medusa::RightMenuDLLInject(QAction* action)
 	{
 		DLLInject _DLLInject;
 		_DLLInject.R3APCInject(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+	}
+	if (action->text() == "R3MapInject")
+	{
+		DLLInject _DLLInject;
+		_DLLInject.R3MapInject(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
 	}
 }
 
@@ -618,7 +624,12 @@ void Medusa::RightMenuR3ModuleScanner(ULONG64 PID)
 		_Modules._Model->setData(_Modules._Model->index(i, 3), ret2.str().data());
 		if (std::wstring(x.Name) == L"shellcode")
 		{
-			_Modules._Model->setData(_Modules._Model->index(i, 1), u8"RWX");
+			_Modules._Model->setData(_Modules._Model->index(i, 1), u8"RWXMemory");
+			_Modules._Model->item(i, 0)->setBackground(QColor(Qt::green));
+		}
+		else
+		{
+			_Modules._Model->setData(_Modules._Model->index(i, 1), u8"MemoryDLL");
 			_Modules._Model->item(i, 0)->setBackground(QColor(Qt::red));
 		}
 		i++;

@@ -162,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DLLInject.h" />
+    <ClInclude Include="DLLInjectShellCode.h" />
     <ClInclude Include="Driver_Load.h" />
     <ClInclude Include="EzPdb\EzPdb.h" />
     <ClInclude Include="FileCheck.h" />
