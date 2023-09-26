@@ -34,8 +34,8 @@ Medusa::Medusa(QWidget *parent)
 	if (INVALID_HANDLE_VALUE != m_hDevice)
 	{
 		_Driver_Loaded = true;
-		CloseHandle(m_hDevice);
 	}
+	CloseHandle(m_hDevice);
 	ChangeTab();
 }
 
@@ -901,6 +901,10 @@ void Medusa::GetKernelModuleList()
 					temp_color = QColor(Qt::green);
 				}
 				if (x.Check == 2)
+				{
+					temp_color = QColor(Qt::red);
+				}
+				if (x.Check == 3)
 				{
 					temp_color = QColor(Qt::red);
 				}

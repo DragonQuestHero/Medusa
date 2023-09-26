@@ -118,6 +118,7 @@ bool Process::GetProcessListFromR0()
 		}
 		delete temp_list;
 
+		CloseHandle(m_hDevice);
 		return true;
 	} while (false);
 

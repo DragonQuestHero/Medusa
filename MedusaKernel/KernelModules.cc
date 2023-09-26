@@ -1,7 +1,7 @@
 #include "KernelModules.h"
 #include "cleaner.h"
 
-
+#include "MemoryRW.h"
 
 
 void KernelModules::GetKernelModuleListALL(PDRIVER_OBJECT  pdriver)
@@ -13,6 +13,7 @@ void KernelModules::GetKernelModuleListALL(PDRIVER_OBJECT  pdriver)
 	UNICODE_STRING	FileSystem = RTL_CONSTANT_STRING(L"\\FileSystem");
 	GetKernelModuleList3(&directory);
 	GetKernelModuleList3(&FileSystem);
+	GetKernelModuleList4();
 }
 
 bool KernelModules::GetKernelModuleList1()
@@ -61,8 +62,6 @@ bool KernelModules::GetKernelModuleList1()
 	return true;
 }
 
-
-
 std::vector<KernelModulesVector> KernelModules::GetKernelModuleList2(PDRIVER_OBJECT  pdriver)
 {
 	std::vector<KernelModulesVector> temp_vector;
@@ -110,8 +109,6 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList2(PDRIVER_OBJ
 
 	return temp_vector;
 }
-
-
 
 std::vector<KernelModulesVector> KernelModules::GetKernelModuleList3(UNICODE_STRING* Directory)
 {
@@ -215,6 +212,7 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList3(UNICODE_STR
 				temp_list.Check = 2;
 				_KernelModuleList.push_back(temp_list);
 			}
+			ObDereferenceObject(DriverObject);
 		}
 		ExFreePool(FullName.Buffer);
 	} while (STATUS_NO_MORE_FILES != ntStatus);
@@ -227,6 +225,63 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList3(UNICODE_STR
 	return temp_vector;
 }
 
+std::vector<KernelModulesVector> KernelModules::GetKernelModuleList4()
+{
+	std::vector<KernelModulesVector> temp_vector;
+
+	PSYSTEM_BIGPOOL_INFORMATION pBigPoolInfo = (PSYSTEM_BIGPOOL_INFORMATION)ExAllocatePool(NonPagedPool, sizeof(SYSTEM_BIGPOOL_INFORMATION));
+	ULONG ReturnLength = 0;
+	NTSTATUS status = ZwQuerySystemInformation(SystemBigPoolInformation, pBigPoolInfo, sizeof(SYSTEM_BIGPOOL_INFORMATION), &ReturnLength);
+	if (!NT_SUCCESS(status))
+	{
+		ExFreePool(pBigPoolInfo);
+		ReturnLength = ReturnLength + PAGE_SIZE;
+		PSYSTEM_BIGPOOL_INFORMATION pBigPoolInfo = (PSYSTEM_BIGPOOL_INFORMATION)ExAllocatePool(NonPagedPool, ReturnLength);
+		if (!pBigPoolInfo)
+		{
+			return temp_vector;
+		}
+		status = ZwQuerySystemInformation(SystemBigPoolInformation, pBigPoolInfo, ReturnLength, &ReturnLength);
+		if (NT_SUCCESS(status))
+		{
+			for (auto j = 0; j < pBigPoolInfo->Count; j++)
+			{
+				SYSTEM_BIGPOOL_ENTRY poolEntry = pBigPoolInfo->AllocatedInfo[j];
+				void* base_addr = poolEntry.VirtualAddress;
+				void* memory_p = new char[PAGE_SIZE];
+				if (KernelSafeReadMemoryIPI((ULONG64)base_addr, memory_p, PAGE_SIZE))
+				{
+					for (int i = 0; i < PAGE_SIZE - 2; i++)
+					{
+						PIMAGE_DOS_HEADER DosHeader = (PIMAGE_DOS_HEADER)((char*)memory_p + i);
+						if (DosHeader->e_magic == IMAGE_DOS_SIGNATURE && MmIsAddressValid(&DosHeader->e_lfanew))
+						{
+							PIMAGE_NT_HEADERS pNt = PIMAGE_NT_HEADERS((char*)memory_p + i + DosHeader->e_lfanew);
+							if (MmIsAddressValid(pNt))
+							{
+								if (pNt->Signature == IMAGE_NT_SIGNATURE)
+								{
+									KernelModulesVector temp_list;
+									RtlZeroMemory(&temp_list, sizeof(KernelModulesVector));
+									temp_list.Addr = (ULONG64)((char*)base_addr + i);
+									temp_list.Size = pNt->OptionalHeader.SizeOfImage;
+									RtlCopyMemory(temp_list.Name, "!!!!!!!", 20);
+									temp_list.Check = 3;
+									temp_vector.push_back(temp_list);
+									_KernelModuleList.push_back(temp_list);
+									break;
+								}
+							}
+						}
+					}
+				}
+				delete memory_p;
+			}
+		}
+		ExFreePool(pBigPoolInfo);
+	}
+	return temp_vector;
+}
 
 bool KernelModules::IsAddressInDriversList(ULONG64 Address)
 {

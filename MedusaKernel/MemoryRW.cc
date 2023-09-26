@@ -87,7 +87,6 @@ NTSTATUS NewNtReadWriteVirtualMemory(Message_NtReadWriteVirtualMemory* message)
 
 volatile LONG number_of_processors = 0;
 volatile bool _ALLCpuReday = false;
-volatile int bbb = 0;
 KEVENT _WaitEvent;
 KSPIN_LOCK SpinLock;
 
@@ -98,8 +97,13 @@ ULONG_PTR KipiBroadcastWorker(
 	Message_NtReadWriteVirtualMemory* temp_NtReadWriteVirtualMemory = (Message_NtReadWriteVirtualMemory*)Argument;
 	if (0 == (InterlockedDecrement(&number_of_processors)))
 	{
-		RtlCopyMemory(temp_NtReadWriteVirtualMemory->Buffer,
-			temp_NtReadWriteVirtualMemory->BaseAddress, temp_NtReadWriteVirtualMemory->BufferBytes);
+		if (MmIsAddressValid(temp_NtReadWriteVirtualMemory->BaseAddress) &&
+			MmIsAddressValid((void*)
+				((ULONG64)temp_NtReadWriteVirtualMemory->BaseAddress + temp_NtReadWriteVirtualMemory->BufferBytes)))
+		{
+			RtlCopyMemory(temp_NtReadWriteVirtualMemory->Buffer,
+				temp_NtReadWriteVirtualMemory->BaseAddress, temp_NtReadWriteVirtualMemory->BufferBytes);
+		}
 		_ALLCpuReday = true;
 	}
 	while (!_ALLCpuReday)
@@ -125,10 +129,6 @@ bool KernelSafeReadMemoryIPI(ULONG64 addr, void* Buffer, ULONG64 Size)
 		((ULONG64)temp_NtReadWriteVirtualMemory.BaseAddress + temp_NtReadWriteVirtualMemory.BufferBytes)))
 	{
 		KeIpiGenericCall(&KipiBroadcastWorker, (ULONG64)&temp_NtReadWriteVirtualMemory);
-		while (!_ALLCpuReday)
-		{
-
-		}
 		return true;
 	}
 	return false;

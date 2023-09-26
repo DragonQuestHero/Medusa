@@ -1,6 +1,7 @@
 #include "Test.h"
 #include "MemoryRW.h"
-
+#include "Threads.h"
+#include "KernelModules.h"
 
 
 void TestWalkStack()
@@ -28,4 +29,11 @@ void TestReadKernelMemory()
 	ULONG64 temp = 0;
 	KernelSafeReadMemoryIPI((ULONG64)&TestReadKernelMemory, &temp, 8);
 	int a = 1;
+}
+
+void TestGetKernel()
+{
+	KernelModules _KernelModules;
+	DbgBreakPoint();
+	_KernelModules.GetKernelModuleList4();
 }
