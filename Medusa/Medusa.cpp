@@ -202,12 +202,19 @@ void Medusa::PdbMenu(QAction* action)
 	}
 	if (action->text() == "SendPDBInfo")
 	{
+		ui.label->setText("downloding pdb files..........................");
+		ui.progressBar->setMaximum(100);
+		ui.progressBar->setValue(5);
+		QCoreApplication::processEvents();
 		if (_PDBView._PDBInfo.SendMedusaPDBInfo())
 		{
+			ui.progressBar->setValue(100);
+			ui.label->setText("success load pdb");
 			QMessageBox::information(this, "success", "pdb send");
 		}
 		else
 		{
+			ui.label->setText("error load pdb");
 			QMessageBox::information(this, "error", "pdb send");
 		}
 	}

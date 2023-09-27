@@ -94,7 +94,7 @@ struct __declspec(align(8)) FunctionEntryForStackStruct
 	PVOID Unknown_1;
 };
 
-std::vector<ULONG64> Threads::StackWalkThreadUser(ULONG64 TID)
+std::vector<ULONG64> Threads::StackWalkThread(ULONG64 TID)
 {
 	std::vector<ULONG64> temp_walk_vector;
 	if (!MedusaPDBInfo::_PDBInfo.RtlpLookupFunctionEntryForStackWalks)

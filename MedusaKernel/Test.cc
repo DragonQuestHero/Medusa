@@ -23,7 +23,7 @@ void TestWalkStack()
 			for (auto y : temp_vector)
 			{
 				DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "TID==%d\n", y.TID);
-				std::vector<ULONG64> temp_walk_vector = _Threads.StackWalkThreadUser(y.TID);
+				std::vector<ULONG64> temp_walk_vector = _Threads.StackWalkThread(y.TID);
 				for (auto n : temp_walk_vector)
 				{
 					DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "%llx\n", n);

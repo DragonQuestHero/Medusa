@@ -158,6 +158,7 @@
     <QtUic Include="Medusa.ui" />
     <QtUic Include="Modules.ui" />
     <QtUic Include="PDBView.ui" />
+    <QtUic Include="StackWalk.ui" />
     <QtUic Include="Threads.ui" />
   </ItemGroup>
   <ItemGroup>

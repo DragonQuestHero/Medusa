@@ -215,19 +215,7 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 	}
 	else if (Io_Control_Code == TEST_GetPDBInfo)
 	{
-	DbgBreakPoint();
 		RtlCopyMemory(&_This->_MedusaPDBInfo._PDBInfo, Input_Buffer, sizeof(PDBInfo));
-		/*if (_This->_MedusaPDBInfo._PDBInfo.CiEaCacheLookasideList &&
-			_This->_MedusaPDBInfo._PDBInfo.HashCacheLock &&
-			_This->_MedusaPDBInfo._PDBInfo.KernelHashBucketList &&
-			_This->_MedusaPDBInfo._PDBInfo.MiProcessLoaderEntry &&
-			_This->_MedusaPDBInfo._PDBInfo.MmLastUnloadedDriver &&
-			_This->_MedusaPDBInfo._PDBInfo.MmUnloadedDrivers &&
-			_This->_MedusaPDBInfo._PDBInfo.PiDDBCacheTable &&
-			_This->_MedusaPDBInfo._PDBInfo.PiDDBLock)
-		{
-			_This->_PdbChecked = true;
-		}*/
 	}
 	else if (Io_Control_Code == TEST_GetUnLoadKernelModuleNumber)
 	{
