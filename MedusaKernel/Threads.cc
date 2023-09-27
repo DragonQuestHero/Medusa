@@ -2,6 +2,7 @@
 
 #include "Modules.h"
 #include "CRT/NtSysAPI_Func.hpp"
+#include "MedusaPDBInfo.h"
 
 
 bool Threads::InitWin32StartAddressOffset()
@@ -96,6 +97,10 @@ struct __declspec(align(8)) FunctionEntryForStackStruct
 std::vector<ULONG64> Threads::StackWalkThreadUser(ULONG64 TID)
 {
 	std::vector<ULONG64> temp_walk_vector;
+	if (!MedusaPDBInfo::_PDBInfo.RtlpLookupFunctionEntryForStackWalks)
+	{
+		return temp_walk_vector;
+	}
 
 	PETHREAD tempthd = nullptr;
 	NTSTATUS status = PsLookupThreadByThreadId((HANDLE)TID, &tempthd);
@@ -122,7 +127,7 @@ std::vector<ULONG64> Threads::StackWalkThreadUser(ULONG64 TID)
 	if (PsIsThreadTerminating(tempthd))
 		return temp_walk_vector;
 
-	status = PsSuspendProcess(tempeps);
+	status = PsSuspendProcess(tempeps);//可以不换挂起线程
 	if (!NT_SUCCESS(status))
 	{
 		return temp_walk_vector;
@@ -217,7 +222,7 @@ std::vector<ULONG64> Threads::StackWalkThreadUser(ULONG64 TID)
 				if (FunctionEntry == NULL)
 				{
 					using func = PRUNTIME_FUNCTION(*)(ULONG64, FunctionEntryForStackStruct*);
-					func temp_func = (func)0xfffff80128aadbe0;//RtlpLookupFunctionEntryForStackWalks
+					func temp_func = (func)MedusaPDBInfo::_PDBInfo.RtlpLookupFunctionEntryForStackWalks;
 					FunctionEntry = temp_func(ThreadContext.Rip,
 						&ImageBase2);
 					ImageBase = (ULONG64)ImageBase2.ModuleBase;

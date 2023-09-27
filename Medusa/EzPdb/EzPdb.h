@@ -68,6 +68,7 @@ std::string EzPdbDownload2(
 	IN OPTIONAL std::string symbolServer = "https://msdl.microsoft.com/download/symbols/");
 
 std::string GetPdbPath(std::string pePath);
+std::string GetPdbPath2(std::string pePath);
 
 bool EzPdbLoad(IN std::string pdbPath, OUT PEZPDB Pdb);
 

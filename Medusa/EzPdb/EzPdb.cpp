@@ -485,6 +485,7 @@ std::string GetPdbPath(std::string pePath)
 }
 
 
+
 // load pdb
 // return true if success, or return false if failed, user can call GetLastError() to know wth is going on
 bool EzPdbLoad(IN std::string pdbPath, OUT PEZPDB Pdb)

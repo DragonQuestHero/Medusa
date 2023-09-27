@@ -28,6 +28,7 @@ struct MedusaPDBInfo
 	ULONG64 KernelHashBucketList;
 	ULONG64 HashCacheLock;
 	ULONG64 CiEaCacheLookasideList;
+	ULONG64 RtlpLookupFunctionEntryForStackWalks;
 };
 
 class PDBInfo

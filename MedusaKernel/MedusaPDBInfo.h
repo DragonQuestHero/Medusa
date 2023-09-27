@@ -14,6 +14,7 @@ struct PDBInfo
 	ULONG64 KernelHashBucketList;
 	ULONG64 HashCacheLock;
 	ULONG64 CiEaCacheLookasideList;
+	ULONG64 RtlpLookupFunctionEntryForStackWalks;
 };
 
 
@@ -21,7 +22,10 @@ struct PDBInfo
 class MedusaPDBInfo
 {
 public:
-	MedusaPDBInfo() = default;
+	MedusaPDBInfo()
+	{
+		RtlZeroMemory(&_PDBInfo, sizeof(PDBInfo));
+	}
 	~MedusaPDBInfo() = default;
 public:
 public:

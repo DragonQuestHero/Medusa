@@ -169,6 +169,7 @@
     <ClCompile Include="IO_Control.cc" />
     <ClCompile Include="KernelModules.cc" />
     <ClCompile Include="Main.cc" />
+    <ClCompile Include="MedusaPDBInfo.cc" />
     <ClCompile Include="MemoryRW.cc" />
     <ClCompile Include="Modules.cc" />
     <ClCompile Include="Test.cc" />
@@ -184,6 +185,7 @@
     <ClInclude Include="KernelModules.h" />
     <ClInclude Include="MemoryRW.h" />
     <ClInclude Include="Modules.h" />
+    <ClInclude Include="MedusaPDBInfo.h" />
     <ClInclude Include="Test.h" />
     <ClInclude Include="Threads.h" />
   </ItemGroup>

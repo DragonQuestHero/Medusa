@@ -2,6 +2,7 @@
 #include "cleaner.h"
 
 #include "MemoryRW.h"
+#include "MedusaPDBInfo.h"
 
 
 void KernelModules::GetKernelModuleListALL(PDRIVER_OBJECT  pdriver)
@@ -293,12 +294,12 @@ bool KernelModules::IsAddressInDriversList(ULONG64 Address)
 	return false;
 }
 
-bool KernelModules::GetUnLoadKernelModuleList(MedusaPDBInfo* _MedusaPDBInfo, PDRIVER_OBJECT  pdriver)
+bool KernelModules::GetUnLoadKernelModuleList(PDRIVER_OBJECT  pdriver)
 {
 	_UnLoadKernelModuleList.clear();
 	std::vector<KernelModulesVector> temp_vector = GetKernelModuleList2(pdriver);
 
-	if (_MedusaPDBInfo)
+	if (MedusaPDBInfo::_PDBInfo.CiEaCacheLookasideList)
 	{
 
 	}

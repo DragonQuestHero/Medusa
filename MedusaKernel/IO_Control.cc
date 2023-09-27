@@ -215,22 +215,23 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 	}
 	else if (Io_Control_Code == TEST_GetPDBInfo)
 	{
-		RtlCopyMemory(&_This->_MedusaPDBInfo, Input_Buffer, sizeof(MedusaPDBInfo));
-		if (_This->_MedusaPDBInfo.CiEaCacheLookasideList &&
-			_This->_MedusaPDBInfo.HashCacheLock &&
-			_This->_MedusaPDBInfo.KernelHashBucketList &&
-			_This->_MedusaPDBInfo.MiProcessLoaderEntry &&
-			_This->_MedusaPDBInfo.MmLastUnloadedDriver &&
-			_This->_MedusaPDBInfo.MmUnloadedDrivers &&
-			_This->_MedusaPDBInfo.PiDDBCacheTable &&
-			_This->_MedusaPDBInfo.PiDDBLock)
+	DbgBreakPoint();
+		RtlCopyMemory(&_This->_MedusaPDBInfo._PDBInfo, Input_Buffer, sizeof(PDBInfo));
+		/*if (_This->_MedusaPDBInfo._PDBInfo.CiEaCacheLookasideList &&
+			_This->_MedusaPDBInfo._PDBInfo.HashCacheLock &&
+			_This->_MedusaPDBInfo._PDBInfo.KernelHashBucketList &&
+			_This->_MedusaPDBInfo._PDBInfo.MiProcessLoaderEntry &&
+			_This->_MedusaPDBInfo._PDBInfo.MmLastUnloadedDriver &&
+			_This->_MedusaPDBInfo._PDBInfo.MmUnloadedDrivers &&
+			_This->_MedusaPDBInfo._PDBInfo.PiDDBCacheTable &&
+			_This->_MedusaPDBInfo._PDBInfo.PiDDBLock)
 		{
 			_This->_PdbChecked = true;
-		}
+		}*/
 	}
 	else if (Io_Control_Code == TEST_GetUnLoadKernelModuleNumber)
 	{
-		_This->_KernelModules.GetUnLoadKernelModuleList(nullptr, _This->Driver_Object);
+		_This->_KernelModules.GetUnLoadKernelModuleList(_This->Driver_Object);
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_KernelModules._UnLoadKernelModuleList.size();
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);

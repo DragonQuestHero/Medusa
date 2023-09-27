@@ -188,17 +188,28 @@ void Medusa::PdbMenu(QAction* action)
 		_PDBView.show();
 		return;
 	}
-	if (action->text().toStdString().find("use microsoft server") != std::string::npos)
+	if (action->text().toStdString().find("Use microsoft server") != std::string::npos)
 	{
-		action->setText(u8"use microsoft server ¡Ì");
-		ui.actionUse_order_server->setText(u8"use order server ¡Á");
+		action->setText(u8"Use microsoft server ¡Ì");
+		ui.actionUse_order_server->setText(u8"Use Order Server ¡Á");
 		_PDBView._PDBInfo._SymbolServer = "https://msdl.microsoft.com/download/symbols/";
 	}
-	if (action->text().toStdString().find("use order server") != std::string::npos)
+	if (action->text().toStdString().find("Use Order Server") != std::string::npos)
 	{
-		action->setText(u8"use order server ¡Ì");
-		ui.actionUse_microsoft_server->setText(u8"use microsoft server ¡Á");
+		action->setText(u8"Use Order Server ¡Ì");
+		ui.actionUse_microsoft_server->setText(u8"Use microsoft server ¡Á");
 		_PDBView._PDBInfo._SymbolServer = "https://msdl.szdyg.cn/download/symbols/";
+	}
+	if (action->text() == "SendPDBInfo")
+	{
+		if (_PDBView._PDBInfo.SendMedusaPDBInfo())
+		{
+			QMessageBox::information(this, "success", "pdb send");
+		}
+		else
+		{
+			QMessageBox::information(this, "error", "pdb send");
+		}
 	}
 }
 
@@ -339,13 +350,6 @@ void Medusa::DriverLoad(QAction* action)
 			{
 				QMessageBox::information(this, "success", "driver unload");
 			}
-		}
-	}
-
-	if (action->text() == "SendPDBInfo")
-	{
-		if (_PDBView._PDBInfo.SendMedusaPDBInfo())
-		{
 		}
 	}
 }

@@ -52,6 +52,9 @@
     <ClCompile Include="Test.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MedusaPDBInfo.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IO_Control.h">
@@ -85,6 +88,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cleaner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MedusaPDBInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

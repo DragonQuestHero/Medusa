@@ -40,7 +40,7 @@ public:
 	std::vector<KernelModulesVector> GetKernelModuleList4();
 	std::vector<KernelModulesVector> GetKernelModuleList4Quick();
 	bool IsAddressInDriversList(ULONG64 Address);
-	bool GetUnLoadKernelModuleList(MedusaPDBInfo *_MedusaPDBInfo, PDRIVER_OBJECT);
+	bool GetUnLoadKernelModuleList(PDRIVER_OBJECT);
 	bool DumpDriver();
 public:
 	std::vector<KernelModulesVector> _KernelModuleList;

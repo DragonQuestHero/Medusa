@@ -192,6 +192,7 @@
     <addaction name="actionPdbView_2"/>
     <addaction name="actionUse_microsoft_server"/>
     <addaction name="actionUse_order_server"/>
+    <addaction name="actionSendPDBInfo_2"/>
    </widget>
    <addaction name="menuMenu"/>
    <addaction name="menuHypervisor"/>
@@ -282,12 +283,17 @@
   </action>
   <action name="actionUse_microsoft_server">
    <property name="text">
-    <string>use microsoft server √</string>
+    <string>Use microsoft server √</string>
    </property>
   </action>
   <action name="actionUse_order_server">
    <property name="text">
-    <string>use order server ×</string>
+    <string>Use Order Server ×</string>
+   </property>
+  </action>
+  <action name="actionSendPDBInfo_2">
+   <property name="text">
+    <string>SendPDBInfo</string>
    </property>
   </action>
  </widget>
