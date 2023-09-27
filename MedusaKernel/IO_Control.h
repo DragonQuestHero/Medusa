@@ -5,6 +5,7 @@
 #include "EmunProcess.h"
 #include "KernelModules.h"
 #include "Threads.h"
+#include "MedusaPDBInfo.h"
 
 
 
@@ -24,9 +25,6 @@ private:
 	static IO_Control* _This;
 	static NTSTATUS IO_Default(PDEVICE_OBJECT  DeviceObject, PIRP  pIrp);
 	static NTSTATUS Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIrp);
-public:
-	MedusaPDBInfo _MedusaPDBInfo;
-	bool _PdbChecked = false;
 private:
 	DRIVER_OBJECT *Driver_Object = nullptr;
 	DEVICE_OBJECT *Device_Object = nullptr;
@@ -36,5 +34,6 @@ private:
 	EmunProcess _EmunProcess;
 	KernelModules _KernelModules;
 	Threads _Threads;
+	MedusaPDBInfo _MedusaPDBInfo;
 };
 

@@ -293,7 +293,6 @@ bool KernelModules::IsAddressInDriversList(ULONG64 Address)
 	return false;
 }
 
-
 bool KernelModules::GetUnLoadKernelModuleList(MedusaPDBInfo* _MedusaPDBInfo, PDRIVER_OBJECT  pdriver)
 {
 	_UnLoadKernelModuleList.clear();

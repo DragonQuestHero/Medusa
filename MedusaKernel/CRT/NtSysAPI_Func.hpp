@@ -1280,6 +1280,23 @@ extern "C" NTKERNELAPI PVOID NTAPI PsGetCurrentThreadStackLimit();
 extern "C" NTSYSAPI NTSTATUS NTAPI PsSuspendProcess(PEPROCESS Process);
 
 extern "C" NTSYSAPI NTSTATUS NTAPI PsResumeProcess(PEPROCESS Process);
+
+extern "C" NTSYSAPI NTSTATUS NTAPI PsGetContextThread(
+	IN PETHREAD Thread, IN OUT PCONTEXT ThreadContext, IN KPROCESSOR_MODE PreviousMode);
+
+extern "C" NTSYSAPI
+PEXCEPTION_ROUTINE
+NTAPI
+RtlVirtualUnwind(
+	_In_ DWORD HandlerType,
+	_In_ DWORD64 ImageBase,
+	_In_ DWORD64 ControlPc,
+	_In_ PRUNTIME_FUNCTION FunctionEntry,
+	_Inout_ PCONTEXT ContextRecord,
+	_Out_ PVOID * HandlerData,
+	_Out_ PDWORD64 EstablisherFrame,
+	_Inout_opt_ void* ContextPointers//PKNONVOLATILE_CONTEXT_POINTERS 
+);
 //extern "C" NTSYSAPI NTSTATUS NTAPI ObInsertObject(
 //	_In_ PVOID              Object,
 //	_In_opt_ PACCESS_STATE  PassedAccessState,
@@ -1539,15 +1556,3 @@ typedef NTSTATUS(NTAPI* _NtCreateDebugObject)(
 
 #define NtSysAPI_NtProtectVirtualMemory_X64_Win10_ALL 0x0050
 
-
-struct MedusaPDBInfo
-{
-	ULONG64 MiProcessLoaderEntry;
-	ULONG64 PiDDBLock;
-	ULONG64 PiDDBCacheTable;
-	ULONG64 MmUnloadedDrivers;
-	ULONG64 MmLastUnloadedDriver;
-	ULONG64 KernelHashBucketList;
-	ULONG64 HashCacheLock;
-	ULONG64 CiEaCacheLookasideList;
-};
