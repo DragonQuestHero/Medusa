@@ -44,7 +44,6 @@ public slots:
 public:
 	Ui::Form_Modules ui;
 	QStandardItemModel* _Model;
-	QMenu _TableView_Menu_Dump;
 	QAction _TableView_Action_Dump;
 private:
 	ULONG64 _PID;

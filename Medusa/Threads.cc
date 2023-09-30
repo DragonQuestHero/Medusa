@@ -29,7 +29,9 @@ Threads::Threads(QWidget* parent)
 	ui.tableView->setColumnWidth(3, 150);
 	ui.tableView->setColumnWidth(4, 300);
 
-	//this->setWindowFlags(Qt::FramelessWindowHint);
+	_TableView_Action_ThreadStackWalk.setText("ThreadStackWalk");
+	ui.tableView->addAction(&_TableView_Action_ThreadStackWalk);
+	connect(&_TableView_Action_ThreadStackWalk, SIGNAL(triggered(bool)), SLOT(ShowStackWalkThread(bool)));//进程鼠标右键菜单
 }
 
 std::vector<ThreadList> Threads::GetThreadListR3(ULONG64 PID)
@@ -99,6 +101,16 @@ std::vector<ThreadList> Threads::GetThreadListR3(ULONG64 PID)
 	return temp_vector;
 }
 
+void Threads::ShowStackWalkThread(bool)
+{
+	ULONG64 TID = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 1).data().toULongLong();
+	std::vector<ULONG64> temp_vector = GetStackWalkThreadR0(TID);
+	for (auto x : temp_vector)
+	{
+
+	}
+}
+
 #define TEST_GetALLThreads CTL_CODE(FILE_DEVICE_UNKNOWN,0x7107,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_GetALLThreadsNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7108,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 std::vector<ThreadList> Threads::GetThreadListR0(ULONG64 PID)
@@ -128,6 +140,48 @@ std::vector<ThreadList> Threads::GetThreadListR0(ULONG64 PID)
 		}
 
 		DeviceIoControl(m_hDevice, TEST_GetALLThreads, &PID, 8, temp_list, sizeof(ThreadList) * process_number, &dwRet, NULL);
+		if (dwRet)
+		{
+			for (int i = 0; i < process_number; i++)
+			{
+				temp_vector.push_back(temp_list[i]);
+			}
+		}
+		delete temp_list;
+	} while (false);
+	CloseHandle(m_hDevice);
+	return temp_vector;
+}
+
+#define TEST_GetThreadStackWalk CTL_CODE(FILE_DEVICE_UNKNOWN,0x7113,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define TEST_GetThreadStackWalkNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7114,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+std::vector<ULONG64> Threads::GetStackWalkThreadR0(ULONG64 TID)
+{
+	std::vector<ULONG64> temp_vector;
+
+	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (INVALID_HANDLE_VALUE == m_hDevice)
+	{
+		return temp_vector;
+	}
+	do
+	{
+		DWORD process_number = 0;
+		DeviceIoControl(m_hDevice, TEST_GetThreadStackWalkNumber, &TID, 8, 0, 0, &process_number, NULL);
+		if (!process_number)
+		{
+			break;
+		}
+
+		DWORD dwRet = 0;
+		ULONG64* temp_list = (ULONG64*)new char[process_number * sizeof(ULONG64)];
+		if (!temp_list)
+		{
+			break;
+		}
+
+		DeviceIoControl(m_hDevice, TEST_GetThreadStackWalk, &TID, 8, temp_list, sizeof(ULONG64) * process_number, &dwRet, NULL);
 		if (dwRet)
 		{
 			for (int i = 0; i < process_number; i++)

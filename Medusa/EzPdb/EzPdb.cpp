@@ -1,6 +1,23 @@
 #include "EzPdb.h"
 
+#include "shlwapi.h"
+#pragma comment(lib,"shlwapi.lib")
 
+bool createMultiDir(const char* path)
+{
+	if (path == NULL) return false;
+	const char* pwcStrrchr = strrchr(path, L'\\');
+	if (!pwcStrrchr) return false;
+	if (PathIsDirectoryA(path)) return true;
+
+	char wsSubPath[MAX_PATH] = {};
+	memset(wsSubPath, 0, sizeof(wsSubPath));
+	for (int i = 0; i < pwcStrrchr - path; i++)
+		wsSubPath[i] = *(path + i);
+	createMultiDir(wsSubPath);
+	if (CreateDirectoryA(path, NULL)) return true;
+	return false;
+}
 
 // download pdb file from symbol server
 // return pdb path if success, 

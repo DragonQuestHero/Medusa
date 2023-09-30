@@ -22,6 +22,9 @@
      <height>631</height>
     </rect>
    </property>
+   <property name="contextMenuPolicy">
+    <enum>Qt::ActionsContextMenu</enum>
+   </property>
   </widget>
  </widget>
  <resources/>

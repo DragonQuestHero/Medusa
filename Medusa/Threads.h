@@ -37,9 +37,12 @@ public:
 public:
 	std::vector<ThreadList> GetThreadListR3(ULONG64 PID);
 	std::vector<ThreadList> GetThreadListR0(ULONG64 PID);
+	std::vector<ULONG64> GetStackWalkThreadR0(ULONG64);
 public:
 public slots:
+	void ShowStackWalkThread(bool);
 public:
 	Ui::Form_Threads ui;
 	QStandardItemModel* _Model;
+	QAction _TableView_Action_ThreadStackWalk;
 };
