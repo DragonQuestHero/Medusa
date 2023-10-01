@@ -87,8 +87,8 @@ NTSTATUS NewNtReadWriteVirtualMemory(Message_NtReadWriteVirtualMemory* message)
 
 volatile LONG number_of_processors = 0;
 volatile bool _ALLCpuReday = false;
-KEVENT _WaitEvent;
-KSPIN_LOCK SpinLock;
+//KEVENT _WaitEvent;
+//KSPIN_LOCK SpinLock;
 
 ULONG_PTR KipiBroadcastWorker(
 	ULONG_PTR Argument
@@ -121,8 +121,8 @@ bool KernelSafeReadMemoryIPI(ULONG64 addr, void* Buffer, ULONG64 Size)
 	temp_NtReadWriteVirtualMemory.Buffer = Buffer;
 	temp_NtReadWriteVirtualMemory.BufferBytes = Size;
 
-	KeInitializeEvent(&_WaitEvent, NotificationEvent, FALSE);
-	KeInitializeSpinLock(&SpinLock);
+	/*KeInitializeEvent(&_WaitEvent, NotificationEvent, FALSE);
+	KeInitializeSpinLock(&SpinLock);*/
 	number_of_processors = KeQueryActiveProcessorCountEx(ALL_PROCESSOR_GROUPS);
 	if (MmIsAddressValid(temp_NtReadWriteVirtualMemory.BaseAddress) &&
 		MmIsAddressValid((void*)

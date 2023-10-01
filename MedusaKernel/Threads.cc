@@ -94,6 +94,62 @@ struct __declspec(align(8)) FunctionEntryForStackStruct
 	PVOID Unknown_1;
 };
 
+
+KEVENT _WaitEvent;
+void StackWalkThreadAPC(IN PKAPC Apc,
+	IN OUT PKNORMAL_ROUTINE* NormalRoutine,
+	IN OUT PVOID* NormalContext,
+	IN OUT PVOID* SystemArgument1,
+	IN OUT PVOID* SystemArgument2)
+{
+	std::vector<ULONG64>* temp_walk_vector = *(std::vector<ULONG64>**)SystemArgument1;
+
+	CONTEXT ThreadContext;
+	ThreadContext.ContextFlags = CONTEXT_ALL;
+	RtlCaptureContext(&ThreadContext);
+
+
+	PVOID HandlerData;
+	DWORD64 EstablisherFrame;
+	FunctionEntryForStackStruct ImageBase2 = { 0 };
+	PRUNTIME_FUNCTION FunctionEntry = nullptr;
+	int Index = 0;
+	while ((Index < 256) && (ThreadContext.Rip != 0))
+	{
+		ULONG64 ImageBase = 0;
+		FunctionEntry = RtlLookupFunctionEntry(ThreadContext.Rip, &ImageBase, NULL);
+		if (FunctionEntry == NULL)
+		{
+			using func = PRUNTIME_FUNCTION(*)(ULONG64, FunctionEntryForStackStruct*);
+			func temp_func = (func)MedusaPDBInfo::_PDBInfo.RtlpLookupFunctionEntryForStackWalks;
+			FunctionEntry = temp_func(ThreadContext.Rip,
+				&ImageBase2);
+			ImageBase = (ULONG64)ImageBase2.ModuleBase;
+		}
+		if (FunctionEntry != NULL)
+		{
+			RtlVirtualUnwind(0,
+				ImageBase,
+				ThreadContext.Rip,
+				FunctionEntry,
+				&ThreadContext,
+				&HandlerData,
+				&EstablisherFrame,
+				NULL);
+			if (ThreadContext.Rip)
+			{
+				temp_walk_vector->push_back(ThreadContext.Rip);
+			}
+			Index++;
+		}
+		else
+		{
+			break;
+		}
+	}
+	KeSetEvent(&_WaitEvent, 0, FALSE);
+}
+
 std::vector<ULONG64> Threads::StackWalkThread(ULONG64 TID)
 {
 	temp_walk_vector.clear();
@@ -183,9 +239,11 @@ std::vector<ULONG64> Threads::StackWalkThread(ULONG64 TID)
 		return temp_walk_vector;
 	}
 	
+	int Index = 0;
 	auto CurrentStackSize = StackBase - CurrentStackLocation;
 	if (CurrentStackLocation > StackLimit && CurrentStackLocation < StackBase)
-	{//Thread->EnableStackSwap; 有些线程会给栈会出去
+	{
+		//Thread->EnableStackSwap; 有些线程会给栈会出去
 		if (MmIsAddressValid((PVOID)CurrentStackLocation) && MmIsAddressValid((PVOID)(CurrentStackLocation + CurrentStackSize - 0x8)))
 		{
 			temp_stack = ExAllocatePool(NonPagedPool, CurrentStackSize);
@@ -215,7 +273,6 @@ std::vector<ULONG64> Threads::StackWalkThread(ULONG64 TID)
 			DWORD64 EstablisherFrame;
 			FunctionEntryForStackStruct ImageBase2 = { 0 };
 			PRUNTIME_FUNCTION FunctionEntry = nullptr;
-			int Index = 0;
 			while ((Index < 256) && (ThreadContext.Rip != 0))
 			{
 				ULONG64 ImageBase = 0;
@@ -257,6 +314,18 @@ std::vector<ULONG64> Threads::StackWalkThread(ULONG64 TID)
 					break;
 				}
 			}
+		}
+	}
+	if (Index == 0)
+	{
+		DbgBreakPoint();
+		KAPC Apc;
+		KeInitializeApc(&Apc, tempthd, OriginalApcEnvironment, &StackWalkThreadAPC, 0, 0, KernelMode, 0);
+		status = KeInsertQueueApc(&Apc, &temp_walk_vector, 0, 0);
+		if (NT_SUCCESS(status))
+		{
+			KeInitializeEvent(&_WaitEvent, NotificationEvent, FALSE);
+			KeWaitForSingleObject(&_WaitEvent, Executive, KernelMode, FALSE, NULL);
 		}
 	}
 
