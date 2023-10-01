@@ -182,10 +182,10 @@ std::vector<ULONG64> Threads::StackWalkThread(ULONG64 TID)
 		PsResumeProcess(tempeps);
 		return temp_walk_vector;
 	}
-
+	
 	auto CurrentStackSize = StackBase - CurrentStackLocation;
 	if (CurrentStackLocation > StackLimit && CurrentStackLocation < StackBase)
-	{//todo mdl
+	{//Thread->EnableStackSwap; 有些线程会给栈会出去
 		if (MmIsAddressValid((PVOID)CurrentStackLocation) && MmIsAddressValid((PVOID)(CurrentStackLocation + CurrentStackSize - 0x8)))
 		{
 			temp_stack = ExAllocatePool(NonPagedPool, CurrentStackSize);

@@ -55,7 +55,7 @@ void StackWalk::ShowStackWalkThreadR0(ULONG64 TID)
 		CloseHandle(hSnap);
 	}
 	Modules _Modules;
-	std::vector<UserModule> temp_module_vector = _Modules.GetUserMoudleListR0(PID);
+	std::vector<MODULEENTRY32W> temp_module_vector = _Modules.GetUserMoudleListR3(PID);
 	std::vector<ULONG64> temp_vector = GetStackWalkThreadR0(TID);
 	int i = 0;
 	for (auto y : temp_vector)
@@ -74,13 +74,13 @@ void StackWalk::ShowStackWalkThreadR0(ULONG64 TID)
 		bool found = false;
 		for (auto x : temp_module_vector)
 		{
-			if ((ULONG64)y >= (ULONG64)x.Addr &&
-				(ULONG64)y <= (ULONG64)x.Addr + x.Size)
+			if ((ULONG64)y >= (ULONG64)x.modBaseAddr &&
+				(ULONG64)y <= (ULONG64)x.modBaseAddr + x.modBaseSize)
 			{
-				ULONG64 offset = y - (ULONG64)x.Addr;
+				ULONG64 offset = y - (ULONG64)x.modBaseAddr;
 				std::wstringstream ret;
 				ret << std::hex << "0x" << offset;
-				Module = x.Name + std::wstring(L"+") + ret.str();
+				Module = x.szModule + std::wstring(L"+") + ret.str();
 				found = true;
 				break;
 			}
@@ -88,8 +88,8 @@ void StackWalk::ShowStackWalkThreadR0(ULONG64 TID)
 		if (!found)
 		{
 			KernelModules _KernelModules;
-			_KernelModules.GetKernelModuleListR0();
-			for (auto x : _KernelModules._KernelModuleListR0)
+			_KernelModules.GetKernelModuleListR3();
+			for (auto x : _KernelModules._KernelModuleListR3)
 			{
 				if ((ULONG64)y >= (ULONG64)x.Addr &&
 					(ULONG64)y <= (ULONG64)x.Addr + x.Size)
@@ -123,6 +123,12 @@ void StackWalk::ShowStackWalkThreadR0(ULONG64 TID)
 		ret << std::hex << "0x" << (ULONG64)startaddr;
 		_Model->setData(_Model->index(i, 3), ret.str().data());
 		_Model->setData(_Model->index(i, 4), QString::fromWCharArray(Module.data()));
+
+		if (!found)
+		{
+			_Model->item(i, 0)->setBackground(QColor(Qt::red));
+		}
+
 		i++;
 	}
 

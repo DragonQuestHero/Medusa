@@ -215,7 +215,7 @@ void Medusa::PdbMenu(QAction* action)
 		else
 		{
 			ui.label->setText("error load pdb");
-			QMessageBox::information(this, "error", "pdb send");
+			QMessageBox::information(this, "error", "error");
 		}
 	}
 }
