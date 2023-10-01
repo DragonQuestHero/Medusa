@@ -169,6 +169,9 @@
     <ClCompile Include="PDBView.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="StackWalk.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Process.h">
@@ -250,6 +253,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="PDBView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="StackWalk.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

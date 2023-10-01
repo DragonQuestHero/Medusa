@@ -298,27 +298,27 @@ bool PDBInfo::SendMedusaPDBInfo()
 	GetALL();
 	for (auto x : _Symbol)
 	{
-		if (x.Name.find("MiProcessLoaderEntry") != std::string::npos)
+		if (x.Name=="MiProcessLoaderEntry")
 		{
 			_MedusaPDBInfo.MiProcessLoaderEntry = x.Addr;
 		}
-		if (x.Name.find("PiDDBLock") != std::string::npos)
+		if (x.Name=="PiDDBLock")
 		{
 			_MedusaPDBInfo.PiDDBLock = x.Addr;
 		}
-		if (x.Name.find("PiDDBCacheTable") != std::string::npos)
+		if (x.Name=="PiDDBCacheTable")
 		{
 			_MedusaPDBInfo.PiDDBCacheTable = x.Addr;
 		}
-		if (x.Name.find("MmUnloadedDrivers") != std::string::npos)
+		if (x.Name=="MmUnloadedDrivers")
 		{
 			_MedusaPDBInfo.MmUnloadedDrivers = x.Addr;
 		}
-		if (x.Name.find("MmLastUnloadedDriver") != std::string::npos)
+		if (x.Name=="MmLastUnloadedDriver")
 		{
 			_MedusaPDBInfo.MmLastUnloadedDriver = x.Addr;
 		}
-		if (x.Name.find("RtlpLookupFunctionEntryForStackWalks") != std::string::npos)
+		if (x.Name == "RtlpLookupFunctionEntryForStackWalks")
 		{
 			_MedusaPDBInfo.RtlpLookupFunctionEntryForStackWalks = x.Addr;
 		}
@@ -334,15 +334,15 @@ bool PDBInfo::SendMedusaPDBInfo()
 	GetALL();
 	for (auto x : _Symbol)
 	{
-		if (x.Name.find("g_KernelHashBucketList") != std::string::npos)
+		if (x.Name == "g_KernelHashBucketList")
 		{
 			_MedusaPDBInfo.KernelHashBucketList = x.Addr;
 		}
-		if (x.Name.find("g_HashCacheLock") != std::string::npos)
+		if (x.Name=="g_HashCacheLock")
 		{
 			_MedusaPDBInfo.HashCacheLock = x.Addr;
 		}
-		if (x.Name.find("g_CiEaCacheLookasideList") != std::string::npos)
+		if (x.Name=="g_CiEaCacheLookasideList")
 		{
 			_MedusaPDBInfo.CiEaCacheLookasideList = x.Addr;
 		}

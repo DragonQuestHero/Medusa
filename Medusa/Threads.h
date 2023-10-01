@@ -18,6 +18,8 @@
 
 #include "ui_Threads.h"
 
+#include "StackWalk.h"
+
 struct ThreadList
 {
 	ULONG64 TID;
@@ -45,4 +47,6 @@ public:
 	Ui::Form_Threads ui;
 	QStandardItemModel* _Model;
 	QAction _TableView_Action_ThreadStackWalk;
+private:
+	StackWalk _StackWalk;
 };

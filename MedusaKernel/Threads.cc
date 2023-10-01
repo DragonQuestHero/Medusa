@@ -96,6 +96,7 @@ struct __declspec(align(8)) FunctionEntryForStackStruct
 
 std::vector<ULONG64> Threads::StackWalkThread(ULONG64 TID)
 {
+	temp_walk_vector.clear();
 	if (!MedusaPDBInfo::_PDBInfo.RtlpLookupFunctionEntryForStackWalks)
 	{
 		return temp_walk_vector;
@@ -131,6 +132,7 @@ std::vector<ULONG64> Threads::StackWalkThread(ULONG64 TID)
 	{
 		return temp_walk_vector;
 	}
+
 
 	KAPC_STATE ApcState;
 	KeStackAttachProcess(tempeps, &ApcState);
@@ -183,7 +185,7 @@ std::vector<ULONG64> Threads::StackWalkThread(ULONG64 TID)
 
 	auto CurrentStackSize = StackBase - CurrentStackLocation;
 	if (CurrentStackLocation > StackLimit && CurrentStackLocation < StackBase)
-	{
+	{//todo mdl
 		if (MmIsAddressValid((PVOID)CurrentStackLocation) && MmIsAddressValid((PVOID)(CurrentStackLocation + CurrentStackSize - 0x8)))
 		{
 			temp_stack = ExAllocatePool(NonPagedPool, CurrentStackSize);
@@ -238,7 +240,14 @@ std::vector<ULONG64> Threads::StackWalkThread(ULONG64 TID)
 						NULL);
 					if (ThreadContext.Rip)
 					{
-						temp_walk_vector.push_back(ThreadContext.Rip);
+						if (MmIsAddressValid((void*)ThreadContext.Rip))
+						{
+							temp_walk_vector.push_back(ThreadContext.Rip);
+						}
+						else if (MmIsAddressValid((ULONG64*)((ULONG64)ThreadContext.Rsp - 8)))
+						{
+							temp_walk_vector.push_back(*(ULONG64*)((ULONG64)ThreadContext.Rsp - 8));
+						}
 					}
 					Index++;
 					//DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "%llx\n", *(ULONG64*)((ULONG64)ThreadContext.Rsp - 8));
