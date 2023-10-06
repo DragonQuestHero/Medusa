@@ -9,6 +9,7 @@ struct NTOSSYMBOL
 {
 	ULONG64 RVA;
 	ULONG64 Addr;
+	ULONG64 Size;
 	std::string Name;
 };
 

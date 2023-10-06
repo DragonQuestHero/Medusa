@@ -205,6 +205,7 @@ BOOL PsymEnumeratesymbolsCallback(
 	temp_list.Addr = pSymInfo->Address - pSymInfo->ModBase + _MyStruct->_BaseAddr;
 	temp_list.Name = GBK_To_UTF8(pSymInfo->Name);//默认中文环境
 	temp_list.RVA = pSymInfo->Address - pSymInfo->ModBase;
+	temp_list.Size = pSymInfo->Size;
 	_MyStruct->temp_vector->push_back(temp_list);
 	return TRUE;
 }

@@ -40,4 +40,11 @@ public:
 private:
 public:
 	PDBInfo _PDBInfo;
+private:
+	std::string Case_Upper(const std::string& str)
+	{
+		std::string result = str;
+		std::transform(result.begin(), result.end(), result.begin(), toupper);
+		return result;
+	}
 };

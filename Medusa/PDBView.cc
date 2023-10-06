@@ -116,23 +116,57 @@ void PDBView::Serch()
 			_PDBInfo.GetALL();
 		}
 		int i = 0;
-		for (auto x : _PDBInfo._Symbol)
+
+		std::string temp_str3 = ui.lineEdit_3->text().toStdString();
+		if (temp_str3.find("0x") != std::string::npos)
 		{
-			if (x.Name.find(ui.lineEdit_3->text().toStdString()) != std::string::npos)
+			temp_str3.erase(0, 2);
+		}
+		ULONG64 addr = strtoull(temp_str3.data(), 0, 16);//输入的是数字
+		if (addr != 0)
+		{
+			for (auto x : _PDBInfo._Symbol)
 			{
-				_Model->setVerticalHeaderItem(i, new QStandardItem);
-				_Model->setData(_Model->index(i, 0), i);
-				_Model->setData(_Model->index(i, 1), x.Name.data());
-				std::ostringstream ret;
-				ret << std::hex << "0x" << (ULONG64)x.Addr;
-				_Model->setData(_Model->index(i, 2), ret.str().data());
-				ret.str("");
-				ret << std::hex << "0x" << (ULONG64)_PDBInfo._BaseAddr;
-				_Model->setData(_Model->index(i, 3), ret.str().data());
-				ret.str("");
-				ret << std::hex << "0x" << (ULONG64)x.RVA;
-				_Model->setData(_Model->index(i, 4), ret.str().data());
-				i++;
+				if (addr >= x.Addr && addr < x.Addr + x.Size)
+				{
+					_Model->setVerticalHeaderItem(i, new QStandardItem);
+					_Model->setData(_Model->index(i, 0), i);
+					_Model->setData(_Model->index(i, 1), x.Name.data());
+					std::ostringstream ret;
+					ret << std::hex << "0x" << (ULONG64)x.Addr;
+					_Model->setData(_Model->index(i, 2), ret.str().data());
+					ret.str("");
+					ret << std::hex << "0x" << (ULONG64)_PDBInfo._BaseAddr;
+					_Model->setData(_Model->index(i, 3), ret.str().data());
+					ret.str("");
+					ret << std::hex << "0x" << (ULONG64)x.RVA;
+					_Model->setData(_Model->index(i, 4), ret.str().data());
+					i++;
+				}
+			}
+		}
+		else
+		{
+			for (auto x : _PDBInfo._Symbol)
+			{
+				std::string temp_str1 = Case_Upper(x.Name);
+				std::string temp_str2 = Case_Upper(ui.lineEdit_3->text().toStdString());
+				if (temp_str1.find(temp_str2) != std::string::npos)
+				{
+					_Model->setVerticalHeaderItem(i, new QStandardItem);
+					_Model->setData(_Model->index(i, 0), i);
+					_Model->setData(_Model->index(i, 1), x.Name.data());
+					std::ostringstream ret;
+					ret << std::hex << "0x" << (ULONG64)x.Addr;
+					_Model->setData(_Model->index(i, 2), ret.str().data());
+					ret.str("");
+					ret << std::hex << "0x" << (ULONG64)_PDBInfo._BaseAddr;
+					_Model->setData(_Model->index(i, 3), ret.str().data());
+					ret.str("");
+					ret << std::hex << "0x" << (ULONG64)x.RVA;
+					_Model->setData(_Model->index(i, 4), ret.str().data());
+					i++;
+				}
 			}
 		}
 	}
