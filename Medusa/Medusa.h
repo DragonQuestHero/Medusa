@@ -42,7 +42,8 @@ public slots:
 	void PdbMenu(QAction*);
 	void ProcessRightMenu(QAction*);
 	void DriverRightMenu(QAction*);
-	void DriverRightMenu(bool);
+	void DriverRightMenuDumpToFILE(bool);
+	void DriverRightMenuDumpToMemory(bool);
 public:
 	void GetProcessList();
 	void GetKernelModuleList();
@@ -95,7 +96,8 @@ private:
 	QMenu _TableView_Menu_DriverClear;
 	QAction _TableView_Action_DriverClear;
 
-	QAction _TableView_Action_DriverDump;
+	QAction _TableView_Action_DriverDumpFILE;
+	QAction _TableView_Action_DriverDumpMemory;
 public:
 	void ProcessUI()
 	{
@@ -212,11 +214,13 @@ public:
 		_TableView_Menu_DriverClear.addAction("ClearLoadInfo");
 		_TableView_Menu_DriverClear.addAction("ClearLoadInfo(usepdb)");
 
-		_TableView_Action_DriverDump.setText("DriverDump");
+		_TableView_Action_DriverDumpFILE.setText("DriverDumpToFILE");
+		_TableView_Action_DriverDumpMemory.setText("DriverDumpToMemory");
 
 		ui.tableView_Driver->addAction(&_TableView_Action_HideDriver);
 		ui.tableView_Driver->addAction(&_TableView_Action_DriverClear);
-		ui.tableView_Driver->addAction(&_TableView_Action_DriverDump);
+		ui.tableView_Driver->addAction(&_TableView_Action_DriverDumpFILE);
+		ui.tableView_Driver->addAction(&_TableView_Action_DriverDumpMemory);
 	}
 public:
 	int Enable_Debug()
