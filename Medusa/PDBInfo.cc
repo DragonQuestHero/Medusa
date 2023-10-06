@@ -9,6 +9,7 @@ bool PDBInfo::DownLoadNtos()
 {
 	_BaseAddr = 0;
 	_Symbol.clear();
+	std::string pe_file_path = std::string(std::getenv("systemroot")) + "\\System32\\ntoskrnl.exe";
 
 	KernelModules _KernelModules;
 	_KernelModules.GetKernelModuleListR3();
@@ -38,32 +39,34 @@ bool PDBInfo::DownLoadNtos()
 			}
 		}
 	}
-	std::string ntos_pdb_path = symbolpath + "\\" + GetPdbPath(std::string(std::getenv("systemroot")) + "\\System32\\ntoskrnl.exe");
+	std::string ntos_pdb_path = symbolpath + "\\" + GetPdbPath(pe_file_path);
 	//ntos_pdb_path = Replace_ALL(ntos_pdb_path, "/", "\\");
 	if (PathFileExistsA(ntos_pdb_path.c_str()))
 	{
-		if (EzPdbLoad(ntos_pdb_path, &_Pdb))
-		{
-			return true;
-		}
+		return EzPdbLoad(ntos_pdb_path, &_Pdb);
 	}
 	else
 	{
 		if (symbolpath.length() > 0)
 		{
-			std::string temp_path = EzPdbDownload2(std::string(std::getenv("systemroot")) + "\\System32\\ntoskrnl.exe", symbolpath,_SymbolServer);
-			if (EzPdbLoad(temp_path, &_Pdb))
-			{
-				return true;
-			}
+			GetSetPdbDir(pe_file_path, symbolpath);
+			std::string temp_path = EzPdbDownload2(pe_file_path, symbolpath,_SymbolServer);
+			return EzPdbLoad(temp_path, &_Pdb);
 		}
 		else
 		{
-			std::string temp_path = EzPdbDownload(std::string(std::getenv("systemroot")) + "\\System32\\ntoskrnl.exe", 
-				"", _SymbolServer);
-			if (EzPdbLoad(temp_path, &_Pdb))
+			char szDownloadDir[MAX_PATH] = { 0 };
+			GetCurrentDirectoryA(sizeof(szDownloadDir), szDownloadDir);
+			std::string pdb_path = std::string(szDownloadDir) + "\\" + GetPdbPath(pe_file_path);
+			if (!PathFileExistsA(pdb_path.c_str()))
 			{
-				return true;
+				GetSetPdbDir(pe_file_path,"");
+				std::string temp_path = EzPdbDownload(pe_file_path, "", _SymbolServer);
+				return EzPdbLoad(temp_path, &_Pdb);
+			}
+			else
+			{
+				return EzPdbLoad(pdb_path, &_Pdb);
 			}
 		}
 	}
@@ -141,27 +144,30 @@ bool PDBInfo::DownLoad(std::string path, bool use_bassaddr)
 	std::string pdb_path = symbolpath + "\\" + GetPdbPath(path);
 	if (PathFileExistsA(pdb_path.c_str()))
 	{
-		if (EzPdbLoad(pdb_path, &_Pdb))
-		{
-			return true;
-		}
+		return EzPdbLoad(pdb_path, &_Pdb);
 	}
 	else
 	{
 		if (symbolpath.length() > 0)
 		{
+			GetSetPdbDir(path, symbolpath);
 			std::string temp_path = EzPdbDownload2(path, symbolpath, _SymbolServer);
-			if (EzPdbLoad(temp_path, &_Pdb))
-			{
-				return true;
-			}
+			return EzPdbLoad(temp_path, &_Pdb);
 		}
 		else
 		{
-			std::string temp_path = EzPdbDownload(path, "", _SymbolServer);
-			if (EzPdbLoad(temp_path, &_Pdb))
+			char szDownloadDir[MAX_PATH] = { 0 };
+			GetCurrentDirectoryA(sizeof(szDownloadDir), szDownloadDir);
+			pdb_path = std::string(szDownloadDir) + "\\" + GetPdbPath(path);
+			if (!PathFileExistsA(pdb_path.c_str()))
 			{
-				return true;
+				GetSetPdbDir(path, "");
+				std::string temp_path = EzPdbDownload(path, "", _SymbolServer);
+				return EzPdbLoad(temp_path, &_Pdb);
+			}
+			else
+			{
+				return EzPdbLoad(pdb_path, &_Pdb);
 			}
 		}
 	}

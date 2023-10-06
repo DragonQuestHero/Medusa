@@ -318,7 +318,6 @@ std::vector<ULONG64> Threads::StackWalkThread(ULONG64 TID)
 	}
 	if (Index == 0)
 	{
-		DbgBreakPoint();
 		KAPC Apc;
 		KeInitializeApc(&Apc, tempthd, OriginalApcEnvironment, &StackWalkThreadAPC, 0, 0, KernelMode, 0);
 		status = KeInsertQueueApc(&Apc, &temp_walk_vector, 0, 0);

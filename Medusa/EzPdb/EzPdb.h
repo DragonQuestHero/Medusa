@@ -79,4 +79,4 @@ ULONG EzPdbGetStructPropertyOffset(IN PEZPDB Pdb, IN std::string StructName, IN 
 ULONG EzPdbGetStructSize(IN PEZPDB Pdb, IN std::string StructName);
 
 VOID EzPdbUnload(IN PEZPDB Pdb);
-
+std::string GetSetPdbDir(std::string pePath, std::string);
