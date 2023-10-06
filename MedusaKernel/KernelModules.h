@@ -41,7 +41,7 @@ public:
 	std::vector<KernelModulesVector> GetKernelModuleList4Quick();
 	bool IsAddressInDriversList(ULONG64 Address);
 	bool GetUnLoadKernelModuleList(PDRIVER_OBJECT);
-	bool DumpDriver();
+	ULONG64 DumpDriver(ULONG64 Address,void*);
 public:
 	std::vector<KernelModulesVector> _KernelModuleList;
 	std::vector<KernelUnloadModules> _UnLoadKernelModuleList;

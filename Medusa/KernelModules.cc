@@ -152,3 +152,36 @@ bool KernelModules::GetUnLoadKernelModuleListR0()
 	CloseHandle(m_hDevice);
 	return false;
 }
+
+#define TEST_DumpDriver CTL_CODE(FILE_DEVICE_UNKNOWN,0x7115,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+bool KernelModules::DumpDriver(ULONG64 Address, ULONG64 Size,void*buffer)
+{
+	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (INVALID_HANDLE_VALUE == m_hDevice)
+	{
+		return false;
+	}
+
+	do
+	{
+		DWORD dwRet = 0;
+		char* temp_list = new char[Size + sizeof(ULONG64)];
+		if (!temp_list)
+		{
+			break;
+		}
+		RtlCopyMemory(temp_list, &Address, sizeof(ULONG64));
+
+		DeviceIoControl(m_hDevice, TEST_DumpDriver, temp_list, Size + sizeof(ULONG64), temp_list, Size + sizeof(ULONG64), &dwRet, NULL);
+		if (dwRet)
+		{
+			RtlCopyMemory(buffer, temp_list + 8, Size);
+			delete temp_list;
+			CloseHandle(m_hDevice);
+			return true;
+		}
+	} while (false);
+	CloseHandle(m_hDevice);
+	return false;
+}

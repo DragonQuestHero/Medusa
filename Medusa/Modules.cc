@@ -42,9 +42,9 @@ void Modules::Dump(bool)
 		return;
 	}
 	std::string addr_str = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString().toStdString();
-	ULONG64 addr = strtoll(addr_str.data(), 0, 16);
+	ULONG64 addr = strtoull(addr_str.data(), 0, 16);
 	std::string size_str = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 3).data().toString().toStdString();
-	ULONG64 size = strtoll(size_str.data(), 0, 16);
+	ULONG64 size = strtoull(size_str.data(), 0, 16);
 
 	char* temp_memory = new char[size];
 	if (temp_memory)
@@ -100,7 +100,6 @@ std::vector<MODULEENTRY32W> Modules::GetUserMoudleListR3(ULONG64 PID)
 	return temp_vector;
 }
 
-
 #define TEST_GetALLUserModule CTL_CODE(FILE_DEVICE_UNKNOWN,0x7104,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_GetALLUserModuleNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7105,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 std::vector<UserModule> Modules::GetUserMoudleListR0(ULONG64 PID)
@@ -143,7 +142,6 @@ std::vector<UserModule> Modules::GetUserMoudleListR0(ULONG64 PID)
 	CloseHandle(m_hDevice);
 	return temp_vector;
 }
-
 
 std::vector<UserModule> Modules::R3ModuleScanner(ULONG64 PID,HANDLE handle)
 {

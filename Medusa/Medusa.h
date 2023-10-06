@@ -20,7 +20,7 @@
 #include "Modules.h"
 #include "Threads.h"
 #include "PDBView.h"
-
+#include "KernelModules.h"
 
 
 #include "Process.h"
@@ -42,6 +42,7 @@ public slots:
 	void PdbMenu(QAction*);
 	void ProcessRightMenu(QAction*);
 	void DriverRightMenu(QAction*);
+	void DriverRightMenu(bool);
 public:
 	void GetProcessList();
 	void GetKernelModuleList();
@@ -69,6 +70,7 @@ private:
 	Modules _Modules;
 	Threads _Threads;
 	PDBView _PDBView;
+	KernelModules _KernelModules;
 private:
     QStandardItemModel* _Model;
 	QStandardItemModel* _Model_Driver;

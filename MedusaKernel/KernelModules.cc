@@ -584,3 +584,35 @@ bool KernelModules::GetUnLoadKernelModuleList(PDRIVER_OBJECT  pdriver)
 		return status;
 	}
 }
+
+ULONG64 KernelModules::DumpDriver(ULONG64 Address,void* buffer)
+{
+	for (auto x : _KernelModuleList)
+	{
+		if (Address == x.Addr)
+		{
+			void* memory_p = new char[x.Size];
+			if (memory_p)
+			{
+				SIZE_T NumberOfBytesTransferred = 0;
+				MM_COPY_ADDRESS SourceAddress;
+				SourceAddress.VirtualAddress = (PVOID)x.Addr;
+				NTSTATUS status = MmCopyMemory(memory_p, SourceAddress, x.Size, MM_COPY_MEMORY_VIRTUAL, &NumberOfBytesTransferred);
+				if (NT_SUCCESS(status))
+				{
+					RtlCopyMemory(buffer, memory_p, x.Size);
+					delete memory_p;
+					return x.Size;
+				}
+				if (NumberOfBytesTransferred)
+				{
+					RtlCopyMemory(buffer, memory_p, NumberOfBytesTransferred);
+					delete memory_p;
+					return x.Size;
+				}
+				delete memory_p;
+			}
+		}
+	}
+	return 0;
+}

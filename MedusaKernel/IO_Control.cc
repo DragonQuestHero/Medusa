@@ -33,6 +33,8 @@ IO_Control* IO_Control::_This;
 #define TEST_GetThreadStackWalk CTL_CODE(FILE_DEVICE_UNKNOWN,0x7113,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_GetThreadStackWalkNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7114,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
+#define TEST_DumpDriver CTL_CODE(FILE_DEVICE_UNKNOWN,0x7115,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
 NTSTATUS IO_Control::Create_IO_Control()
 {
 	NTSTATUS status = 0;
@@ -268,6 +270,13 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		}
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_Threads.temp_walk_vector.size() * sizeof(ULONG64);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if (Io_Control_Code == TEST_DumpDriver && Output_Lenght > 0)
+	{
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_KernelModules.DumpDriver(*(ULONG64*)Input_Buffer, Input_Buffer + 8);
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}

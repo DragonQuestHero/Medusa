@@ -3,7 +3,7 @@
 #include "FileCheck.h"
 #include "Hypervisor.h"
 #include "DLLInject.h"
-#include "KernelModules.h"
+
 
 
 
@@ -51,7 +51,8 @@ void Medusa::Set_SLOTS()
 	connect(&_TableView_Menu_Threads, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 
 
-	connect(&_TableView_Menu_DriverClear, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));
+	connect(&_TableView_Menu_DriverClear, SIGNAL(triggered(QAction*)), SLOT(DriverRightMenu(QAction*)));
+	connect(&_TableView_Action_DriverDump, SIGNAL(triggered(bool)), SLOT(DriverRightMenu(bool)));
 
 	connect(ui.menuMenu, SIGNAL(triggered(QAction*)), SLOT(DriverLoadMenu(QAction*)));
 	connect(ui.menuHypervisor, SIGNAL(triggered(QAction*)), SLOT(HypervisorMenu(QAction*)));
@@ -405,7 +406,32 @@ void Medusa::ProcessRightMenu(QAction* action)
 
 void Medusa::DriverRightMenu(QAction* action)
 {
-	
+}
+
+void Medusa::DriverRightMenu(bool)
+{
+	std::string addr_str = ui.tableView_Driver->model()->index(ui.tableView_Driver->currentIndex().row(), 2).data().toString().toStdString();
+	addr_str.erase(0, 2);
+	ULONG64 addr = strtoull(addr_str.data(), 0, 16);
+	std::string size_str = ui.tableView_Driver->model()->index(ui.tableView_Driver->currentIndex().row(), 3).data().toString().toStdString();
+	size_str.erase(0, 2);
+	ULONG64 size = strtoull(size_str.data(), 0, 16);
+	char* temp_buffer = new char[size];
+	if (_KernelModules.DumpDriver(addr, size, temp_buffer))
+	{
+		std::fstream temp_file(addr_str, std::ios::out | std::ios::binary);
+		if (temp_file.is_open())
+		{
+			temp_file << std::string(temp_buffer, size);
+			temp_file.close();
+			QMessageBox::information(this, "Ret", "susscss");
+		}
+	}
+	else
+	{
+		QMessageBox::information(this, "Ret", "error");
+	}
+	delete temp_buffer;
 }
 
 void Medusa::ChangeTab()
@@ -838,7 +864,6 @@ void Medusa::GetKernelModuleList()
 	_Model_Driver->removeRows(0, _Model_Driver->rowCount());
 	if (_Driver_Loaded)
 	{
-		KernelModules _KernelModules;
 		_KernelModules.GetKernelModuleListR0();
 		if (_KernelModules._KernelModuleListR0.size() != 0)
 		{

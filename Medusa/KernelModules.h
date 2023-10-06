@@ -42,6 +42,7 @@ public:
 	bool GetKernelModuleListR3();
 	bool GetKernelModuleListR0();
 	bool GetUnLoadKernelModuleListR0();
+	bool DumpDriver(ULONG64 Address, ULONG64, void*);
 public:
 	std::vector<KernelModulesVector> _KernelModuleListR3;
 	std::vector<KernelModulesVector> _KernelModuleListR0;
