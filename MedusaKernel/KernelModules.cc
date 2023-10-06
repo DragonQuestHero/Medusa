@@ -210,8 +210,16 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList3(UNICODE_STR
 			}
 			if (!found)
 			{
-				temp_list.Check = 2;
-				_KernelModuleList.push_back(temp_list);
+				if (DriverObject->DriverSize==0 && 
+					(ULONG64)DriverObject->DriverStart==0 &&
+					IsAddressInDriversList((ULONG64)DriverObject->DriverInit))
+				{
+				}
+				else
+				{
+					temp_list.Check = 2;
+					_KernelModuleList.push_back(temp_list);
+				}
 			}
 			ObDereferenceObject(DriverObject);
 		}
@@ -226,7 +234,7 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList3(UNICODE_STR
 	return temp_vector;
 }
 
-std::vector<KernelModulesVector> KernelModules::GetKernelModuleList4()
+std::vector<KernelModulesVector> KernelModules::GetKernelModuleList4Quick()
 {
 	std::vector<KernelModulesVector> temp_vector;
 
@@ -276,6 +284,77 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList4()
 						}
 					}
 				}
+				delete memory_p;
+			}
+		}
+		ExFreePool(pBigPoolInfo);
+	}
+	return temp_vector;
+}
+
+std::vector<KernelModulesVector> KernelModules::GetKernelModuleList4()
+{
+	std::vector<KernelModulesVector> temp_vector;
+
+	PSYSTEM_BIGPOOL_INFORMATION pBigPoolInfo = (PSYSTEM_BIGPOOL_INFORMATION)ExAllocatePool(NonPagedPool, sizeof(SYSTEM_BIGPOOL_INFORMATION));
+	ULONG ReturnLength = 0;
+	NTSTATUS status = ZwQuerySystemInformation(SystemBigPoolInformation, pBigPoolInfo, sizeof(SYSTEM_BIGPOOL_INFORMATION), &ReturnLength);
+	if (!NT_SUCCESS(status))
+	{
+		ExFreePool(pBigPoolInfo);
+		ReturnLength = ReturnLength + PAGE_SIZE;
+		PSYSTEM_BIGPOOL_INFORMATION pBigPoolInfo = (PSYSTEM_BIGPOOL_INFORMATION)ExAllocatePool(NonPagedPool, ReturnLength);
+		if (!pBigPoolInfo)
+		{
+			return temp_vector;
+		}
+		status = ZwQuerySystemInformation(SystemBigPoolInformation, pBigPoolInfo, ReturnLength, &ReturnLength);
+		if (NT_SUCCESS(status))
+		{
+			for (auto j = 0; j < pBigPoolInfo->Count; j++)
+			{
+				SYSTEM_BIGPOOL_ENTRY poolEntry = pBigPoolInfo->AllocatedInfo[j];
+				void* base_addr = poolEntry.VirtualAddress;
+				void* memory_p = new char[poolEntry.SizeInBytes];
+				SIZE_T NumberOfBytesTransferred;
+				MM_COPY_ADDRESS SourceAddress;
+				SourceAddress.VirtualAddress = (PVOID)base_addr;
+				status = MmCopyMemory(memory_p, SourceAddress, poolEntry.SizeInBytes, MM_COPY_MEMORY_VIRTUAL, &NumberOfBytesTransferred);
+				if (!NT_SUCCESS(status))
+				{
+					if (memory_p)
+					{
+						delete memory_p;
+						memory_p = nullptr;
+					}
+					continue;
+				}
+				for (int i = 0; i < NumberOfBytesTransferred; i++)
+				{
+					PIMAGE_DOS_HEADER DosHeader = (PIMAGE_DOS_HEADER)((char*)memory_p + i);
+					if (MmIsAddressValid(&DosHeader->e_lfanew) &&
+						DosHeader->e_magic == IMAGE_DOS_SIGNATURE && 
+						NumberOfBytesTransferred - i > PAGE_SIZE)
+					{
+						PIMAGE_NT_HEADERS pNt = PIMAGE_NT_HEADERS((char*)memory_p + i + DosHeader->e_lfanew);
+						if (MmIsAddressValid(pNt))
+						{
+							if (pNt->Signature == IMAGE_NT_SIGNATURE)
+							{
+								KernelModulesVector temp_list;
+								RtlZeroMemory(&temp_list, sizeof(KernelModulesVector));
+								temp_list.Addr = (ULONG64)((char*)base_addr + i);
+								temp_list.Size = pNt->OptionalHeader.SizeOfImage;
+								RtlCopyMemory(temp_list.Name, "!!!!!!!", 20);
+								temp_list.Check = 3;
+								temp_vector.push_back(temp_list);
+								_KernelModuleList.push_back(temp_list);
+								break;
+							}
+						}
+					}
+				}
+
 				delete memory_p;
 			}
 		}
