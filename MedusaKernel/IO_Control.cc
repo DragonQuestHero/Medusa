@@ -5,6 +5,8 @@
 #include "Modules.h"
 #include "MemoryRW.h"
 
+
+
 #define DEVICE_NAME L"\\Device\\IO_Control"
 #define LINK_NAME L"\\??\\IO_Control"
 IO_Control* IO_Control::_This;

@@ -32,7 +32,7 @@ private:
 public:
 	unsigned long _Last_Error = 0;
 	bool _NtModule = false;
-private:
+public:
 	std::string _Driver_Name;
 	std::string _Driver_Path;
 	std::string _Driver_Ext;

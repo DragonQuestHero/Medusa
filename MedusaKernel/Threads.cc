@@ -102,6 +102,10 @@ void StackWalkThreadAPC(IN PKAPC Apc,
 	IN OUT PVOID* SystemArgument1,
 	IN OUT PVOID* SystemArgument2)
 {
+	if (!MmIsAddressValid(SystemArgument1) || !MmIsAddressValid(*SystemArgument1))
+	{
+		return;
+	}
 	std::vector<ULONG64>* temp_walk_vector = *(std::vector<ULONG64>**)SystemArgument1;
 
 	CONTEXT ThreadContext;
@@ -285,7 +289,7 @@ std::vector<ULONG64> Threads::StackWalkThread(ULONG64 TID)
 						&ImageBase2);
 					ImageBase = (ULONG64)ImageBase2.ModuleBase;
 				}
-				if (FunctionEntry != NULL)
+				if (FunctionEntry != NULL && MmIsAddressValid((void*)ThreadContext.Rip) && MmIsAddressValid((void*)ThreadContext.Rsp))
 				{
 					RtlVirtualUnwind(0,
 						ImageBase,
@@ -297,14 +301,14 @@ std::vector<ULONG64> Threads::StackWalkThread(ULONG64 TID)
 						NULL);
 					if (ThreadContext.Rip)
 					{
-						if (MmIsAddressValid((void*)ThreadContext.Rip))
+						//if (MmIsAddressValid((void*)ThreadContext.Rip))
 						{
 							temp_walk_vector.push_back(ThreadContext.Rip);
 						}
-						else if (MmIsAddressValid((ULONG64*)((ULONG64)ThreadContext.Rsp - 8)))
+						/*else if (MmIsAddressValid((ULONG64*)((ULONG64)ThreadContext.Rsp - 8)))
 						{
 							temp_walk_vector.push_back(*(ULONG64*)((ULONG64)ThreadContext.Rsp - 8));
-						}
+						}*/
 					}
 					Index++;
 					//DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "%llx\n", *(ULONG64*)((ULONG64)ThreadContext.Rsp - 8));
@@ -324,7 +328,9 @@ std::vector<ULONG64> Threads::StackWalkThread(ULONG64 TID)
 		if (NT_SUCCESS(status))
 		{
 			KeInitializeEvent(&_WaitEvent, NotificationEvent, FALSE);
-			KeWaitForSingleObject(&_WaitEvent, Executive, KernelMode, FALSE, NULL);
+			LARGE_INTEGER temp_LARGE_INTEGER;
+			temp_LARGE_INTEGER.QuadPart = -10000000*5;
+			KeWaitForSingleObject(&_WaitEvent, Executive, KernelMode, FALSE, &temp_LARGE_INTEGER);
 		}
 	}
 

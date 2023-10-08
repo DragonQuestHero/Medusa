@@ -282,6 +282,12 @@ void Medusa::DriverLoad(QAction* action)
 	
 	if (action->text() == "UnLoadMedusaDriver")
 	{
+		if (_Driver_Load._Driver_Name == "")
+		{
+			char szDownloadDir[MAX_PATH] = { 0 };
+			GetCurrentDirectoryA(sizeof(szDownloadDir), szDownloadDir);
+			_Driver_Load.Init(szDownloadDir + std::string("\\MedusaKernel.sys"));
+		}
 		if (_Driver_Load._NtModule)
 		{
 			if (_Driver_Load.Nt_Stop_Driver() && _Driver_Load.Nt_UnRegister_Driver())
@@ -298,6 +304,15 @@ void Medusa::DriverLoad(QAction* action)
 				_Driver_Loaded = false;
 				QMessageBox::information(this, "success", "driver unload");
 				exit(0);
+			}
+			else
+			{
+				if (_Driver_Load.Nt_Stop_Driver() && _Driver_Load.Nt_UnRegister_Driver())
+				{
+					_Driver_Loaded = false;
+					QMessageBox::information(this, "success", "driver unload");
+					exit(0);
+				}
 			}
 		}
 		
@@ -499,7 +514,7 @@ void Medusa::RightMenuDLLInject(QAction* action)
 
 void Medusa::RightMenuHookScanner(QAction* action)
 {
-	if (action->text() == "QuickCheckALL")
+	if (action->text() == "QuickCheckALLProcess")
 	{
 		FileCheck temp_check(_Driver_Loaded);
 		std::string temp_str;

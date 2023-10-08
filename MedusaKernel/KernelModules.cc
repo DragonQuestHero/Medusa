@@ -106,6 +106,47 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList2(PDRIVER_OBJ
 			}
 			pentry = (PLDR_DATA_TABLE_ENTRY)pentry->InLoadOrderLinks.Blink;
 		}
+		else
+		{
+			break;
+		}
+	} while ((ULONGLONG)pentry->InLoadOrderLinks.Blink != (ULONGLONG)first);
+
+	return temp_vector;
+}
+
+std::vector<KernelModulesVector> KernelModules::GetKernelModuleList2Quick(PDRIVER_OBJECT  pdriver)
+{
+	std::vector<KernelModulesVector> temp_vector;
+	if (!pdriver)
+	{
+		return temp_vector;
+	}
+	PLDR_DATA_TABLE_ENTRY		pentry = (PLDR_DATA_TABLE_ENTRY)pdriver->DriverSection;
+	PLDR_DATA_TABLE_ENTRY		first = pentry;
+	do
+	{
+		if (pentry->DllBase)
+		{
+			KernelModulesVector temp_list;
+			RtlZeroMemory(&temp_list, sizeof(KernelModulesVector));
+			temp_list.Addr = (ULONG64)pentry->DllBase;
+			temp_list.Size = pentry->SizeOfImage;
+			if (pentry->BaseDllName.Buffer != NULL)
+			{
+				RtlCopyMemory(temp_list.Name, pentry->BaseDllName.Buffer, pentry->BaseDllName.MaximumLength);
+			}
+			if (pentry->FullDllName.Buffer != NULL)
+			{
+				RtlCopyMemory(temp_list.Path, pentry->FullDllName.Buffer, pentry->FullDllName.MaximumLength);
+			}
+			temp_vector.push_back(temp_list);
+			pentry = (PLDR_DATA_TABLE_ENTRY)pentry->InLoadOrderLinks.Blink;
+		}
+		else
+		{
+			break;
+		}
 	} while ((ULONGLONG)pentry->InLoadOrderLinks.Blink != (ULONGLONG)first);
 
 	return temp_vector;
@@ -376,7 +417,7 @@ bool KernelModules::IsAddressInDriversList(ULONG64 Address)
 bool KernelModules::GetUnLoadKernelModuleList(PDRIVER_OBJECT  pdriver)
 {
 	_UnLoadKernelModuleList.clear();
-	std::vector<KernelModulesVector> temp_vector = GetKernelModuleList2(pdriver);
+	std::vector<KernelModulesVector> temp_vector = GetKernelModuleList2Quick(pdriver);
 
 	if (MedusaPDBInfo::_PDBInfo.CiEaCacheLookasideList)
 	{
@@ -587,30 +628,33 @@ bool KernelModules::GetUnLoadKernelModuleList(PDRIVER_OBJECT  pdriver)
 
 ULONG64 KernelModules::DumpDriver(ULONG64 Address,void* buffer)
 {
-	for (auto x : _KernelModuleList)
+	if (MmIsAddressValid(buffer))
 	{
-		if (Address == x.Addr)
+		for (auto x : _KernelModuleList)
 		{
-			void* memory_p = new char[x.Size];
-			if (memory_p)
+			if (Address == x.Addr)
 			{
-				SIZE_T NumberOfBytesTransferred = 0;
-				MM_COPY_ADDRESS SourceAddress;
-				SourceAddress.VirtualAddress = (PVOID)x.Addr;
-				NTSTATUS status = MmCopyMemory(memory_p, SourceAddress, x.Size, MM_COPY_MEMORY_VIRTUAL, &NumberOfBytesTransferred);
-				if (NT_SUCCESS(status))
+				void* memory_p = new char[x.Size];
+				if (memory_p)
 				{
-					RtlCopyMemory(buffer, memory_p, x.Size);
+					SIZE_T NumberOfBytesTransferred = 0;
+					MM_COPY_ADDRESS SourceAddress;
+					SourceAddress.VirtualAddress = (PVOID)x.Addr;
+					NTSTATUS status = MmCopyMemory(memory_p, SourceAddress, x.Size, MM_COPY_MEMORY_VIRTUAL, &NumberOfBytesTransferred);
+					if (NT_SUCCESS(status))
+					{
+						RtlCopyMemory(buffer, memory_p, x.Size);
+						delete memory_p;
+						return x.Size;
+					}
+					if (NumberOfBytesTransferred)
+					{
+						RtlCopyMemory(buffer, memory_p, NumberOfBytesTransferred);
+						delete memory_p;
+						return x.Size;
+					}
 					delete memory_p;
-					return x.Size;
 				}
-				if (NumberOfBytesTransferred)
-				{
-					RtlCopyMemory(buffer, memory_p, NumberOfBytesTransferred);
-					delete memory_p;
-					return x.Size;
-				}
-				delete memory_p;
 			}
 		}
 	}

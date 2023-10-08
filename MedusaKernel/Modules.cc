@@ -27,7 +27,15 @@ std::vector<UserModule> Modules::GetWin32MoudleList(ULONG64 PID)
 		KeUnstackDetachProcess(&kapc);
 		return temp_vector;
 	}
+	if (!MmIsAddressValid(&peb->Ldr))
+	{
+		return temp_vector;
+	}
 	pPebLdrData = (PPEB_LDR_DATA)peb->Ldr;
+	if (!pPebLdrData)
+	{
+		return temp_vector;
+	}
 	pListEntryStart = pListEntryEnd = pPebLdrData->InMemoryOrderModuleList.Blink;
 	do
 	{

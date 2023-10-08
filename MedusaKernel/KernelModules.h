@@ -36,6 +36,7 @@ public:
 	void GetKernelModuleListALL(PDRIVER_OBJECT  pdriver);
 	bool GetKernelModuleList1();
 	std::vector<KernelModulesVector> GetKernelModuleList2(PDRIVER_OBJECT  pdriver);
+	std::vector<KernelModulesVector> GetKernelModuleList2Quick(PDRIVER_OBJECT  pdriver);
 	std::vector<KernelModulesVector> GetKernelModuleList3(UNICODE_STRING* Directory);
 	std::vector<KernelModulesVector> GetKernelModuleList4();
 	std::vector<KernelModulesVector> GetKernelModuleList4Quick();
