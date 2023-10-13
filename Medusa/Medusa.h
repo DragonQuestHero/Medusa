@@ -174,9 +174,10 @@ public:
 		_TableView_Action_Inject.setMenu(&_TableView_Menu_Inject);
 		_TableView_Menu_Inject.setTitle("Inject DLL");
 		_TableView_Menu_Inject.addAction("R3CreateRemoteThread+LoadLibraryA");
-		//_TableView_Menu_Inject.addAction("R3NtCreateRemoteThread+syscall+shellcode+ldrloadlibaby");
+		_TableView_Menu_Inject.addAction("R3SetThreadContext+LoadLibrary");
 		_TableView_Menu_Inject.addAction("R3APCInject");
 		_TableView_Menu_Inject.addAction("R3MapInject");
+
 
 
 		_TableView_Action_HookCheck.setMenu(&_TableView_Menu_HookCheck);

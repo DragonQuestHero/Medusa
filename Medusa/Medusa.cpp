@@ -384,7 +384,8 @@ void Medusa::ProcessRightMenu(QAction* action)
 {
 	if (action->text() == "R3CreateRemoteThread+LoadLibraryA" ||
 		action->text() == "R3APCInject" ||
-		action->text() == "R3MapInject")
+		action->text() == "R3MapInject" || 
+		action->text() == "R3SetThreadContext+LoadLibrary")
 	{
 		RightMenuDLLInject(action);
 		return;
@@ -509,6 +510,19 @@ void Medusa::RightMenuDLLInject(QAction* action)
 	{
 		DLLInject _DLLInject;
 		_DLLInject.R3MapInject(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+	}
+	if (action->text() == "R3SetThreadContext+LoadLibrary")
+	{
+		QFileDialog file_path;
+		QString temp_str = file_path.getOpenFileName();
+		if (temp_str.size() == 0)
+		{
+			return;
+		}
+		temp_str = QDir::toNativeSeparators(temp_str);
+
+		DLLInject _DLLInject;
+		_DLLInject.injectdll(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID,C_TO_W(temp_str.toStdString()));
 	}
 }
 
