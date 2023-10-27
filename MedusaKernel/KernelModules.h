@@ -13,6 +13,7 @@ struct KernelModulesVector
 {
 	ULONG64 Addr;
 	ULONG64 Size;
+	ULONG64 DriverObject;
 	WCHAR Name[260];
 	char Path[260];
 	USHORT Check;
@@ -27,26 +28,41 @@ struct KernelUnloadModules
 	USHORT Check;
 };
 
+struct IOCTLS
+{
+	ULONG64 Index;
+	ULONG64 Addr;
+	bool Check;
+};
+
 class KernelModules
 {
 public:
 	KernelModules() = default;
 	~KernelModules() = default;
 public:
-	void GetKernelModuleListALL(PDRIVER_OBJECT  pdriver);
+	void Init(DRIVER_OBJECT* pdriver)
+	{
+		_Driver_Object = pdriver;
+	}
+public:
+	void GetKernelModuleListALL();
 	bool GetKernelModuleList1();
-	std::vector<KernelModulesVector> GetKernelModuleList2(PDRIVER_OBJECT  pdriver);
-	std::vector<KernelModulesVector> GetKernelModuleList2Quick(PDRIVER_OBJECT  pdriver);
+	std::vector<KernelModulesVector> GetKernelModuleList2();
+	std::vector<KernelModulesVector> GetKernelModuleList2Quick();
 	std::vector<KernelModulesVector> GetKernelModuleList3(UNICODE_STRING* Directory);
 	std::vector<KernelModulesVector> GetKernelModuleList4();
 	std::vector<KernelModulesVector> GetKernelModuleList4Quick();
-	bool IsAddressInDriversList(ULONG64 Address);
-	bool GetUnLoadKernelModuleList(PDRIVER_OBJECT);
+	bool IsAddressInAnyDriversList(ULONG64 Address);
+	bool IsAddressInDriversList(PDRIVER_OBJECT DriverObjectAddress, ULONG64 Address);
+	bool GetUnLoadKernelModuleList();
 	ULONG64 DumpDriver(ULONG64 Address,void*);
+	std::vector<IOCTLS> GetIOCTLFunctionR0(ULONG64 Addr);
 public:
 	std::vector<KernelModulesVector> _KernelModuleList;
 	std::vector<KernelUnloadModules> _UnLoadKernelModuleList;
 private:
+	DRIVER_OBJECT* _Driver_Object = nullptr;
 	std::wstring Case_Upper(const std::wstring& str)
 	{
 		std::wstring result = str;

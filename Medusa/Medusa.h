@@ -21,6 +21,7 @@
 #include "Threads.h"
 #include "PDBView.h"
 #include "KernelModules.h"
+#include "IOCTLScanner.h"
 
 
 #include "Process.h"
@@ -44,6 +45,7 @@ public slots:
 	void DriverRightMenu(QAction*);
 	void DriverRightMenuDumpToFILE(bool);
 	void DriverRightMenuDumpToMemory(bool);
+	void DriverRightMenuIOCTLScanner(QAction*);
 public:
 	void GetProcessList();
 	void GetKernelModuleList();
@@ -72,6 +74,7 @@ private:
 	Threads _Threads;
 	PDBView _PDBView;
 	KernelModules _KernelModules;
+	IOCTLScanner _IOCTLScanner;
 private:
     QStandardItemModel* _Model;
 	QStandardItemModel* _Model_Driver;
@@ -98,6 +101,9 @@ private:
 
 	QAction _TableView_Action_DriverDumpFILE;
 	QAction _TableView_Action_DriverDumpMemory;
+
+	QMenu _TableView_Menu_IOCTLScanner;
+	QAction _TableView_Action_IOCTLScanner;
 public:
 	void ProcessUI()
 	{
@@ -132,19 +138,21 @@ public:
 		ui.tableView_Driver->verticalHeader()->setDefaultSectionSize(25);
 		ui.tableView_Driver->setSelectionBehavior(QAbstractItemView::SelectRows);
 
-		_Model_Driver->setColumnCount(6);
+		_Model_Driver->setColumnCount(7);
 		_Model_Driver->setHeaderData(0, Qt::Horizontal, u8"Index");
 		_Model_Driver->setHeaderData(1, Qt::Horizontal, u8"Name");
 		_Model_Driver->setHeaderData(2, Qt::Horizontal, u8"Addr");
 		_Model_Driver->setHeaderData(3, Qt::Horizontal, u8"Size");
 		_Model_Driver->setHeaderData(4, Qt::Horizontal, u8"Path");
 		_Model_Driver->setHeaderData(5, Qt::Horizontal, u8"Desciption");
+		_Model_Driver->setHeaderData(6, Qt::Horizontal, u8"DriverObject");
 		ui.tableView_Driver->setColumnWidth(0, 50);
 		ui.tableView_Driver->setColumnWidth(1, 150);
-		ui.tableView_Driver->setColumnWidth(2, 200);
+		ui.tableView_Driver->setColumnWidth(2, 180);
 		ui.tableView_Driver->setColumnWidth(3, 150);
 		ui.tableView_Driver->setColumnWidth(4, 400);
 		ui.tableView_Driver->setColumnWidth(5, 500);
+		ui.tableView_Driver->setColumnWidth(6, 180);
 		ui.tableView_Driver->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	}
 	void UnloadDriverUI()
@@ -218,10 +226,18 @@ public:
 		_TableView_Action_DriverDumpFILE.setText("DriverDumpToFILE");
 		_TableView_Action_DriverDumpMemory.setText("DriverDumpToMemory");
 
+		_TableView_Action_IOCTLScanner.setMenu(&_TableView_Menu_IOCTLScanner);
+		_TableView_Menu_IOCTLScanner.setTitle("IOCTLScanner");
+		_TableView_Menu_IOCTLScanner.addAction("ViewIOCTL-Functions");
+		_TableView_Menu_IOCTLScanner.addAction("ScanIOCTLHook");
+		_TableView_Menu_IOCTLScanner.addAction("ScanAllDriverIOCTLHook");
+
+
 		ui.tableView_Driver->addAction(&_TableView_Action_HideDriver);
 		ui.tableView_Driver->addAction(&_TableView_Action_DriverClear);
 		ui.tableView_Driver->addAction(&_TableView_Action_DriverDumpFILE);
 		ui.tableView_Driver->addAction(&_TableView_Action_DriverDumpMemory);
+		ui.tableView_Driver->addAction(&_TableView_Action_IOCTLScanner);
 	}
 public:
 	int Enable_Debug()

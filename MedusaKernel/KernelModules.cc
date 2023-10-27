@@ -5,11 +5,11 @@
 #include "MedusaPDBInfo.h"
 
 
-void KernelModules::GetKernelModuleListALL(PDRIVER_OBJECT  pdriver)
+void KernelModules::GetKernelModuleListALL()
 {
 	_KernelModuleList.clear();
 	GetKernelModuleList1();
-	GetKernelModuleList2(pdriver);
+	GetKernelModuleList2();
 	UNICODE_STRING	directory = RTL_CONSTANT_STRING(L"\\driver");
 	UNICODE_STRING	FileSystem = RTL_CONSTANT_STRING(L"\\FileSystem");
 	GetKernelModuleList3(&directory);
@@ -63,14 +63,14 @@ bool KernelModules::GetKernelModuleList1()
 	return true;
 }
 
-std::vector<KernelModulesVector> KernelModules::GetKernelModuleList2(PDRIVER_OBJECT  pdriver)
+std::vector<KernelModulesVector> KernelModules::GetKernelModuleList2()
 {
 	std::vector<KernelModulesVector> temp_vector;
-	if (!pdriver)
+	if (!_Driver_Object)
 	{
 		return temp_vector;
 	}
-	PLDR_DATA_TABLE_ENTRY		pentry = (PLDR_DATA_TABLE_ENTRY)pdriver->DriverSection;
+	PLDR_DATA_TABLE_ENTRY		pentry = (PLDR_DATA_TABLE_ENTRY)_Driver_Object->DriverSection;
 	PLDR_DATA_TABLE_ENTRY		first = pentry;
 	do
 	{
@@ -115,14 +115,14 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList2(PDRIVER_OBJ
 	return temp_vector;
 }
 
-std::vector<KernelModulesVector> KernelModules::GetKernelModuleList2Quick(PDRIVER_OBJECT  pdriver)
+std::vector<KernelModulesVector> KernelModules::GetKernelModuleList2Quick()
 {
 	std::vector<KernelModulesVector> temp_vector;
-	if (!pdriver)
+	if (!_Driver_Object)
 	{
 		return temp_vector;
 	}
-	PLDR_DATA_TABLE_ENTRY		pentry = (PLDR_DATA_TABLE_ENTRY)pdriver->DriverSection;
+	PLDR_DATA_TABLE_ENTRY		pentry = (PLDR_DATA_TABLE_ENTRY)_Driver_Object->DriverSection;
 	PLDR_DATA_TABLE_ENTRY		first = pentry;
 	do
 	{
@@ -234,6 +234,7 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList3(UNICODE_STR
 			RtlZeroMemory(&temp_list, sizeof(KernelModulesVector));
 			temp_list.Addr = (ULONG64)DriverObject->DriverStart;
 			temp_list.Size = DriverObject->DriverSize;
+			temp_list.DriverObject = (ULONG64)DriverObject;
 			if (DriverObject->DriverName.Buffer != NULL)
 			{
 				RtlCopyMemory(temp_list.Name, DriverObject->DriverName.Buffer, DriverObject->DriverName.MaximumLength);
@@ -241,10 +242,11 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList3(UNICODE_STR
 			temp_vector.push_back(temp_list);
 			
 			bool found = false;
-			for (auto y : _KernelModuleList)
+			for (auto &y : _KernelModuleList)
 			{
 				if (temp_list.Addr == y.Addr)
 				{
+					y.DriverObject = (ULONG64)DriverObject;
 					found = true;
 					break;
 				}
@@ -253,7 +255,7 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList3(UNICODE_STR
 			{
 				if (DriverObject->DriverSize==0 && 
 					(ULONG64)DriverObject->DriverStart==0 &&
-					IsAddressInDriversList((ULONG64)DriverObject->DriverInit))
+					IsAddressInAnyDriversList((ULONG64)DriverObject->DriverInit))
 				{
 				}
 				else
@@ -404,7 +406,7 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList4()
 	return temp_vector;
 }
 
-bool KernelModules::IsAddressInDriversList(ULONG64 Address)
+bool KernelModules::IsAddressInAnyDriversList(ULONG64 Address)
 {
 	for (auto x : _KernelModuleList)
 	{
@@ -414,10 +416,20 @@ bool KernelModules::IsAddressInDriversList(ULONG64 Address)
 	return false;
 }
 
-bool KernelModules::GetUnLoadKernelModuleList(PDRIVER_OBJECT  pdriver)
+bool KernelModules::IsAddressInDriversList(PDRIVER_OBJECT DriverObjectAddress, ULONG64 Address)
+{
+	if (Address >= (ULONG64)DriverObjectAddress->DriverStart &&
+		Address < (ULONG64)DriverObjectAddress->DriverStart + (ULONG64)DriverObjectAddress->DriverSize)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool KernelModules::GetUnLoadKernelModuleList()
 {
 	_UnLoadKernelModuleList.clear();
-	std::vector<KernelModulesVector> temp_vector = GetKernelModuleList2Quick(pdriver);
+	std::vector<KernelModulesVector> temp_vector = GetKernelModuleList2Quick();
 
 	if (MedusaPDBInfo::_PDBInfo.CiEaCacheLookasideList)
 	{
@@ -659,4 +671,36 @@ ULONG64 KernelModules::DumpDriver(ULONG64 Address,void* buffer)
 		}
 	}
 	return 0;
+}
+
+std::vector<IOCTLS> KernelModules::GetIOCTLFunctionR0(ULONG64 pdriver)
+{
+	std::vector<IOCTLS> temp_vector;
+	if (!pdriver)
+	{
+		return temp_vector;
+	}
+
+	
+
+	ULONG64 default_function_addr = (ULONG64)_Driver_Object->MajorFunction[IRP_MJ_CLOSE];
+	
+	PDRIVER_OBJECT temp_object = (PDRIVER_OBJECT)pdriver;
+	for (int i = 0; i < IRP_MJ_MAXIMUM_FUNCTION + 1; i++)
+	{
+		IOCTLS temp_list = { 0 };
+		temp_list.Index = i;
+		temp_list.Addr = (ULONG64)temp_object->MajorFunction[i];
+		if (temp_list.Addr != default_function_addr)
+		{
+			/*if (!IsAddressInDriversList(temp_object, temp_list.Addr))
+			{
+
+			}*/
+			temp_list.Check = true;
+		}
+		temp_vector.push_back(temp_list);
+	}
+
+	return temp_vector;
 }

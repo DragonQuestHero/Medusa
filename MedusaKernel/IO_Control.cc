@@ -37,6 +37,8 @@ IO_Control* IO_Control::_This;
 
 #define TEST_DumpDriver CTL_CODE(FILE_DEVICE_UNKNOWN,0x7115,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
+#define TEST_GetIOCTLFunction CTL_CODE(FILE_DEVICE_UNKNOWN,0x7116,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
 NTSTATUS IO_Control::Create_IO_Control()
 {
 	NTSTATUS status = 0;
@@ -66,6 +68,7 @@ NTSTATUS IO_Control::Create_IO_Control()
 
 
 	_Threads.InitWin32StartAddressOffset();
+	_KernelModules.Init(Driver_Object);
 
 
 	return STATUS_SUCCESS;
@@ -127,7 +130,7 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 	}
 	else if (Io_Control_Code == TEST_GetALLKernelModuleNumber)
 	{
-		_This->_KernelModules.GetKernelModuleListALL(_This->Driver_Object);
+		_This->_KernelModules.GetKernelModuleListALL();
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_KernelModules._KernelModuleList.size();
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
@@ -226,7 +229,7 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 	}
 	else if (Io_Control_Code == TEST_GetUnLoadKernelModuleNumber)
 	{
-		_This->_KernelModules.GetUnLoadKernelModuleList(_This->Driver_Object);
+		_This->_KernelModules.GetUnLoadKernelModuleList();
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_KernelModules._UnLoadKernelModuleList.size();
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
@@ -279,6 +282,20 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 	{
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_KernelModules.DumpDriver(*(ULONG64*)Input_Buffer, Input_Buffer + 8);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if(Io_Control_Code == TEST_GetIOCTLFunction && Input_Lenght > 0 && Output_Lenght > 0)
+	{
+		std::vector<IOCTLS> temp_vector = _This->_KernelModules.GetIOCTLFunctionR0(*(ULONG64*)Input_Buffer);
+		int i = 0;
+		for (auto x : temp_vector)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(IOCTLS), &x, sizeof(IOCTLS));
+			i++;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = temp_vector.size() * sizeof(IOCTLS);
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}

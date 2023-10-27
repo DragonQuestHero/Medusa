@@ -19,6 +19,7 @@ struct KernelModulesVector
 {
 	ULONG64 Addr;
 	ULONG64 Size;
+	ULONG64 DriverObject;
 	WCHAR Name[260];
 	char Path[260];
 	USHORT Check;

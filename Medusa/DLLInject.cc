@@ -43,6 +43,7 @@ bool DLLInject::R3CreateThread(ULONG64 PID)
 		QMessageBox::information(nullptr, "dll inject", "unsuccess");
 		CloseHandle(handle);
 	}
+	return false;
 }
 
 bool DLLInject::R3APCInject(ULONG64 PID)

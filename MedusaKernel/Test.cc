@@ -53,8 +53,8 @@ void TestGetKernel(PDRIVER_OBJECT drive_object)
 	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
 	KernelModules _KernelModules;
 	_KernelModules.GetKernelModuleList4Quick();
-	_KernelModules.GetKernelModuleListALL(drive_object);
-	_KernelModules.GetUnLoadKernelModuleList(drive_object);
+	_KernelModules.GetKernelModuleListALL();
+	_KernelModules.GetUnLoadKernelModuleList();
 	for (auto x : _KernelModules._KernelModuleList)
 	{
 		char* temp = new char[x.Size];

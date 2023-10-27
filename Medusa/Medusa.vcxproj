@@ -115,6 +115,7 @@
     <ClCompile Include="FileCheck.cc" />
     <ClCompile Include="HookScanner.cc" />
     <ClCompile Include="Hypervisor.cc" />
+    <ClCompile Include="IOCTLScanner.cc" />
     <ClCompile Include="KernelModules.cc" />
     <ClCompile Include="libpeconv\buffer_util.cpp" />
     <ClCompile Include="libpeconv\caves.cpp" />
@@ -156,6 +157,7 @@
     <QtMoc Include="Medusa.h" />
     <ClCompile Include="Medusa.cpp" />
     <ClCompile Include="main.cpp" />
+    <QtUic Include="IOCTLScanner.ui" />
     <QtUic Include="Medusa.ui" />
     <QtUic Include="Modules.ui" />
     <QtUic Include="PDBView.ui" />
@@ -172,6 +174,7 @@
     <QtMoc Include="Threads.h" />
     <QtMoc Include="HookScanner.h" />
     <ClInclude Include="Hypervisor.h" />
+    <QtMoc Include="IOCTLScanner.h" />
     <ClInclude Include="KernelModules.h" />
     <ClInclude Include="libpeconv\fix_dot_net_ep.h" />
     <ClInclude Include="libpeconv\ntddk.h" />

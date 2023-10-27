@@ -5,6 +5,7 @@
 #include "DLLInject.h"
 
 
+
 #include "libpeconv/peconv.h"
 
 
@@ -56,6 +57,7 @@ void Medusa::Set_SLOTS()
 	connect(&_TableView_Menu_DriverClear, SIGNAL(triggered(QAction*)), SLOT(DriverRightMenu(QAction*)));
 	connect(&_TableView_Action_DriverDumpFILE, SIGNAL(triggered(bool)), SLOT(DriverRightMenuDumpToFILE(bool)));
 	connect(&_TableView_Action_DriverDumpMemory, SIGNAL(triggered(bool)), SLOT(DriverRightMenuDumpToMemory(bool)));
+	connect(&_TableView_Menu_IOCTLScanner, SIGNAL(triggered(QAction*)), SLOT(DriverRightMenuIOCTLScanner(QAction*)));
 
 	connect(ui.menuMenu, SIGNAL(triggered(QAction*)), SLOT(DriverLoadMenu(QAction*)));
 	connect(ui.menuHypervisor, SIGNAL(triggered(QAction*)), SLOT(HypervisorMenu(QAction*)));
@@ -478,6 +480,62 @@ void Medusa::DriverRightMenuDumpToMemory(bool)
 	delete temp_buffer;
 }
 
+void Medusa::DriverRightMenuIOCTLScanner(QAction* action)
+{
+	if (action->text() == "ViewIOCTL-Functions")
+	{
+		std::string addr_str = ui.tableView_Driver->model()->index(ui.tableView_Driver->currentIndex().row(), 6).data().toString().toStdString();
+		addr_str.erase(0, 2);
+		ULONG64 addr = strtoull(addr_str.data(), 0, 16);
+
+		std::string module_name = ui.tableView_Driver->model()->index(ui.tableView_Driver->currentIndex().row(), 1).data().toString().toStdString();
+
+		_IOCTLScanner.GetIOCTLFunction(addr, _KernelModules, module_name);
+		_IOCTLScanner.show();
+	}
+	if (action->text() == "ScanAllDriverIOCTLHook")
+	{
+		std::string ret = "detected hook:\r\n";
+		for (auto x : _KernelModules._KernelModuleListR0)
+		{
+			if (x.DriverObject)
+			{
+				std::string module_name;
+				if (x.Check == 1 || x.Check == 2)
+				{
+					module_name = W_TO_C((WCHAR*)x.Name);
+				}
+				else
+				{
+					module_name = (char*)x.Name;
+				}
+				if (_IOCTLScanner.QueryIOCTLHook(x.DriverObject, _KernelModules, module_name))
+				{
+					ret = ret + module_name + "\r\n";
+				}
+			}
+		}
+		QMessageBox::information(this, "Ret", ret.data());
+	}
+	if (action->text() == "ScanIOCTLHook")
+	{
+		std::string addr_str = ui.tableView_Driver->model()->index(ui.tableView_Driver->currentIndex().row(), 6).data().toString().toStdString();
+		addr_str.erase(0, 2);
+		ULONG64 addr = strtoull(addr_str.data(), 0, 16);
+
+		std::string module_name = ui.tableView_Driver->model()->index(ui.tableView_Driver->currentIndex().row(), 1).data().toString().toStdString();
+		bool ret = _IOCTLScanner.QueryIOCTLHook(addr, _KernelModules, module_name);
+		if (ret)
+		{
+			QMessageBox::information(this, "Ret", "detected hook");
+		}
+		else
+		{
+			QMessageBox::information(this, "Ret", "normal");
+		}
+	}
+}
+
 void Medusa::ChangeTab()
 {
 	if (ui.tabWidget->currentIndex() == 0)
@@ -496,20 +554,45 @@ void Medusa::ChangeTab()
 
 void Medusa::RightMenuDLLInject(QAction* action)
 {
+	bool ret = false;
 	if (action->text() == "R3CreateRemoteThread+LoadLibraryA")
 	{
 		DLLInject _DLLInject;
-		_DLLInject.R3CreateThread(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		ret = _DLLInject.R3CreateThread(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		if (ret)
+		{
+			QMessageBox::information(this, "Ret", "susscss");
+		}
+		else
+		{
+			QMessageBox::information(this, "Ret", "error");
+		}
 	}
 	if (action->text() == "R3APCInject")
 	{
 		DLLInject _DLLInject;
-		_DLLInject.R3APCInject(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		ret = _DLLInject.R3APCInject(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		if (ret)
+		{
+			QMessageBox::information(this, "Ret", "susscss");
+		}
+		else
+		{
+			QMessageBox::information(this, "Ret", "error");
+		}
 	}
 	if (action->text() == "R3MapInject")
 	{
 		DLLInject _DLLInject;
-		_DLLInject.R3MapInject(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		ret = _DLLInject.R3MapInject(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		if (ret)
+		{
+			QMessageBox::information(this, "Ret", "susscss");
+		}
+		else
+		{
+			QMessageBox::information(this, "Ret", "error");
+		}
 	}
 	if (action->text() == "R3SetThreadContext+LoadLibrary")
 	{
@@ -522,7 +605,15 @@ void Medusa::RightMenuDLLInject(QAction* action)
 		temp_str = QDir::toNativeSeparators(temp_str);
 
 		DLLInject _DLLInject;
-		_DLLInject.injectdll(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID,C_TO_W(temp_str.toStdString()));
+		ret = _DLLInject.injectdll(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID,C_TO_W(temp_str.toStdString()));
+		if (ret)
+		{
+			QMessageBox::information(this, "Ret", "susscss");
+		}
+		else
+		{
+			QMessageBox::information(this, "Ret", "error");
+		}
 	}
 }
 
@@ -988,6 +1079,11 @@ void Medusa::GetKernelModuleList()
 						_Model_Driver->setData(_Model_Driver->index(i, 5), "");
 					}
 				}
+
+				std::ostringstream ret3;
+				ret3 << std::hex << "0x" << (ULONG64)x.DriverObject;
+				_Model_Driver->setData(_Model_Driver->index(i, 6), ret3.str().data());
+
 				QColor temp_color = QColor(Qt::white);
 				if (x.Check == 1)
 				{
