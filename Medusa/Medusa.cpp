@@ -15,6 +15,7 @@ Medusa::Medusa(QWidget *parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
+
 	Enable_Debug();
 
 	ProcessUI();
@@ -62,6 +63,7 @@ void Medusa::Set_SLOTS()
 	connect(ui.menuMenu, SIGNAL(triggered(QAction*)), SLOT(DriverLoadMenu(QAction*)));
 	connect(ui.menuHypervisor, SIGNAL(triggered(QAction*)), SLOT(HypervisorMenu(QAction*)));
 	connect(ui.menuPDB, SIGNAL(triggered(QAction*)), SLOT(PdbMenu(QAction*)));
+	connect(ui.menuViewKernelMemory, SIGNAL(triggered(QAction*)), SLOT(ViewKernelMemory(QAction*)));
 }
 
 void Medusa::DriverLoadMenu(QAction* action)
@@ -223,6 +225,14 @@ void Medusa::PdbMenu(QAction* action)
 			ui.label->setText("error load pdb");
 			QMessageBox::information(this, "error", "error");
 		}
+	}
+}
+
+void Medusa::ViewKernelMemory(QAction* action)
+{
+	if (action->text() == "View")
+	{
+		_KernelMemory.show();
 	}
 }
 

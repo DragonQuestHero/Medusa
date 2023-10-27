@@ -39,6 +39,8 @@ IO_Control* IO_Control::_This;
 
 #define TEST_GetIOCTLFunction CTL_CODE(FILE_DEVICE_UNKNOWN,0x7116,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
+#define TEST_ReadKernelMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7117,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
 NTSTATUS IO_Control::Create_IO_Control()
 {
 	NTSTATUS status = 0;
@@ -298,6 +300,31 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		pIrp->IoStatus.Information = temp_vector.size() * sizeof(IOCTLS);
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
+	}
+	else if(Io_Control_Code == TEST_ReadKernelMemory && Input_Lenght > 0 && Output_Lenght > 0)
+	{
+		SIZE_T NumberOfBytesTransferred = 0;
+
+		ULONG64 addr = *(ULONG64*)Input_Buffer;
+		ULONG64 size = *(ULONG64*)(Input_Buffer + 8);
+		void* temp_buffer = new char[size];
+		if (temp_buffer)
+		{
+			RtlZeroMemory(temp_buffer, size);
+			MM_COPY_ADDRESS SourceAddress;
+			SourceAddress.VirtualAddress = (PVOID)addr;
+			NTSTATUS status = MmCopyMemory(temp_buffer, SourceAddress, size, MM_COPY_MEMORY_VIRTUAL, &NumberOfBytesTransferred);
+			if (NumberOfBytesTransferred != 0)
+			{
+				RtlCopyMemory(Input_Buffer, temp_buffer, NumberOfBytesTransferred);
+			}
+			delete temp_buffer;
+
+			pIrp->IoStatus.Status = STATUS_SUCCESS;
+			pIrp->IoStatus.Information = NumberOfBytesTransferred;
+			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+			return STATUS_SUCCESS;
+		}
 	}
 
 

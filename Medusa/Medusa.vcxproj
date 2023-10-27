@@ -60,8 +60,9 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
-      <AdditionalDependencies>ntdll.lib;Shlwapi.lib;Bcrypt.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ntdll.lib;Shlwapi.lib;Bcrypt.lib;Version.lib;Zydis.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <AdditionalLibraryDirectories>$(SolutionDir)Medusa\Zydis\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <QtRcc>
       <RuntimeLibrary>
@@ -73,14 +74,19 @@
     </QtMoc>
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ZYDIS_STATIC_DEFINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Medusa\Zydis\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
-      <AdditionalDependencies>ntdll.lib;Shlwapi.lib;Bcrypt.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ntdll.lib;Shlwapi.lib;Bcrypt.lib;Version.lib;Zydis.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <AdditionalLibraryDirectories>$(SolutionDir)Medusa\Zydis\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)Medusa\Zydis\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
@@ -116,6 +122,7 @@
     <ClCompile Include="HookScanner.cc" />
     <ClCompile Include="Hypervisor.cc" />
     <ClCompile Include="IOCTLScanner.cc" />
+    <ClCompile Include="KernelMemory.cc" />
     <ClCompile Include="KernelModules.cc" />
     <ClCompile Include="libpeconv\buffer_util.cpp" />
     <ClCompile Include="libpeconv\caves.cpp" />
@@ -159,6 +166,7 @@
     <ClCompile Include="main.cpp" />
     <QtUic Include="IOCTLScanner.ui" />
     <QtUic Include="Medusa.ui" />
+    <QtUic Include="KernelMemory.ui" />
     <QtUic Include="Modules.ui" />
     <QtUic Include="PDBView.ui" />
     <QtUic Include="StackWalk.ui" />
@@ -175,6 +183,7 @@
     <QtMoc Include="HookScanner.h" />
     <ClInclude Include="Hypervisor.h" />
     <QtMoc Include="IOCTLScanner.h" />
+    <QtMoc Include="KernelMemory.h" />
     <ClInclude Include="KernelModules.h" />
     <ClInclude Include="libpeconv\fix_dot_net_ep.h" />
     <ClInclude Include="libpeconv\ntddk.h" />

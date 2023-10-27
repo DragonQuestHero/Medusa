@@ -22,6 +22,7 @@
 #include "PDBView.h"
 #include "KernelModules.h"
 #include "IOCTLScanner.h"
+#include "KernelMemory.h"
 
 
 #include "Process.h"
@@ -46,6 +47,7 @@ public slots:
 	void DriverRightMenuDumpToFILE(bool);
 	void DriverRightMenuDumpToMemory(bool);
 	void DriverRightMenuIOCTLScanner(QAction*);
+	void ViewKernelMemory(QAction*);
 public:
 	void GetProcessList();
 	void GetKernelModuleList();
@@ -75,6 +77,7 @@ private:
 	PDBView _PDBView;
 	KernelModules _KernelModules;
 	IOCTLScanner _IOCTLScanner;
+	KernelMemory _KernelMemory;
 private:
     QStandardItemModel* _Model;
 	QStandardItemModel* _Model_Driver;

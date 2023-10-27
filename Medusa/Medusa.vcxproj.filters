@@ -175,6 +175,9 @@
     <ClCompile Include="IOCTLScanner.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="KernelMemory.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Process.h">
@@ -247,6 +250,9 @@
     <QtUic Include="IOCTLScanner.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+    <QtUic Include="KernelMemory.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="HookScanner.h">
@@ -265,6 +271,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="IOCTLScanner.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="KernelMemory.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

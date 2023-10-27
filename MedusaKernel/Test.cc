@@ -96,6 +96,26 @@ void TestModules()
 	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
 }
 
+void TestCopyMemory(PDRIVER_OBJECT drive_object)
+{
+	ULONG64 addr = (ULONG64)drive_object->DriverStart + (ULONG64)drive_object->DriverSize - PAGE_SIZE;
+	void* temp_buffer = new char[PAGE_SIZE * 10];
+	RtlZeroMemory(temp_buffer, PAGE_SIZE * 10);
+	SIZE_T NumberOfBytesTransferred = 0;
+	MM_COPY_ADDRESS SourceAddress;
+	SourceAddress.VirtualAddress = (PVOID)addr;
+	NTSTATUS status = MmCopyMemory(temp_buffer, SourceAddress, PAGE_SIZE * 10, MM_COPY_MEMORY_VIRTUAL, &NumberOfBytesTransferred);
+	if (NT_SUCCESS(status))
+	{
+
+	}
+	else
+	{
+
+	}
+	delete temp_buffer;
+}
+
 void TestALL(PDRIVER_OBJECT drive_object)
 {
 	DbgBreakPoint();

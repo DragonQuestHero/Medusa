@@ -194,9 +194,16 @@
     <addaction name="actionUse_order_server"/>
     <addaction name="actionSendPDBInfo_2"/>
    </widget>
+   <widget class="QMenu" name="menuViewKernelMemory">
+    <property name="title">
+     <string>KernelMemory</string>
+    </property>
+    <addaction name="actionView"/>
+   </widget>
    <addaction name="menuMenu"/>
    <addaction name="menuHypervisor"/>
    <addaction name="menuPDB"/>
+   <addaction name="menuViewKernelMemory"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -294,6 +301,11 @@
   <action name="actionSendPDBInfo_2">
    <property name="text">
     <string>SendPDBInfo</string>
+   </property>
+  </action>
+  <action name="actionView">
+   <property name="text">
+    <string>View</string>
    </property>
   </action>
  </widget>

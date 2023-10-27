@@ -7,5 +7,6 @@ int main(int argc, char *argv[])
     Medusa w;
     w.show();
     w.setFixedSize(w.width(),w.height());
+
     return a.exec();
 }
