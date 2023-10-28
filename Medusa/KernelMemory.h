@@ -34,6 +34,7 @@ public:
 	void QueryMemoryTable2(char* temp_buffer, ULONG64 ret, ULONG64 Addr, ULONG64 Size);
 public slots:
 	void DumpMemory();
+	void DumpASM();
 	void QueryMemory();
 	void TexeBar(int value);
 public:

@@ -66,9 +66,9 @@
      <property name="geometry">
       <rect>
        <x>250</x>
-       <y>10</y>
+       <y>30</y>
        <width>421</width>
-       <height>801</height>
+       <height>781</height>
       </rect>
      </property>
      <property name="font">
@@ -87,9 +87,9 @@
      <property name="geometry">
       <rect>
        <x>680</x>
-       <y>10</y>
+       <y>30</y>
        <width>421</width>
-       <height>801</height>
+       <height>781</height>
       </rect>
      </property>
      <property name="font">
@@ -105,9 +105,9 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>10</y>
+       <y>30</y>
        <width>231</width>
-       <height>801</height>
+       <height>781</height>
       </rect>
      </property>
      <property name="font">
@@ -120,6 +120,35 @@
      </property>
      <property name="placeholderText">
       <string/>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>7</y>
+       <width>89</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Binary</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_2">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>7</y>
+       <width>89</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>HEX</string>
      </property>
     </widget>
    </widget>
@@ -150,6 +179,19 @@
   <widget class="QPushButton" name="pushButton_2">
    <property name="geometry">
     <rect>
+     <x>530</x>
+     <y>10</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>DumpHEX</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_3">
+   <property name="geometry">
+    <rect>
      <x>440</x>
      <y>10</y>
      <width>75</width>
@@ -157,7 +199,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Dump</string>
+    <string>DumpASM</string>
    </property>
   </widget>
  </widget>

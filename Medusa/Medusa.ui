@@ -204,6 +204,7 @@
     <property name="title">
      <string>www.win32k.cn</string>
     </property>
+    <addaction name="actionINFO"/>
    </widget>
    <addaction name="menuMenu"/>
    <addaction name="menuHypervisor"/>
@@ -312,6 +313,11 @@
   <action name="actionView">
    <property name="text">
     <string>View</string>
+   </property>
+  </action>
+  <action name="actionINFO">
+   <property name="text">
+    <string>INFO</string>
    </property>
   </action>
  </widget>

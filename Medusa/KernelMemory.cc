@@ -27,6 +27,7 @@ KernelMemory::KernelMemory(QWidget* parent)
 
 	connect(ui.pushButton, SIGNAL(clicked()), SLOT(QueryMemory()));
 	connect(ui.pushButton_2, SIGNAL(clicked()), SLOT(DumpMemory()));
+	connect(ui.pushButton_3, SIGNAL(clicked()), SLOT(DumpASM()));
 
 	connect(ui.textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this,&KernelMemory::TexeBar);
 	connect(ui.textEdit_2->verticalScrollBar(), &QScrollBar::valueChanged, this, &KernelMemory::TexeBar);
@@ -87,6 +88,79 @@ void KernelMemory::DumpMemory()
 	QMessageBox::information(this, "Ret", "error");
 }
 
+void KernelMemory::DumpASM()
+{
+	std::string addr_str = ui.lineEdit->text().toStdString();
+	if (addr_str.find("0x") != std::string::npos)
+	{
+		addr_str.erase(0, 2);
+	}
+	ULONG64 Addr = strtoull(addr_str.data(), 0, 16);
+
+	std::string size_str = ui.lineEdit_2->text().toStdString();
+	if (size_str.find("0x") != std::string::npos)
+	{
+		size_str.erase(0, 2);
+	}
+	ULONG64 Size = strtoull(size_str.data(), 0, 16);
+	if (Size)
+	{
+		char* temp_buffer = new char[Size];
+		RtlZeroMemory(temp_buffer, Size);
+		ULONG64 ret = ReadKernelMemory(Addr, Size, temp_buffer);
+		if (ret)
+		{
+			std::fstream temp_file(addr_str+".txt", std::ios::out | std::ios::binary);
+			if (temp_file.is_open())
+			{
+				ZyanU64 runtime_address = Addr;
+
+				int i = 0;
+				// Loop over the instructions in our buffer. 
+				ZyanUSize offset = 0;
+				ZydisDisassembledInstruction instruction;
+				while (ZYAN_SUCCESS(ZydisDisassembleIntel(
+					/* machine_mode:    */ ZYDIS_MACHINE_MODE_LONG_64,
+					/* runtime_address: */ runtime_address,
+					/* buffer:          */ temp_buffer + offset,
+					/* length:          */ Size - offset,
+					/* instruction:     */ &instruction
+				)))
+				{
+					temp_file << i << "    ";
+					temp_file << std::hex << runtime_address << "          ";
+					std::string str_line2;
+					for (int j = 0; j < instruction.info.length; j++)
+					{
+						USHORT temp_short = 0;
+						RtlCopyMemory(&temp_short, temp_buffer + offset + j, 1);
+						std::ostringstream ret;
+						if (temp_short < 0x10)
+						{
+							ret << std::hex << "0x0" << temp_short;
+						}
+						else
+						{
+							ret << std::hex << "0x" << temp_short;
+						}
+						str_line2 = str_line2 + ret.str() + " ";
+					}
+					temp_file << str_line2 << "\r\n";
+					temp_file << "                                         " << instruction.text << "\r\n";
+					i++;
+
+					offset += instruction.info.length;
+					runtime_address += instruction.info.length;
+				}
+				temp_file.close();
+				QMessageBox::information(this, "Ret", "susscss");
+				return;
+			}
+		}
+	}
+	QMessageBox::information(this, "Ret", "error");
+}
+
 void KernelMemory::QueryMemoryTable1(char* temp_buffer, ULONG64 ret, ULONG64 Addr)
 {
 	std::string str_line1;
@@ -95,25 +169,35 @@ void KernelMemory::QueryMemoryTable1(char* temp_buffer, ULONG64 ret, ULONG64 Add
 	for (int i = 0; i < ret / 8; i++)
 	{
 		std::ostringstream ret2;
-		ret2 << std::hex << "0x" << Addr + i;
+		ret2 << std::hex << "0x" << Addr + i * 8;
 		str_line1 = str_line1 + ret2.str() + "\r\n";
-		for (int j = 0; j < 8; j++)
+
+		if (ui.radioButton->isChecked())
 		{
-			USHORT temp_short = 0;
-			RtlCopyMemory(&temp_short, temp_buffer + i * 8 + j, 1);
+			for (int j = 0; j < 8; j++)
+			{
+				USHORT temp_short = 0;
+				RtlCopyMemory(&temp_short, temp_buffer + i * 8 + j, 1);
+				std::ostringstream ret;
+				if (temp_short < 0x10)
+				{
+					ret << std::hex << "0x0" << temp_short;
+				}
+				else
+				{
+					ret << std::hex << "0x" << temp_short;
+				}
+				str_line2 = str_line2 + ret.str() + " ";
+				str_line3 = str_line3 + std::string(temp_buffer + i * 8 + j, 1) + " ";
+			}
+		}
+		else if (ui.radioButton_2->isChecked())
+		{
+			ULONG64 temp_short = 0;
+			RtlCopyMemory(&temp_short, temp_buffer + i * 8, 8);
 			std::ostringstream ret;
-			if (temp_short < 0x10)
-			{
-				ret << std::hex << "0x0" << temp_short;
-			}
-			else
-			{
-				ret << std::hex << "0x" << temp_short;
-			}
-			str_line2 = str_line2 + ret.str() + " ";
-
-			str_line3 = str_line3 + std::string(temp_buffer + i * 8 + j, 1) + " ";
-
+			ret << std::hex << "0x0" << temp_short;
+			str_line2 = str_line2 + ret.str();
 		}
 		str_line2 = str_line2 + "\r\n";
 		str_line3 = str_line3 + "\r\n";
