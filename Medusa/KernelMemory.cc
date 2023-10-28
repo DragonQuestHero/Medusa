@@ -26,6 +26,7 @@ KernelMemory::KernelMemory(QWidget* parent)
 	ui.tableView->setColumnWidth(3, 420);
 
 	connect(ui.pushButton, SIGNAL(clicked()), SLOT(QueryMemory()));
+	connect(ui.pushButton_2, SIGNAL(clicked()), SLOT(DumpMemory()));
 
 	connect(ui.textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this,&KernelMemory::TexeBar);
 	connect(ui.textEdit_2->verticalScrollBar(), &QScrollBar::valueChanged, this, &KernelMemory::TexeBar);
@@ -49,6 +50,41 @@ void KernelMemory::TexeBar(int value)
 		ui.textEdit_2->verticalScrollBar()->setValue(value);
 		ui.textEdit->verticalScrollBar()->setValue(value);
 	}
+}
+
+void KernelMemory::DumpMemory()
+{
+	std::string addr_str = ui.lineEdit->text().toStdString();
+	if (addr_str.find("0x") != std::string::npos)
+	{
+		addr_str.erase(0, 2);
+	}
+	ULONG64 Addr = strtoull(addr_str.data(), 0, 16);
+
+	std::string size_str = ui.lineEdit_2->text().toStdString();
+	if (size_str.find("0x") != std::string::npos)
+	{
+		size_str.erase(0, 2);
+	}
+	ULONG64 Size = strtoull(size_str.data(), 0, 16);
+	if (Size)
+	{
+		char* temp_buffer = new char[Size];
+		RtlZeroMemory(temp_buffer, Size);
+		ULONG64 ret = ReadKernelMemory(Addr, Size, temp_buffer);
+		if (ret)
+		{
+			std::fstream temp_file(addr_str, std::ios::out | std::ios::binary);
+			if (temp_file.is_open())
+			{
+				temp_file << std::string(temp_buffer, ret);
+				temp_file.close();
+				QMessageBox::information(this, "Ret", "susscss");
+				return;
+			}
+		}
+	}
+	QMessageBox::information(this, "Ret", "error");
 }
 
 void KernelMemory::QueryMemoryTable1(char* temp_buffer, ULONG64 ret, ULONG64 Addr)

@@ -15,6 +15,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <fstream>
 
 #include "ui_KernelMemory.h"
 
@@ -32,6 +33,7 @@ public:
 	void QueryMemoryTable1(char* temp_buffer, ULONG64 ret, ULONG64 Addr);
 	void QueryMemoryTable2(char* temp_buffer, ULONG64 ret, ULONG64 Addr, ULONG64 Size);
 public slots:
+	void DumpMemory();
 	void QueryMemory();
 	void TexeBar(int value);
 public:

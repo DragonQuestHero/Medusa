@@ -147,6 +147,19 @@
     <string>0x100</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="pushButton_2">
+   <property name="geometry">
+    <rect>
+     <x>440</x>
+     <y>10</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Dump</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

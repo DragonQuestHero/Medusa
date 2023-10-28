@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Medusa</string>
+   <string>Medusa           www.win32k.cn</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QTabWidget" name="tabWidget">
@@ -200,10 +200,16 @@
     </property>
     <addaction name="actionView"/>
    </widget>
+   <widget class="QMenu" name="menuWww_win32k_cn">
+    <property name="title">
+     <string>www.win32k.cn</string>
+    </property>
+   </widget>
    <addaction name="menuMenu"/>
    <addaction name="menuHypervisor"/>
    <addaction name="menuPDB"/>
    <addaction name="menuViewKernelMemory"/>
+   <addaction name="menuWww_win32k_cn"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
