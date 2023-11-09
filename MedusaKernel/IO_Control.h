@@ -6,6 +6,7 @@
 #include "KernelModules.h"
 #include "Threads.h"
 #include "MedusaPDBInfo.h"
+#include "CallBackScanner.h"
 
 
 
@@ -35,5 +36,6 @@ private:
 	KernelModules _KernelModules;
 	Threads _Threads;
 	MedusaPDBInfo _MedusaPDBInfo;
+	CallBackScanner _CallBackScanner;
 };
 

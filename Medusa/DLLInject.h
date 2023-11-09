@@ -15,6 +15,7 @@ public:
 	bool R3CreateThread(ULONG64 PID);
 	bool R3APCInject(ULONG64 PID);
 	bool R3MapInject(ULONG64 PID);
+	bool R0MapInject(ULONG64 PID);
 private:
 	std::string Read_ALL(std::string file_name)
 	{

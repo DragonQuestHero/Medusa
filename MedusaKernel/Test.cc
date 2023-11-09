@@ -4,6 +4,7 @@
 #include "KernelModules.h"
 #include "EmunProcess.h"
 #include "Modules.h"
+#include "CallBackScanner.h"
 
 #include <string>
 
@@ -65,7 +66,6 @@ void TestGetKernel(PDRIVER_OBJECT drive_object)
 	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
 }
 
-
 void TestProcess()
 {
 	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "TestProcess start\n");
@@ -116,6 +116,20 @@ void TestCopyMemory(PDRIVER_OBJECT drive_object)
 	delete temp_buffer;
 }
 
+void TestCallBack()//²»Ö§³Öwin7
+{
+	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "TestModules start\n");
+	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
+	CallBackScanner _CallBackScanner;
+	_CallBackScanner.GetALLCallBackList();
+
+	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "%llx\n", _CallBackScanner._ObjectCallBackList.size());
+	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
+}
+
+
+
+
 void TestALL(PDRIVER_OBJECT drive_object)
 {
 	DbgBreakPoint();
@@ -129,7 +143,9 @@ void TestALL(PDRIVER_OBJECT drive_object)
 	TestGetKernel(drive_object);
 	TestProcess();
 	TestModules();
+	TestCallBack();
 
 
 	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
 }
+

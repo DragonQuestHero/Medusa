@@ -2,6 +2,9 @@
 #include "ntdll.h"
 
 
+#include "libpeconv/peconv.h"
+
+
 Modules::Modules(QWidget* parent)
 	: QMainWindow(parent)
 {
@@ -30,8 +33,11 @@ Modules::Modules(QWidget* parent)
 
 
 	_TableView_Action_Dump.setText("Dump");
+	_TableView_Action_DumpToFile.setText("DumpToFile");
 	ui.tableView->addAction(&_TableView_Action_Dump);
-	connect(&_TableView_Action_Dump, SIGNAL(triggered(bool)), SLOT(Dump(bool)));//进程鼠标右键菜单
+	ui.tableView->addAction(&_TableView_Action_DumpToFile);
+	connect(&_TableView_Action_Dump, SIGNAL(triggered(bool)), SLOT(Dump(bool)));
+	connect(&_TableView_Action_DumpToFile, SIGNAL(triggered(bool)), SLOT(DumpToFile(bool)));
 }
 
 void Modules::Dump(bool)
@@ -57,6 +63,41 @@ void Modules::Dump(bool)
 			{
 				temp_file << std::string(temp_memory, size);
 				temp_file.close();
+				QMessageBox::information(this, "Ret", "susscss");
+			}
+		}
+		else
+		{
+		}
+	}
+	else
+	{
+		QMessageBox::information(this, "Ret", "alloc memory error");
+	}
+	CloseHandle(proc);
+}
+
+void Modules::DumpToFile(bool)
+{
+	auto proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, _PID);
+	if (!proc)
+	{
+		return;
+	}
+	std::string addr_str = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString().toStdString();
+	ULONG64 addr = strtoull(addr_str.data(), 0, 16);
+	std::string size_str = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 3).data().toString().toStdString();
+	ULONG64 size = strtoull(size_str.data(), 0, 16);
+
+	char* temp_memory = new char[size];
+	if (temp_memory)
+	{
+		SIZE_T temp_size = 0;
+		if (ReadProcessMemory(proc, (char*)addr, temp_memory, size, &temp_size))
+		{
+			peconv::t_pe_dump_mode dump_mode = peconv::PE_DUMP_UNMAP;
+			if (peconv::dump_pe(C_TO_W(addr_str + ".DLL").data(), (BYTE*)temp_memory, size, 0, dump_mode))
+			{
 				QMessageBox::information(this, "Ret", "susscss");
 			}
 		}

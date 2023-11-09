@@ -178,6 +178,9 @@
     <ClCompile Include="KernelMemory.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="KernelCallBackScanner.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Process.h">
@@ -220,6 +223,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DLLInjectShellCode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelCallBackScanner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

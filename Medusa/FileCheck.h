@@ -34,6 +34,7 @@ public:
 public:
 	int CheckSimple(ULONG64 PID);
 	std::vector<_CheckDifferent> CheckPlain(ULONG64 PID);
+	std::vector<_CheckDifferent> CheckPlainQuick(ULONG64 PID);
 private:
 	bool _Driver = false;
 };

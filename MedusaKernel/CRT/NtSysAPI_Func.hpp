@@ -1041,6 +1041,35 @@ typedef struct _LDR_DATA_TABLE_ENTRYB
 	struct _LDR_DDAG_NODE* DdagNode;                                        //0x98
 } LDR_DATA_TABLE_ENTRYB, * PLDR_DATA_TABLE_ENTRYB;
 
+typedef struct _CALLBACK_ENTRY {
+	UINT16 Version; // 0x0
+	UINT16 OperationRegistrationCount; // 0x2
+	UINT32 unk1; // 0x4
+	PVOID RegistrationContext; // 0x8
+	UNICODE_STRING Altitude; // 0x10
+} CALLBACK_ENTRY, * PCALLBACK_ENTRY;
+
+typedef struct _OBJECT_CALLBACK_ENTRY {
+	LIST_ENTRY CallbackList;
+	OB_OPERATION Operations;
+	ULONG Active;
+	/*OB_HANDLE*/ PCALLBACK_ENTRY CallbackEntry;
+	POBJECT_TYPE ObjectType;
+	POB_PRE_OPERATION_CALLBACK  PreOperation;
+	POB_POST_OPERATION_CALLBACK PostOperation;
+} OBJECT_CALLBACK_ENTRY, * POBJECT_CALLBACK_ENTRY;
+
+typedef struct _OB_CALLBACK_CONTEXT_BLOCK
+{
+	_LIST_ENTRY CallbackListEntry;
+	unsigned int Operations;
+	unsigned int Flags;
+	void* Registration;
+	_OBJECT_TYPE* ObjectType;
+	_OB_PREOP_CALLBACK_STATUS(__fastcall* PreCallback)(void*, _OB_PRE_OPERATION_INFORMATION*);
+	void(__fastcall* PostCallback)(void*, _OB_POST_OPERATION_INFORMATION*);
+	_EX_RUNDOWN_REF RundownReference;
+}OB_CALLBACK_CONTEXT_BLOCK;
 //-------------------------------------------
 extern "C" POBJECT_TYPE *IoDriverObjectType;
 
@@ -1297,6 +1326,27 @@ RtlVirtualUnwind(
 	_Out_ PDWORD64 EstablisherFrame,
 	_Inout_opt_ void* ContextPointers//PKNONVOLATILE_CONTEXT_POINTERS 
 );
+
+typedef NTSTATUS(*PUSER_THREAD_START_ROUTINE)(
+	PVOID ThreadParameter
+	);
+extern "C" NTSYSAPI NTSTATUS
+NTAPI
+RtlCreateUserThread(
+	HANDLE Process,
+	PSECURITY_DESCRIPTOR ThreadSecurityDescriptor,
+	BOOLEAN CreateSuspended,
+	ULONG StackZeroBits,
+	SIZE_T MaximumStackSize OPTIONAL,
+	SIZE_T InitialStackSize OPTIONAL,
+	//PUSER_THREAD_START_ROUTINE StartAddress,
+	void *StartAddress,
+	PVOID Parameter,
+	PHANDLE Thread,
+	PCLIENT_ID ClientId
+);
+
+
 //extern "C" NTSYSAPI NTSTATUS NTAPI ObInsertObject(
 //	_In_ PVOID              Object,
 //	_In_opt_ PACCESS_STATE  PassedAccessState,

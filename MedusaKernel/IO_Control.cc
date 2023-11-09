@@ -41,6 +41,11 @@ IO_Control* IO_Control::_This;
 
 #define TEST_ReadKernelMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7117,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
+#define TEST_InjectDLL CTL_CODE(FILE_DEVICE_UNKNOWN,0x7118,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
+#define TEST_GetCallBackList CTL_CODE(FILE_DEVICE_UNKNOWN,0x7119,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define TEST_GetCallBackListNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7120,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
 NTSTATUS IO_Control::Create_IO_Control()
 {
 	NTSTATUS status = 0;
@@ -259,7 +264,7 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		return STATUS_SUCCESS;
 	}
 	
-	if (Io_Control_Code == TEST_GetThreadStackWalkNumber)
+	if (Io_Control_Code == TEST_GetThreadStackWalkNumber && Input_Lenght > 0)
 	{
 		_This->_Threads.StackWalkThread(*(ULONG64*)Input_Buffer);
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
@@ -326,7 +331,47 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 			return STATUS_SUCCESS;
 		}
 	}
+	else if (Io_Control_Code == TEST_InjectDLL && Input_Lenght > 0)
+	{
+		ULONG64 pid = *(ULONG64*)Input_Buffer;
+		ULONG64 size = *(ULONG64*)(Input_Buffer + 8);
+		void* temp_buffer = (void*)(Input_Buffer + 16);
+		Modules _Modules;
+		if (_Modules.R0MapInject(pid, size, temp_buffer))
+		{
+			pIrp->IoStatus.Information = 1;
+		}
+		else
+		{
+			pIrp->IoStatus.Information = 0;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
 
+
+	if (Io_Control_Code == TEST_GetCallBackListNumber)
+	{
+		_This->_CallBackScanner.GetALLCallBackList();
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_CallBackScanner._ObjectCallBackList.size();
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if (Io_Control_Code == TEST_GetCallBackList)
+	{
+		int i = 0;
+		for (auto x : _This->_CallBackScanner._ObjectCallBackList)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(ObjectCallBackList), &x, sizeof(ObjectCallBackList));
+			i++;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_CallBackScanner._ObjectCallBackList.size() * sizeof(ObjectCallBackList);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
 
 	pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
 	pIrp->IoStatus.Information = 0;

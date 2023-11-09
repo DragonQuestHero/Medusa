@@ -122,6 +122,7 @@
     <ClCompile Include="HookScanner.cc" />
     <ClCompile Include="Hypervisor.cc" />
     <ClCompile Include="IOCTLScanner.cc" />
+    <ClCompile Include="KernelCallBackScanner.cc" />
     <ClCompile Include="KernelMemory.cc" />
     <ClCompile Include="KernelModules.cc" />
     <ClCompile Include="libpeconv\buffer_util.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="Hypervisor.h" />
     <QtMoc Include="IOCTLScanner.h" />
     <QtMoc Include="KernelMemory.h" />
+    <ClInclude Include="KernelCallBackScanner.h" />
     <ClInclude Include="KernelModules.h" />
     <ClInclude Include="libpeconv\fix_dot_net_ep.h" />
     <ClInclude Include="libpeconv\ntddk.h" />

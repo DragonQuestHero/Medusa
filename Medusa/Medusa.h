@@ -52,6 +52,8 @@ public:
 	void GetProcessList();
 	void GetKernelModuleList();
 	void GetUnLoadKernelModuleList();
+	void GetALLCallBackList();
+public:
 	void DriverLoad(QAction*);
 	void RightMenuDLLInject(QAction*);
 	void RightMenuHookScanner(QAction*);
@@ -82,6 +84,7 @@ private:
     QStandardItemModel* _Model;
 	QStandardItemModel* _Model_Driver;
 	QStandardItemModel* _Model_UnloadDriver;
+	QStandardItemModel* _Model_CallBackList;
 private:
 	QMenu _TableView_Menu_Inject;
 	QAction _TableView_Action_Inject;
@@ -180,6 +183,31 @@ public:
 		ui.tableView_UnloadDriver->setColumnWidth(4, 200);
 		ui.tableView_UnloadDriver->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	}
+	void CallBackListUI()
+	{
+		_Model_CallBackList = new QStandardItemModel();
+		ui.tableView_CallBackList->setModel(_Model_CallBackList);
+		ui.tableView_CallBackList->setEditTriggers(QAbstractItemView::NoEditTriggers);
+		ui.tableView_CallBackList->horizontalHeader()->setSectionsClickable(false);
+		ui.tableView_CallBackList->verticalHeader()->setDefaultSectionSize(25);
+		ui.tableView_CallBackList->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+		_Model_CallBackList->setColumnCount(6);
+		_Model_CallBackList->setHeaderData(0, Qt::Horizontal, u8"Index");
+		_Model_CallBackList->setHeaderData(1, Qt::Horizontal, u8"Name");
+		_Model_CallBackList->setHeaderData(2, Qt::Horizontal, u8"PreAddr");
+		_Model_CallBackList->setHeaderData(3, Qt::Horizontal, u8"PostAddr");
+		_Model_CallBackList->setHeaderData(4, Qt::Horizontal, u8"Type");
+		_Model_CallBackList->setHeaderData(5, Qt::Horizontal, u8"PointerAddr");
+		ui.tableView_CallBackList->setColumnWidth(0, 50);
+		ui.tableView_CallBackList->setColumnWidth(1, 300);
+		ui.tableView_CallBackList->setColumnWidth(2, 200);
+		ui.tableView_CallBackList->setColumnWidth(3, 200);
+		ui.tableView_CallBackList->setColumnWidth(4, 250);
+		ui.tableView_CallBackList->setColumnWidth(5, 200);
+		ui.tableView_CallBackList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	}
+public:
 	void ProcessRightMenuUI()
 	{
 		_TableView_Action_Inject.setMenu(&_TableView_Menu_Inject);
@@ -188,6 +216,7 @@ public:
 		_TableView_Menu_Inject.addAction("R3SetThreadContext+LoadLibrary");
 		_TableView_Menu_Inject.addAction("R3APCInject");
 		_TableView_Menu_Inject.addAction("R3MapInject");
+		_TableView_Menu_Inject.addAction("R0MapInject");
 
 
 
@@ -195,6 +224,7 @@ public:
 		_TableView_Menu_HookCheck.setTitle("HookScanner");
 		_TableView_Menu_HookCheck.addAction("HookScannerSimple(Y/N)");
 		_TableView_Menu_HookCheck.addAction("HookScanner");
+		_TableView_Menu_HookCheck.addAction("HookScannerQuick");
 		_TableView_Menu_HookCheck.addAction("QuickCheckALLProcess");
 
 

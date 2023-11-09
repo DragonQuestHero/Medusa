@@ -31,7 +31,6 @@ bool DLLInject::R3CreateThread(ULONG64 PID)
 					(LPTHREAD_START_ROUTINE)Get_Load_Addr, New_Get_Addr, 0, NULL);
 				if (New_Hand != NULL)
 				{
-					QMessageBox::information(nullptr, "dll inject", "success");
 					VirtualFreeEx(handle, New_Get_Addr, 0, MEM_RELEASE | MEM_DECOMMIT);
 					CloseHandle(New_Hand);
 					CloseHandle(handle);
@@ -40,7 +39,6 @@ bool DLLInject::R3CreateThread(ULONG64 PID)
 			}
 			VirtualFreeEx(handle, New_Get_Addr, 0, MEM_RELEASE | MEM_DECOMMIT);
 		}
-		QMessageBox::information(nullptr, "dll inject", "unsuccess");
 		CloseHandle(handle);
 	}
 	return false;
@@ -129,7 +127,6 @@ bool RemoteInjectDll(DWORD ProcessId, PVOID DllData, SIZE_T dwSize)//À´×ÔÈºÓÑÔÞÖ
 	CloseHandle(hProcess);
 	return true;
 }
-
 bool DLLInject::R3MapInject(ULONG64 PID)
 {
 	QFileDialog file_path;
@@ -143,3 +140,43 @@ bool DLLInject::R3MapInject(ULONG64 PID)
 	return RemoteInjectDll(PID, (void*)file_str.data(), file_str.size());
 }
 
+#define TEST_InjectDLL CTL_CODE(FILE_DEVICE_UNKNOWN,0x7118,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+bool DLLInject::R0MapInject(ULONG64 PID)
+{
+	QFileDialog file_path;
+	QString temp_str = file_path.getOpenFileName();
+	if (temp_str.size() == 0)
+	{
+		return false;
+	}
+	temp_str = QDir::toNativeSeparators(temp_str);
+	std::string file_str = Read_ALL(temp_str.toStdString());
+
+	char* buffer = new char[file_str.size() + 16];
+
+
+	*(ULONG64*)buffer = PID;
+	*(ULONG64*)(buffer + 8) = file_str.size();
+	RtlCopyMemory(buffer + 16, file_str.data(), file_str.size());
+	
+
+	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (INVALID_HANDLE_VALUE == m_hDevice)
+	{
+		delete buffer;
+		return false;
+	}
+
+	DWORD dwRet = 0;
+	DeviceIoControl(m_hDevice, TEST_InjectDLL, buffer, file_str.size()+16, 0, 0, &dwRet, NULL);
+	if (dwRet)
+	{
+		delete buffer;
+		CloseHandle(m_hDevice);
+		return true;
+	}
+	delete buffer;
+	CloseHandle(m_hDevice);
+	return false;
+}

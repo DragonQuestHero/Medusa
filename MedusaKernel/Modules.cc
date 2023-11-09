@@ -1,5 +1,5 @@
 #include "Modules.h"
-
+#include "DLLInjectShellCode.h"
 
 
 
@@ -61,4 +61,46 @@ std::vector<UserModule> Modules::GetWin32MoudleList(ULONG64 PID)
 
 	KeUnstackDetachProcess(&kapc);
 	return temp_vector;
+}
+
+bool Modules::R0MapInject(ULONG64 PID, ULONG64 Size, void* DLLImage)
+{
+	PEPROCESS tempep;
+	NTSTATUS status = PsLookupProcessByProcessId((HANDLE)PID, &tempep);
+	if (NT_SUCCESS(status))
+	{
+		ObDereferenceObject(tempep);
+		KAPC_STATE kapc;
+		KeStackAttachProcess(tempep, &kapc);
+		void* buffer = nullptr;
+		void* shellcode = nullptr;
+		ULONG64 shellcode_size = sizeof(MemLoadShellcode_x64);
+		ULONG64 buffer_size = Size;
+		status = ZwAllocateVirtualMemory(ZwCurrentProcess(), &shellcode, 0, &shellcode_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+		if (!NT_SUCCESS(status))
+		{
+			KeUnstackDetachProcess(&kapc);
+			return false;
+		}
+		status = ZwAllocateVirtualMemory(ZwCurrentProcess(), &buffer, 0, &buffer_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+		if (!NT_SUCCESS(status))
+		{
+			KeUnstackDetachProcess(&kapc);
+			return false;
+		}
+		RtlCopyMemory(shellcode, MemLoadShellcode_x64, sizeof(MemLoadShellcode_x64));
+		RtlCopyMemory(buffer, DLLImage, Size);
+		HANDLE thread_handle = 0;
+		status = RtlCreateUserThread(ZwCurrentProcess(), 0, 0, 0, 0, 0, shellcode, buffer, &thread_handle, 0);
+		if (!NT_SUCCESS(status))
+		{
+			ZwFreeVirtualMemory(ZwCurrentProcess(), &shellcode, &shellcode_size, MEM_RELEASE);
+			ZwFreeVirtualMemory(ZwCurrentProcess(), &buffer, &Size, MEM_RELEASE);
+			KeUnstackDetachProcess(&kapc);
+			return false;
+		}
+		KeUnstackDetachProcess(&kapc);
+		return true;
+	}
+	return false;
 }

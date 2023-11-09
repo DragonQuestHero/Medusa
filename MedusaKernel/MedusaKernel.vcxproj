@@ -167,6 +167,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CallBackScanner.cc" />
     <ClCompile Include="EmunProcess.cc" />
     <ClCompile Include="IO_Control.cc" />
     <ClCompile Include="KernelModules.cc" />
@@ -178,10 +179,12 @@
     <ClCompile Include="Threads.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CallBackScanner.h" />
     <ClInclude Include="cleaner.h" />
     <ClInclude Include="CRT\NativeEnums.h" />
     <ClInclude Include="CRT\NtSysAPI_Func.hpp" />
     <ClInclude Include="CRT\PEStructs.h" />
+    <ClInclude Include="DLLInjectShellCode.h" />
     <ClInclude Include="EmunProcess.h" />
     <ClInclude Include="IO_Control.h" />
     <ClInclude Include="KernelModules.h" />

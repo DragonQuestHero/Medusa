@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Medusa           www.win32k.cn</string>
+   <string>Medusa</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QTabWidget" name="tabWidget">
@@ -79,6 +79,30 @@
       <string>UnloadDriver</string>
      </attribute>
      <widget class="QTableView" name="tableView_UnloadDriver">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>1731</width>
+        <height>851</height>
+       </rect>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>1731</width>
+        <height>851</height>
+       </size>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::ActionsContextMenu</enum>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="CallBackList">
+     <attribute name="title">
+      <string>CallBackList</string>
+     </attribute>
+     <widget class="QTableView" name="tableView_CallBackList">
       <property name="geometry">
        <rect>
         <x>10</x>

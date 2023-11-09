@@ -3,6 +3,7 @@
 #include "FileCheck.h"
 #include "Hypervisor.h"
 #include "DLLInject.h"
+#include "KernelCallBackScanner.h"
 
 
 
@@ -21,6 +22,10 @@ Medusa::Medusa(QWidget *parent)
 	ProcessUI();
 	DriverUI();
 	UnloadDriverUI();
+	CallBackListUI();
+
+
+
 	ProcessRightMenuUI();
 	DriverRightMenuUI();
 	
@@ -47,7 +52,7 @@ Medusa::Medusa(QWidget *parent)
 void Medusa::Set_SLOTS()
 {
 	connect(ui.tabWidget, SIGNAL(currentChanged(int)), SLOT(ChangeTab()));//进程
-	//connect(ui.tableView_Driver, SIGNAL(currentChanged(int)), SLOT(ChangeTab()));//进程
+	connect(ui.tabWidget, SIGNAL(tabBarClicked(int)), SLOT(ChangeTab()));//进程
 
 	connect(&_TableView_Menu_Inject, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 	connect(&_TableView_Menu_HookCheck, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
@@ -397,7 +402,8 @@ void Medusa::ProcessRightMenu(QAction* action)
 	if (action->text() == "R3CreateRemoteThread+LoadLibraryA" ||
 		action->text() == "R3APCInject" ||
 		action->text() == "R3MapInject" || 
-		action->text() == "R3SetThreadContext+LoadLibrary")
+		action->text() == "R3SetThreadContext+LoadLibrary" ||
+		action->text() == "R0MapInject")
 	{
 		RightMenuDLLInject(action);
 		return;
@@ -405,6 +411,7 @@ void Medusa::ProcessRightMenu(QAction* action)
 
 	if (action->text() == "QuickCheckALLProcess" || 
 		action->text() == "HookScanner" || 
+		action->text() == "HookScannerQuick" ||
 		action->text() == "HookScannerSimple(Y/N)")
 	{
 		RightMenuHookScanner(action);
@@ -560,7 +567,15 @@ void Medusa::ChangeTab()
 	{
 		GetUnLoadKernelModuleList();
 	}
+	else if (ui.tabWidget->currentIndex() == 3)
+	{
+		GetALLCallBackList();
+	}
 }
+
+
+
+
 
 void Medusa::RightMenuDLLInject(QAction* action)
 {
@@ -616,6 +631,19 @@ void Medusa::RightMenuDLLInject(QAction* action)
 
 		DLLInject _DLLInject;
 		ret = _DLLInject.injectdll(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID,C_TO_W(temp_str.toStdString()));
+		if (ret)
+		{
+			QMessageBox::information(this, "Ret", "susscss");
+		}
+		else
+		{
+			QMessageBox::information(this, "Ret", "error");
+		}
+	}
+	if (action->text() == "R0MapInject")
+	{
+		DLLInject _DLLInject;
+		ret = _DLLInject.R0MapInject(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
 		if (ret)
 		{
 			QMessageBox::information(this, "Ret", "susscss");
@@ -687,6 +715,41 @@ void Medusa::RightMenuHookScanner(QAction* action)
 		_HookScanner._Model->removeRows(0, _HookScanner._Model->rowCount());
 		FileCheck temp_check(_Driver_Loaded);
 		std::vector<_CheckDifferent> temp_vector = temp_check.CheckPlain(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		int i = 0;
+		for (auto x : temp_vector)
+		{
+			_HookScanner._Model->setVerticalHeaderItem(i, new QStandardItem);
+			_HookScanner._Model->setData(_HookScanner._Model->index(i, 0), i);
+			_HookScanner._Model->setData(_HookScanner._Model->index(i, 1), QString::fromWCharArray(x.Name));
+			std::ostringstream ret;
+			ret << std::hex << "0x" << x.Addr;
+			_HookScanner._Model->setData(_HookScanner._Model->index(i, 2), ret.str().data());
+			_HookScanner._Model->setData(_HookScanner._Model->index(i, 3), String_TO_HEX(std::string(x.FileHex, 20)).data());
+			_HookScanner._Model->setData(_HookScanner._Model->index(i, 4), String_TO_HEX(std::string(x.MemoryHex, 20)).data());
+			_HookScanner._Model->setData(_HookScanner._Model->index(i, 5), QString::fromWCharArray(x.Path));
+			if (x.Fail)
+			{
+				_HookScanner._Model->item(i, 0)->setBackground(QColor(Qt::red));
+				_HookScanner._Model->item(i, 1)->setBackground(QColor(Qt::red));
+				_HookScanner._Model->item(i, 2)->setBackground(QColor(Qt::red));
+				_HookScanner._Model->item(i, 3)->setBackground(QColor(Qt::red));
+				_HookScanner._Model->item(i, 4)->setBackground(QColor(Qt::red));
+				_HookScanner._Model->item(i, 5)->setBackground(QColor(Qt::red));
+			}
+			i++;
+		}
+		_HookScanner.show();
+	}
+	if (action->text() == "HookScannerQuick")
+	{
+		if (_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 0
+			|| _Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 4)
+		{
+			return;
+		}
+		_HookScanner._Model->removeRows(0, _HookScanner._Model->rowCount());
+		FileCheck temp_check(_Driver_Loaded);
+		std::vector<_CheckDifferent> temp_vector = temp_check.CheckPlainQuick(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
 		int i = 0;
 		for (auto x : temp_vector)
 		{
@@ -893,6 +956,10 @@ void Medusa::RightMenuR0ThreadsView(ULONG64 PID)
 		_Threads.show();
 	}
 }
+
+
+
+
 
 void Medusa::GetProcessList()
 {
@@ -1204,6 +1271,118 @@ void Medusa::GetUnLoadKernelModuleList()
 		_Model_UnloadDriver->item(i, 2)->setBackground(temp_color);
 		_Model_UnloadDriver->item(i, 3)->setBackground(temp_color);
 		_Model_UnloadDriver->item(i, 4)->setBackground(temp_color);
+
+		i++;
+	}
+}
+
+void Medusa::GetALLCallBackList()
+{
+	_Model_CallBackList->removeRows(0, _Model_CallBackList->rowCount());
+	KernelCallBackScanner _KernelCallBackScanner;
+	_KernelCallBackScanner.GetALLCallBackList();
+	if (!_KernelCallBackScanner.__KernelCallBackListR0.size())
+	{
+		return;
+	}
+	if (_KernelModules._KernelModuleListR0.size() == 0)
+	{
+		_KernelModules.GetKernelModuleListR0();
+	}
+	int i = 0;
+	for (auto x : _KernelCallBackScanner.__KernelCallBackListR0)
+	{
+		_Model_CallBackList->setVerticalHeaderItem(i, new QStandardItem);
+		_Model_CallBackList->setData(_Model_CallBackList->index(i, 0), i);
+
+
+		std::string module_name;
+		bool found = false;
+		for (auto y : _KernelModules._KernelModuleListR0)
+		{
+			if (x.PreOperation >= (ULONG64)y.Addr &&
+				x.PreOperation < (ULONG64)y.Addr + (ULONG64)y.Size)
+			{
+				if (y.Check == 1 || y.Check == 2)
+				{
+					module_name = W_TO_C((WCHAR*)y.Name);
+				}
+				else
+				{
+					module_name = (char*)y.Name;
+				}
+
+				found = true;
+				module_name = module_name + "+";
+				std::ostringstream ret;
+				ret << std::hex << "0x" << x.PreOperation - y.Addr;
+				module_name = module_name + ret.str() + "   ";
+			}
+			if (x.PostOperation!=0 &&
+				x.PostOperation >= (ULONG64)y.Addr &&
+				x.PostOperation < (ULONG64)y.Addr + (ULONG64)y.Size)
+			{
+				if (y.Check == 1 || y.Check == 2)
+				{
+					module_name = W_TO_C((WCHAR*)y.Name);
+				}
+				else
+				{
+					module_name = (char*)y.Name;
+				}
+
+				module_name = module_name + "+";
+				std::ostringstream ret;
+				ret << std::hex << "0x" << x.PostOperation - y.Addr;
+				module_name = module_name + ret.str() + "   ";
+			}
+		}
+		_Model_CallBackList->setData(_Model_CallBackList->index(i, 1), module_name.data());
+
+		std::ostringstream ret;
+		ret << std::hex << "0x" << (ULONG64)x.PreOperation;
+		_Model_CallBackList->setData(_Model_CallBackList->index(i, 2), ret.str().data());
+		std::ostringstream ret2;
+		ret2 << std::hex << "0x" << (ULONG64)x.PostOperation;
+		_Model_CallBackList->setData(_Model_CallBackList->index(i, 3), ret2.str().data());
+		std::ostringstream ret3;
+		ret3 << std::hex << "0x" << (ULONG64)x.CallbackEntry;
+		_Model_CallBackList->setData(_Model_CallBackList->index(i, 5), ret3.str().data());
+
+		std::string callback_name;
+		if (x.Type == 1)
+		{
+			callback_name = "PsProcessType";
+		}
+		if (x.Type == 2)
+		{
+			callback_name = "PsThreadType";
+		}
+		if (x.Type == 3)
+		{
+			callback_name = "LoadImageNotifyRoutine";
+		}
+		if (x.Type == 4)
+		{
+			callback_name = "ProcessNotifyRoutine";
+		}
+		if (x.Type == 5)
+		{
+			callback_name = "ThreadNotifyRoutine";
+		}
+		_Model_CallBackList->setData(_Model_CallBackList->index(i, 4), callback_name.data());
+
+		QColor temp_color = QColor(Qt::white);
+		if (!found)
+		{
+			temp_color = QColor(Qt::red);
+		}
+		_Model_CallBackList->item(i, 0)->setBackground(temp_color);
+		_Model_CallBackList->item(i, 1)->setBackground(temp_color);
+		_Model_CallBackList->item(i, 2)->setBackground(temp_color);
+		_Model_CallBackList->item(i, 3)->setBackground(temp_color);
+		_Model_CallBackList->item(i, 4)->setBackground(temp_color);
+		_Model_CallBackList->item(i, 5)->setBackground(temp_color);
 
 		i++;
 	}

@@ -21,6 +21,7 @@ public:
 	~Modules() = default;
 public:
 	std::vector<UserModule> GetWin32MoudleList(ULONG64 PID);
+	bool R0MapInject(ULONG64 PID,ULONG64 Size,void *DLLImage);
 private:
 
 };

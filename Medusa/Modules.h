@@ -41,10 +41,22 @@ public:
 public:
 public slots:
 	void Dump(bool);
+	void DumpToFile(bool);
 public:
 	Ui::Form_Modules ui;
 	QStandardItemModel* _Model;
 	QAction _TableView_Action_Dump;
+	QAction _TableView_Action_DumpToFile;
 private:
 	ULONG64 _PID;
+	std::wstring C_TO_W(std::string str)
+	{
+		std::wstring result;
+		DWORD strsize = MultiByteToWideChar(CP_ACP, 0, str.data(), -1, NULL, 0);
+		wchar_t* pwstr = new wchar_t[strsize];
+		MultiByteToWideChar(CP_ACP, 0, str.data(), -1, pwstr, strsize);
+		result = pwstr;
+		delete[] pwstr;
+		return result;
+	}
 };
