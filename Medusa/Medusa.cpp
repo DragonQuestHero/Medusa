@@ -418,27 +418,27 @@ void Medusa::ProcessRightMenu(QAction* action)
 		return;
 	}
 
-
+	ULONG64 PID = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 1).data().toULongLong();
 	if (action->text() == "R3ModulesView")
 	{
-		RightMenuR3ModulesView(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		RightMenuR3ModulesView(PID);
 	}
 	if (action->text() == "R0ModulesView(second check)")
 	{
-		RightMenuR0ModulesView(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		RightMenuR0ModulesView(PID);
 	}
 	if (action->text() == "R3ModuleScanner")
 	{
-		RightMenuR3ModuleScanner(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		RightMenuR3ModuleScanner(PID);
 	}
 
 	if (action->text() == "R3ThreadView")
 	{
-		RightMenuR3ThreadsView(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		RightMenuR3ThreadsView(PID);
 	}
 	if (action->text() == "R0ThreadView(second check)")
 	{
-		RightMenuR0ThreadsView(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		RightMenuR0ThreadsView(PID);
 	}
 }
 
@@ -579,11 +579,12 @@ void Medusa::ChangeTab()
 
 void Medusa::RightMenuDLLInject(QAction* action)
 {
+	ULONG64 PID = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 1).data().toULongLong();
 	bool ret = false;
 	if (action->text() == "R3CreateRemoteThread+LoadLibraryA")
 	{
 		DLLInject _DLLInject;
-		ret = _DLLInject.R3CreateThread(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		ret = _DLLInject.R3CreateThread(PID);
 		if (ret)
 		{
 			QMessageBox::information(this, "Ret", "susscss");
@@ -596,7 +597,7 @@ void Medusa::RightMenuDLLInject(QAction* action)
 	if (action->text() == "R3APCInject")
 	{
 		DLLInject _DLLInject;
-		ret = _DLLInject.R3APCInject(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		ret = _DLLInject.R3APCInject(PID);
 		if (ret)
 		{
 			QMessageBox::information(this, "Ret", "susscss");
@@ -609,7 +610,7 @@ void Medusa::RightMenuDLLInject(QAction* action)
 	if (action->text() == "R3MapInject")
 	{
 		DLLInject _DLLInject;
-		ret = _DLLInject.R3MapInject(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		ret = _DLLInject.R3MapInject(PID);
 		if (ret)
 		{
 			QMessageBox::information(this, "Ret", "susscss");
@@ -630,7 +631,7 @@ void Medusa::RightMenuDLLInject(QAction* action)
 		temp_str = QDir::toNativeSeparators(temp_str);
 
 		DLLInject _DLLInject;
-		ret = _DLLInject.injectdll(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID,C_TO_W(temp_str.toStdString()));
+		ret = _DLLInject.injectdll(PID,C_TO_W(temp_str.toStdString()));
 		if (ret)
 		{
 			QMessageBox::information(this, "Ret", "susscss");
@@ -643,7 +644,7 @@ void Medusa::RightMenuDLLInject(QAction* action)
 	if (action->text() == "R0MapInject")
 	{
 		DLLInject _DLLInject;
-		ret = _DLLInject.R0MapInject(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		ret = _DLLInject.R0MapInject(PID);
 		if (ret)
 		{
 			QMessageBox::information(this, "Ret", "susscss");
@@ -657,6 +658,7 @@ void Medusa::RightMenuDLLInject(QAction* action)
 
 void Medusa::RightMenuHookScanner(QAction* action)
 {
+	ULONG64 PID = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 1).data().toULongLong();
 	if (action->text() == "QuickCheckALLProcess")
 	{
 		FileCheck temp_check(_Driver_Loaded);
@@ -685,13 +687,13 @@ void Medusa::RightMenuHookScanner(QAction* action)
 	}
 	if (action->text() == "HookScannerSimple(Y/N)")
 	{
-		if (_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 0
-			|| _Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 4)
+		if (PID == 0
+			|| PID == 4)
 		{
 			return;
 		}
 		FileCheck temp_check(_Driver_Loaded);
-		int temp_ret = temp_check.CheckSimple(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		int temp_ret = temp_check.CheckSimple(PID);
 		if (temp_ret == 1)
 		{
 			QMessageBox::information(this, "Ret", "not detected hook");
@@ -707,14 +709,14 @@ void Medusa::RightMenuHookScanner(QAction* action)
 	}
 	if (action->text() == "HookScanner")
 	{
-		if (_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 0
-			|| _Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 4)
+		if (PID == 0
+			|| PID == 4)
 		{
 			return;
 		}
 		_HookScanner._Model->removeRows(0, _HookScanner._Model->rowCount());
 		FileCheck temp_check(_Driver_Loaded);
-		std::vector<_CheckDifferent> temp_vector = temp_check.CheckPlain(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		std::vector<_CheckDifferent> temp_vector = temp_check.CheckPlain(PID);
 		int i = 0;
 		for (auto x : temp_vector)
 		{
@@ -742,14 +744,14 @@ void Medusa::RightMenuHookScanner(QAction* action)
 	}
 	if (action->text() == "HookScannerQuick")
 	{
-		if (_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 0
-			|| _Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID == 4)
+		if (PID == 0
+			|| PID == 4)
 		{
 			return;
 		}
 		_HookScanner._Model->removeRows(0, _HookScanner._Model->rowCount());
 		FileCheck temp_check(_Driver_Loaded);
-		std::vector<_CheckDifferent> temp_vector = temp_check.CheckPlainQuick(_Process._Process_List_R3.at(ui.tableView->currentIndex().row()).PID);
+		std::vector<_CheckDifferent> temp_vector = temp_check.CheckPlainQuick(PID);
 		int i = 0;
 		for (auto x : temp_vector)
 		{

@@ -14,7 +14,7 @@ void KernelModules::GetKernelModuleListALL()
 	UNICODE_STRING	FileSystem = RTL_CONSTANT_STRING(L"\\FileSystem");
 	GetKernelModuleList3(&directory);
 	GetKernelModuleList3(&FileSystem);
-	GetKernelModuleList4();
+	//GetKernelModuleList4();
 }
 
 bool KernelModules::GetKernelModuleList1()
@@ -299,6 +299,10 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList4Quick()
 			for (auto j = 0; j < pBigPoolInfo->Count; j++)
 			{
 				SYSTEM_BIGPOOL_ENTRY poolEntry = pBigPoolInfo->AllocatedInfo[j];
+				if (!MmIsAddressValid(poolEntry.VirtualAddress))
+				{
+					continue;
+				}
 				void* base_addr = poolEntry.VirtualAddress;
 				void* memory_p = new char[PAGE_SIZE];
 				if (KernelSafeReadMemoryIPI((ULONG64)base_addr, memory_p, PAGE_SIZE))
@@ -357,6 +361,10 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList4()
 			for (auto j = 0; j < pBigPoolInfo->Count; j++)
 			{
 				SYSTEM_BIGPOOL_ENTRY poolEntry = pBigPoolInfo->AllocatedInfo[j];
+				if (!MmIsAddressValid(poolEntry.VirtualAddress))
+				{
+					continue;
+				}
 				void* base_addr = poolEntry.VirtualAddress;
 				void* memory_p = new char[poolEntry.SizeInBytes];
 				SIZE_T NumberOfBytesTransferred;
