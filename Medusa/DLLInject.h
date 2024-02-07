@@ -1,9 +1,12 @@
 #pragma once
 #include <windows.h>
 #include <fstream>
+#include <string_view>
 
 #include <TlHelp32.h>
 #include <Psapi.h>
+
+#include "Wow64Ext/wow64ext.h"
 
 
 class DLLInject
@@ -32,6 +35,13 @@ private:
 		return result;
 	}
 public:
+	bool is_process64(HANDLE hProcess) {
+		BOOL wow64 = FALSE;
+		if (!IsWow64Process(hProcess, &wow64)) {
+			return false;
+		}
+		return !wow64;
+	}
 	bool injectdll_x64(const PROCESS_INFORMATION& pi, std::wstring dll) {
 		static unsigned char sc[] = {
 			0x9c,                                                                   // pushfq
@@ -138,7 +148,15 @@ public:
 		return true;
 	}
 	bool injectdll(const PROCESS_INFORMATION& pi, const std::wstring& x64dll) {
-		return injectdll_x64(pi, x64dll);
+		if (is_process64(pi.hProcess))
+		{
+			return injectdll_x64(pi, x64dll);
+		}
+		else
+		{
+			return false;
+		}
+		
 	}
 	bool setdebugprivilege() {
 		TOKEN_PRIVILEGES tp = { 0 };

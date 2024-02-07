@@ -2,6 +2,12 @@
 
 [English](https://github.com/DragonQuestHero/Medusa/blob/master/Readme-en.md)
 
+##### 更新日志:
+
+###### 2-7 修复了对wow64的模块查看错误 wow64注入目前只有r3map和r0map可用(神话给的代码太复杂
+
+
+
 ##### 我不在意GDT和IDT到底有没有被修改 也不想重复process hacker已经有的功能 更不在乎某个进程连接了哪个IP
 
 ##### 重点关注进程 内存 线程 内核等重灾区 大多ARK为了功能足够多舍弃了一些不好维护或添加或不够稳定的功能 

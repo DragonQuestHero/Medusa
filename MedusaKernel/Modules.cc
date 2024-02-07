@@ -116,7 +116,16 @@ bool Modules::R0MapInject(ULONG64 PID, ULONG64 Size, void* DLLImage)
 		KeStackAttachProcess(tempep, &kapc);
 		void* buffer = nullptr;
 		void* shellcode = nullptr;
-		ULONG64 shellcode_size = sizeof(MemLoadShellcode_x64);
+		unsigned char* temp_load_shellcode = nullptr;
+		if (PsGetProcessWow64Process(tempep) != NULL)
+		{
+			temp_load_shellcode = MemLoadShellcode_x86;
+		}
+		else
+		{
+			temp_load_shellcode = MemLoadShellcode_x64;
+		}
+		ULONG64 shellcode_size = sizeof(temp_load_shellcode);
 		ULONG64 buffer_size = Size;
 		status = ZwAllocateVirtualMemory(ZwCurrentProcess(), &shellcode, 0, &shellcode_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 		if (!NT_SUCCESS(status))
@@ -130,7 +139,7 @@ bool Modules::R0MapInject(ULONG64 PID, ULONG64 Size, void* DLLImage)
 			KeUnstackDetachProcess(&kapc);
 			return false;
 		}
-		RtlCopyMemory(shellcode, MemLoadShellcode_x64, sizeof(MemLoadShellcode_x64));
+		RtlCopyMemory(shellcode, temp_load_shellcode, shellcode_size);
 		RtlCopyMemory(buffer, DLLImage, Size);
 		HANDLE thread_handle = 0;
 		status = RtlCreateUserThread(ZwCurrentProcess(), 0, 0, 0, 0, 0, shellcode, buffer, &thread_handle, 0);
