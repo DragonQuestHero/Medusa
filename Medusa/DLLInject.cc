@@ -101,31 +101,65 @@ bool RemoteInjectDll(DWORD ProcessId, PVOID DllData, SIZE_T dwSize)//À´×ÔÈºÓÑÔÞÖ
 		return false;
 	}
 
-	auto ShellCode = VirtualAllocEx(hProcess, nullptr, sizeof(MemLoadShellcode_x64), MEM_COMMIT | MEM_RESERVE | MEM_TOP_DOWN, PAGE_EXECUTE_READWRITE);
-	if (!ShellCode) {
-		CloseHandle(hProcess);
-		return false;
-	}
-	auto DllPtr = VirtualAllocEx(hProcess, nullptr, dwSize, MEM_COMMIT | MEM_RESERVE | MEM_TOP_DOWN, PAGE_EXECUTE_READWRITE);
-	if (!DllPtr) {
-		VirtualFreeEx(hProcess, ShellCode, 0, MEM_RELEASE);
-		CloseHandle(hProcess);
-		return false;
+	BOOL isWow64 = FALSE;
+	if (IsWow64Process(hProcess, &isWow64)) {
+		if (isWow64) {
+			auto ShellCode = VirtualAllocEx(hProcess, nullptr, sizeof(MemLoadShellcode_x86), MEM_COMMIT | MEM_RESERVE | MEM_TOP_DOWN, PAGE_EXECUTE_READWRITE);
+			if (!ShellCode) {
+				CloseHandle(hProcess);
+				return false;
+			}
+			auto DllPtr = VirtualAllocEx(hProcess, nullptr, dwSize, MEM_COMMIT | MEM_RESERVE | MEM_TOP_DOWN, PAGE_EXECUTE_READWRITE);
+			if (!DllPtr) {
+				VirtualFreeEx(hProcess, ShellCode, 0, MEM_RELEASE);
+				CloseHandle(hProcess);
+				return false;
+			}
+
+			WriteProcessMemory(hProcess, ShellCode, MemLoadShellcode_x86, sizeof(MemLoadShellcode_x86), nullptr);
+			WriteProcessMemory(hProcess, DllPtr, DllData, dwSize, nullptr);
+			auto Thread = CreateRemoteThread(hProcess, nullptr, 0, (LPTHREAD_START_ROUTINE)ShellCode, DllPtr, 0, nullptr);
+			if (Thread)
+			{
+				WaitForSingleObject(Thread, INFINITE);
+				CloseHandle(Thread);
+			}
+
+			VirtualFreeEx(hProcess, ShellCode, 0, MEM_RELEASE);
+			VirtualFreeEx(hProcess, DllPtr, 0, MEM_RELEASE);
+			CloseHandle(hProcess);
+			return true;
+		}
+		else {
+			auto ShellCode = VirtualAllocEx(hProcess, nullptr, sizeof(MemLoadShellcode_x64), MEM_COMMIT | MEM_RESERVE | MEM_TOP_DOWN, PAGE_EXECUTE_READWRITE);
+			if (!ShellCode) {
+				CloseHandle(hProcess);
+				return false;
+			}
+			auto DllPtr = VirtualAllocEx(hProcess, nullptr, dwSize, MEM_COMMIT | MEM_RESERVE | MEM_TOP_DOWN, PAGE_EXECUTE_READWRITE);
+			if (!DllPtr) {
+				VirtualFreeEx(hProcess, ShellCode, 0, MEM_RELEASE);
+				CloseHandle(hProcess);
+				return false;
+			}
+
+			WriteProcessMemory(hProcess, ShellCode, MemLoadShellcode_x64, sizeof(MemLoadShellcode_x64), nullptr);
+			WriteProcessMemory(hProcess, DllPtr, DllData, dwSize, nullptr);
+			auto Thread = CreateRemoteThread(hProcess, nullptr, 0, (LPTHREAD_START_ROUTINE)ShellCode, DllPtr, 0, nullptr);
+			if (Thread)
+			{
+				WaitForSingleObject(Thread, INFINITE);
+				CloseHandle(Thread);
+			}
+
+			VirtualFreeEx(hProcess, ShellCode, 0, MEM_RELEASE);
+			VirtualFreeEx(hProcess, DllPtr, 0, MEM_RELEASE);
+			CloseHandle(hProcess);
+			return true;
+		}
 	}
 
-	WriteProcessMemory(hProcess, ShellCode, MemLoadShellcode_x64, sizeof(MemLoadShellcode_x64), nullptr);
-	WriteProcessMemory(hProcess, DllPtr, DllData, dwSize, nullptr);
-	auto Thread = CreateRemoteThread(hProcess, nullptr, 0, (LPTHREAD_START_ROUTINE)ShellCode, DllPtr, 0, nullptr);
-	if (Thread)
-	{
-		WaitForSingleObject(Thread, INFINITE);
-		CloseHandle(Thread);
-	}
-
-	VirtualFreeEx(hProcess, ShellCode, 0, MEM_RELEASE);
-	VirtualFreeEx(hProcess, DllPtr, 0, MEM_RELEASE);
-	CloseHandle(hProcess);
-	return true;
+	
 }
 bool DLLInject::R3MapInject(ULONG64 PID)
 {

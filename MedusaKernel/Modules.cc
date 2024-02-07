@@ -9,11 +9,6 @@ std::vector<UserModule> Modules::GetWin32MoudleList(ULONG64 PID)
 	PEPROCESS   tempep = NULL;
 	KAPC_STATE   kapc = { 0 };
 	KIRQL        tempirql = 0;
-	PPEB      peb = NULL;
-	PPEB_LDR_DATA	pPebLdrData = NULL;
-	PLIST_ENTRY		pListEntryStart = NULL;
-	PLIST_ENTRY		pListEntryEnd = NULL;
-	PLDR_DATA_TABLE_ENTRYB pLdrDataEntry = NULL;
 	NTSTATUS status = PsLookupProcessByProcessId((HANDLE)PID, &tempep);
 	if (!NT_SUCCESS(status))
 	{
@@ -21,43 +16,90 @@ std::vector<UserModule> Modules::GetWin32MoudleList(ULONG64 PID)
 	}
 	ObDereferenceObject(tempep);
 	KeStackAttachProcess(tempep, &kapc);
-	peb = (PPEB)PsGetProcessPeb(tempep);
-	if (!peb || !MmIsAddressValid(peb))
+	
+	PPEB32 pPeb32 = (PPEB32)PsGetProcessWow64Process(tempep);
+	if (pPeb32 && MmIsAddressValid(pPeb32))
 	{
-		KeUnstackDetachProcess(&kapc);
-		return temp_vector;
-	}
-	if (!MmIsAddressValid(&peb->Ldr))
-	{
-		return temp_vector;
-	}
-	pPebLdrData = (PPEB_LDR_DATA)peb->Ldr;
-	if (!pPebLdrData)
-	{
-		return temp_vector;
-	}
-	pListEntryStart = pListEntryEnd = pPebLdrData->InMemoryOrderModuleList.Blink;
-	do
-	{
-		pLdrDataEntry = (PLDR_DATA_TABLE_ENTRYB)CONTAINING_RECORD(pListEntryStart, LDR_DATA_TABLE_ENTRYB, InMemoryOrderLinks);
-		UserModule temp_list;
-		RtlZeroMemory(&temp_list, sizeof(UserModule));
-		temp_list.Addr = (ULONG64)pLdrDataEntry->DllBase;
-		temp_list.Size = pLdrDataEntry->SizeOfImage;
-		if (pLdrDataEntry->BaseDllName.Buffer != NULL)
+		if (!MmIsAddressValid(&pPeb32->Ldr))
 		{
-			RtlCopyMemory(temp_list.Name, pLdrDataEntry->BaseDllName.Buffer, pLdrDataEntry->BaseDllName.MaximumLength);
+			KeUnstackDetachProcess(&kapc);
+			return temp_vector;
 		}
-		if (pLdrDataEntry->FullDllName.Buffer != NULL)
+		PPEB_LDR_DATA32 pPebLdrData = (PPEB_LDR_DATA32)pPeb32->Ldr;
+		if (!pPebLdrData)
 		{
-			RtlCopyMemory(temp_list.Path, pLdrDataEntry->FullDllName.Buffer, pLdrDataEntry->FullDllName.MaximumLength);
+			KeUnstackDetachProcess(&kapc);
+			return temp_vector;
 		}
-		pListEntryStart = pListEntryStart->Blink;
-		if (pListEntryStart != pListEntryEnd)
+		for (PLIST_ENTRY32 pListEntry = (PLIST_ENTRY32)((PPEB_LDR_DATA32)pPeb32->Ldr)->InLoadOrderModuleList.Flink;
+			pListEntry != &((PPEB_LDR_DATA32)pPeb32->Ldr)->InLoadOrderModuleList;
+			pListEntry = (PLIST_ENTRY32)pListEntry->Flink)
 		{
+			PLDR_DATA_TABLE_ENTRY32 pEntry = CONTAINING_RECORD(pListEntry, LDR_DATA_TABLE_ENTRY32, InLoadOrderLinks);
+
+			UserModule temp_list;
+			RtlZeroMemory(&temp_list, sizeof(UserModule));
+			temp_list.Addr = (ULONG64)pEntry->DllBase;
+			temp_list.Size = pEntry->SizeOfImage;
+			if (pEntry->BaseDllName.Buffer != NULL)
+			{
+				RtlCopyMemory(temp_list.Name, (PWCH)pEntry->BaseDllName.Buffer, pEntry->BaseDllName.MaximumLength);
+			}
+			if (pEntry->FullDllName.Buffer != NULL)
+			{
+				RtlCopyMemory(temp_list.Path, (PWCH)pEntry->FullDllName.Buffer, pEntry->FullDllName.MaximumLength);
+			}
 			temp_vector.push_back(temp_list);
 		}
-	} while (pListEntryStart != pListEntryEnd);
+	}
+	{
+		PPEB      peb = NULL;
+		PPEB_LDR_DATA	pPebLdrData = NULL;
+		PLIST_ENTRY		pListEntryStart = NULL;
+		PLIST_ENTRY		pListEntryEnd = NULL;
+		PLDR_DATA_TABLE_ENTRYB pLdrDataEntry = NULL;
+
+		peb = (PPEB)PsGetProcessPeb(tempep);
+		if (!peb || !MmIsAddressValid(peb))
+		{
+			KeUnstackDetachProcess(&kapc);
+			return temp_vector;
+		}
+		if (!MmIsAddressValid(&peb->Ldr))
+		{
+			KeUnstackDetachProcess(&kapc);
+			return temp_vector;
+		}
+		pPebLdrData = (PPEB_LDR_DATA)peb->Ldr;
+		if (!pPebLdrData)
+		{
+			KeUnstackDetachProcess(&kapc);
+			return temp_vector;
+		}
+		pListEntryStart = pListEntryEnd = pPebLdrData->InMemoryOrderModuleList.Blink;
+		do
+		{
+			pLdrDataEntry = (PLDR_DATA_TABLE_ENTRYB)CONTAINING_RECORD(pListEntryStart, LDR_DATA_TABLE_ENTRYB, InMemoryOrderLinks);
+			UserModule temp_list;
+			RtlZeroMemory(&temp_list, sizeof(UserModule));
+			temp_list.Addr = (ULONG64)pLdrDataEntry->DllBase;
+			temp_list.Size = pLdrDataEntry->SizeOfImage;
+			if (pLdrDataEntry->BaseDllName.Buffer != NULL)
+			{
+				RtlCopyMemory(temp_list.Name, pLdrDataEntry->BaseDllName.Buffer, pLdrDataEntry->BaseDllName.MaximumLength);
+			}
+			if (pLdrDataEntry->FullDllName.Buffer != NULL)
+			{
+				RtlCopyMemory(temp_list.Path, pLdrDataEntry->FullDllName.Buffer, pLdrDataEntry->FullDllName.MaximumLength);
+			}
+			pListEntryStart = pListEntryStart->Blink;
+			if (pListEntryStart != pListEntryEnd)
+			{
+				temp_vector.push_back(temp_list);
+			}
+		} while (pListEntryStart != pListEntryEnd);
+	}
+	
 
 	KeUnstackDetachProcess(&kapc);
 	return temp_vector;

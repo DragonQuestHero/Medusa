@@ -408,7 +408,6 @@ void Medusa::ProcessRightMenu(QAction* action)
 		RightMenuDLLInject(action);
 		return;
 	}
-
 	if (action->text() == "QuickCheckALLProcess" || 
 		action->text() == "HookScanner" || 
 		action->text() == "HookScannerQuick" ||
@@ -417,7 +416,6 @@ void Medusa::ProcessRightMenu(QAction* action)
 		RightMenuHookScanner(action);
 		return;
 	}
-
 	ULONG64 PID = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 1).data().toULongLong();
 	if (action->text() == "R3ModulesView")
 	{
@@ -431,7 +429,6 @@ void Medusa::ProcessRightMenu(QAction* action)
 	{
 		RightMenuR3ModuleScanner(PID);
 	}
-
 	if (action->text() == "R3ThreadView")
 	{
 		RightMenuR3ThreadsView(PID);

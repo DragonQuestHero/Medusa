@@ -117,10 +117,27 @@ std::vector<MODULEENTRY32W> Modules::GetUserMoudleListR3(ULONG64 PID)
 	_PID = PID;
 	std::vector<MODULEENTRY32W> temp_vector;
 
+	ULONG Flag = TH32CS_SNAPMODULE;
+	HANDLE processHandle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, PID);
+	if (processHandle != NULL) {
+		BOOL isWow64 = FALSE;
+		if (IsWow64Process(processHandle, &isWow64)) {
+			if (isWow64) {
+				Flag = TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32;
+			}
+			else {
+				Flag = TH32CS_SNAPMODULE;
+			}
+		}
+	}
+
+	
+	
+
 	HANDLE        hModuleSnap = INVALID_HANDLE_VALUE;
 	MODULEENTRY32 me32 = { sizeof(MODULEENTRY32) };
 
-	hModuleSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, PID);
+	hModuleSnap = CreateToolhelp32Snapshot(Flag, PID);
 	if (hModuleSnap == INVALID_HANDLE_VALUE)
 	{
 		int a = GetLastError();

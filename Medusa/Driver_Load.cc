@@ -251,7 +251,20 @@ bool Driver_Load::Nt_Start_Driver()
 		}
 		else
 		{
-			QMessageBox::information(nullptr, "Error", std::to_string(ret).data());
+			char* temp_error = nullptr;
+			if (FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+				FORMAT_MESSAGE_FROM_SYSTEM |
+				FORMAT_MESSAGE_IGNORE_INSERTS,
+				NULL,
+				ret,
+				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+				(char*)&temp_error,
+				0,
+				NULL))
+			{
+				QMessageBox::information(nullptr, ("Error:" + std::to_string(ret)).data(), temp_error);
+				LocalFree(temp_error);
+			}
 			return false;
 		}
 	}
@@ -282,7 +295,20 @@ bool Driver_Load::Nt_Stop_Driver()
 		}
 		else
 		{
-			QMessageBox::information(nullptr, "Error", std::to_string(ret).data());
+			char* temp_error = nullptr;
+			if (FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+				FORMAT_MESSAGE_FROM_SYSTEM |
+				FORMAT_MESSAGE_IGNORE_INSERTS,
+				NULL,
+				ret,
+				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+				(char*)&temp_error,
+				0,
+				NULL))
+			{
+				QMessageBox::information(nullptr, ("Error:" + std::to_string(ret)).data(), temp_error);
+				LocalFree(temp_error);
+			}
 			return false;
 		}
 	}

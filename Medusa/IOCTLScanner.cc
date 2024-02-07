@@ -206,7 +206,6 @@ bool IOCTLScanner::GetIOCTLFunction(ULONG64 Addr, KernelModules& _KernelModules,
 	return dwRet;
 }
 
-
 bool IOCTLScanner::QueryIOCTLHook(ULONG64 Addr, KernelModules& _KernelModules, std::string name)
 {
 	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
