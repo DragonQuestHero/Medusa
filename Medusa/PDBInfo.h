@@ -16,7 +16,9 @@ struct NTOSSYMBOL
 struct SYMBOLSTRUCT
 {
 	ULONG64 Offset;
+	ULONG64 Size;
 	std::string Name;
+	std::string Type;
 };
 
 struct MedusaPDBInfo
@@ -47,6 +49,7 @@ public:
 	bool GetALL();
 	void UnLoad();
 	std::vector<SYMBOLSTRUCT> PdbGetStruct(IN PEZPDB Pdb, IN std::string StructName);
+	std::string GetArrayType(IN PEZPDB Pdb, DWORD symTag, DWORD typeId);
 	bool SendMedusaPDBInfo();
 public:
 	EZPDB _Pdb;

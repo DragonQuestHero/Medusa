@@ -30,6 +30,9 @@
     <Filter Include="Header Files\EzPdb">
       <UniqueIdentifier>{d4e90fcb-fc70-4376-ae7e-85d9b11cc21b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\SymParser">
+      <UniqueIdentifier>{5b67ab99-f96e-4aab-8a2a-7991f6ccccb9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="Medusa.qrc">
@@ -181,6 +184,9 @@
     <ClCompile Include="KernelCallBackScanner.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SymParser.cpp">
+      <Filter>Header Files\SymParser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Process.h">
@@ -227,6 +233,9 @@
     </ClInclude>
     <ClInclude Include="KernelCallBackScanner.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SymParser.h">
+      <Filter>Header Files\SymParser</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

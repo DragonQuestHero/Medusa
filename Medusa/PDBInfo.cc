@@ -4,6 +4,8 @@
 #include "KernelModules.h"
 #include "Modules.h"
 
+#include "SymParser.h"
+
 
 bool PDBInfo::DownLoadNtos()
 {
@@ -215,74 +217,173 @@ bool PDBInfo::GetALL()
 	MyStruct _MyStruct;
 	_MyStruct._BaseAddr = _BaseAddr;
 	_MyStruct.temp_vector = &_Symbol;
-	return SymEnumSymbols(GetCurrentProcess(), EZ_PDB_BASE_OF_DLL, "*!*", &PsymEnumeratesymbolsCallback, &_MyStruct);
+	if (!SymEnumSymbols(GetCurrentProcess(), EZ_PDB_BASE_OF_DLL, "*!*", &PsymEnumeratesymbolsCallback, &_MyStruct))
+	{
+		return false;
+	}
+	return SymEnumTypesByName(GetCurrentProcess(), EZ_PDB_BASE_OF_DLL, "*!*", &PsymEnumeratesymbolsCallback, &_MyStruct);
 }
 
 std::vector<SYMBOLSTRUCT> PDBInfo::PdbGetStruct(IN PEZPDB Pdb, IN std::string StructName)
 {
 	std::vector<SYMBOLSTRUCT> temp_vector;
 
-	ULONG SymInfoSize = sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR);
-	SYMBOL_INFO* SymInfo = (SYMBOL_INFO*)malloc(SymInfoSize);
-	if (!SymInfo)
+	SymParser _SymParser(Pdb->hProcess, EZ_PDB_BASE_OF_DLL);
+	SYM_INFO SymInfo;
+	_SymParser.DumpSymbol(StructName.data(), SymInfo);
+	SYMBOLSTRUCT temp_list;
+	temp_list.Name = SymInfo.Name;
+	temp_list.Size = SymInfo.Size;
+	temp_list.Offset = SymInfo.Offset;
+	temp_vector.push_back(temp_list);
+	for (auto x : SymInfo.Entries)
 	{
-		return  temp_vector;
-	}
-	ZeroMemory(SymInfo, SymInfoSize);
-	SymInfo->SizeOfStruct = sizeof(SYMBOL_INFO);
-	SymInfo->MaxNameLen = MAX_SYM_NAME;
-	if (!SymGetTypeFromName(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, StructName.c_str(), SymInfo))
-	{
-		return  temp_vector;
-	}
-
-	TI_FINDCHILDREN_PARAMS TempFp = { 0 };
-	if (!SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, SymInfo->TypeIndex, TI_GET_CHILDRENCOUNT, &TempFp))
-	{
-		free(SymInfo);
-		return  temp_vector;
-	}
-
-	ULONG ChildParamsSize = sizeof(TI_FINDCHILDREN_PARAMS) + TempFp.Count * sizeof(ULONG);
-	TI_FINDCHILDREN_PARAMS* ChildParams = (TI_FINDCHILDREN_PARAMS*)malloc(ChildParamsSize);
-	if (ChildParams == NULL)
-	{
-		free(SymInfo);
-		return  temp_vector;
-	}
-	ZeroMemory(ChildParams, ChildParamsSize);
-	memcpy(ChildParams, &TempFp, sizeof(TI_FINDCHILDREN_PARAMS));
-	if (!SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, SymInfo->TypeIndex, TI_FINDCHILDREN, ChildParams))
-	{
-		goto failed;
-	}
-	for (ULONG i = ChildParams->Start; i < ChildParams->Count; i++)
-	{
-		WCHAR* pSymName = NULL;
-		ULONG Offset = 0;
-		if (!SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, ChildParams->ChildId[i], TI_GET_OFFSET, &Offset))
+		SYMBOLSTRUCT temp_list;
+		temp_list.Name = x.Name;
+		temp_list.Size = x.Size;
+		temp_list.Offset = x.Offset;
+		if (x.ElementsCount > 1)
 		{
-			goto failed;
+			temp_list.Type = "[" + std::to_string(x.ElementsCount) + "]" + x.TypeName;
 		}
-		if (!SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, ChildParams->ChildId[i], TI_GET_SYMNAME, &pSymName))
+		else
 		{
-			goto failed;
+			temp_list.Type = x.TypeName;
 		}
-		if (pSymName)
+		if (x.IsBitField)
 		{
-			SYMBOLSTRUCT temp_list;
-			RtlZeroMemory(&temp_list, sizeof(SYMBOLSTRUCT));
-			temp_list.Name = W_TO_C(pSymName);
-			temp_list.Offset = Offset;
-			LocalFree(pSymName);
-			temp_vector.push_back(temp_list);
+			temp_list.Type = x.TypeName + " Pos:" + std::to_string(x.BitPosition);
 		}
+		temp_vector.push_back(temp_list);
 	}
-failed:
-	free(ChildParams);
-	free(SymInfo);
-	return  temp_vector;
+	return temp_vector;
 }
+//std::vector<SYMBOLSTRUCT> PDBInfo::PdbGetStruct(IN PEZPDB Pdb, IN std::string StructName)
+//{
+//	std::vector<SYMBOLSTRUCT> temp_vector;
+//
+//	ULONG SymInfoSize = sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR);
+//	SYMBOL_INFO* SymInfo = (SYMBOL_INFO*)malloc(SymInfoSize);
+//	if (!SymInfo)
+//	{
+//		return  temp_vector;
+//	}
+//	ZeroMemory(SymInfo, SymInfoSize);
+//	SymInfo->SizeOfStruct = sizeof(SYMBOL_INFO);
+//	SymInfo->MaxNameLen = MAX_SYM_NAME;
+//	if (!SymGetTypeFromName(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, StructName.c_str(), SymInfo))
+//	{
+//		return  temp_vector;
+//	}
+//
+//	TI_FINDCHILDREN_PARAMS TempFp = { 0 };
+//	if (!SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, SymInfo->TypeIndex, TI_GET_CHILDRENCOUNT, &TempFp))
+//	{
+//		free(SymInfo);
+//		return  temp_vector;
+//	}
+//
+//	ULONG ChildParamsSize = sizeof(TI_FINDCHILDREN_PARAMS) + TempFp.Count * sizeof(ULONG);
+//	TI_FINDCHILDREN_PARAMS* ChildParams = (TI_FINDCHILDREN_PARAMS*)malloc(ChildParamsSize);
+//	if (ChildParams == NULL)
+//	{
+//		free(SymInfo);
+//		return  temp_vector;
+//	}
+//	ZeroMemory(ChildParams, ChildParamsSize);
+//	memcpy(ChildParams, &TempFp, sizeof(TI_FINDCHILDREN_PARAMS));
+//	if (!SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, SymInfo->TypeIndex, TI_FINDCHILDREN, ChildParams))
+//	{
+//		goto failed;
+//	}
+//	for (ULONG i = ChildParams->Start; i < ChildParams->Count; i++)
+//	{
+//		WCHAR* pSymName = NULL;
+//		WCHAR* typeName = NULL;
+//		std::string type_name = "";
+//		DWORD typeId = 0;
+//		ULONG Offset = 0;
+//		DWORD symTag = 0;
+//		DWORD length = 0;
+//		if (!SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, ChildParams->ChildId[i], TI_GET_OFFSET, &Offset))
+//		{
+//			goto failed;
+//		}
+//		if (!SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, ChildParams->ChildId[i], TI_GET_SYMNAME, &pSymName))
+//		{
+//			goto failed;
+//		}
+//		if (!SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, ChildParams->ChildId[i], TI_GET_TYPE, &typeId))
+//		{
+//			goto failed;
+//		}
+//		if (SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, typeId, TI_GET_SYMNAME, &typeName))
+//		{
+//			//goto failed;
+//		}
+//		else if (SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, typeId, TI_GET_TYPEID, &symTag))
+//		{
+//			BOOL SymStatus = SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, typeId, TI_GET_SYMTAG, &symTag);
+//			if (symTag == SymTagPointerType) 
+//			{
+//				type_name = type_name + "Ptr64 ";
+//				DWORD pointedTypeId;
+//				if (SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, typeId, TI_GET_TYPEID, &pointedTypeId)) {
+//					DWORD pointedSymTag;
+//					if (SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, pointedTypeId, TI_GET_SYMTAG, &pointedSymTag)) {
+//						// 处理指向的类型
+//						if (pointedSymTag == SymTagBaseType) 
+//						{
+//							DWORD baseType;
+//							if (SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, pointedTypeId, TI_GET_BASETYPE, &baseType)) {
+//								type_name = type_name + GetTypeName(baseType);
+//							}
+//						}
+//					}
+//				}
+//				if (SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, typeId, TI_GET_LENGTH, &length))
+//				{
+//					type_name = type_name + "(" + std::to_string(length) + ")";
+//					//printf("Failed to get length information for type ID: %u\n", typeId);
+//				}
+//			}
+//			else if (symTag == SymTagArrayType) 
+//			{
+//				type_name = GetArrayType(Pdb, symTag, typeId);
+//			}
+//			else if (symTag == SymTagBaseType)
+//			{
+//				DWORD baseType;
+//				if (SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, typeId, TI_GET_BASETYPE, &baseType))
+//				{
+//					type_name = GetTypeName(baseType);
+//				}
+//			}
+//		}
+//		if (pSymName)
+//		{
+//			SYMBOLSTRUCT temp_list;
+//			temp_list.Name = W_TO_C(pSymName);
+//			if (typeName)
+//			{
+//				temp_list.Type = W_TO_C(typeName);
+//				LocalFree(typeName);
+//			}
+//			else if (type_name != "")
+//			{
+//				temp_list.Type = type_name;
+//			}
+//			temp_list.Offset = Offset;
+//			temp_list.Size = length;
+//			LocalFree(pSymName);
+//			temp_vector.push_back(temp_list);
+//		}
+//	}
+//failed:
+//	free(ChildParams);
+//	free(SymInfo);
+//	return  temp_vector;
+//}
 
 
 void PDBInfo::UnLoad()

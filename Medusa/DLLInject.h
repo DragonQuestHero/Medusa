@@ -6,7 +6,6 @@
 #include <TlHelp32.h>
 #include <Psapi.h>
 
-#include "Wow64Ext/wow64ext.h"
 
 
 class DLLInject

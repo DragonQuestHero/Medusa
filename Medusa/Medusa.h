@@ -43,6 +43,7 @@ public slots:
 	void HypervisorMenu(QAction*);
 	void PdbMenu(QAction*);
 	void ProcessRightMenu(QAction*);
+	void HideProcess(bool);
 	void DriverRightMenu(QAction*);
 	void DriverRightMenuDumpToFILE(bool);
 	void DriverRightMenuDumpToMemory(bool);
@@ -99,6 +100,9 @@ private:
 	QAction _TableView_Action_Threads;
 
 	QAction _TableView_Action_HideProcess;
+
+	QMenu _TableView_Menu_KillProcess;
+	QAction _TableView_Action_KillProcess;
 
 	QAction _TableView_Action_HideDriver;
 
@@ -239,6 +243,11 @@ public:
 		_TableView_Menu_Threads.addAction("R3ThreadView");
 		_TableView_Menu_Threads.addAction("R0ThreadView(second check)");
 
+		_TableView_Action_KillProcess.setMenu(&_TableView_Menu_KillProcess);
+		_TableView_Menu_KillProcess.setTitle("KillProcess");
+		_TableView_Menu_KillProcess.addAction("R3KillProcess");
+		_TableView_Menu_KillProcess.addAction("R0KillProcess");
+
 		_TableView_Action_HideProcess.setText("HideProcess");
 
 		ui.tableView->addAction(&_TableView_Action_Inject);
@@ -246,6 +255,7 @@ public:
 		ui.tableView->addAction(&_TableView_Action_Modules);
 		ui.tableView->addAction(&_TableView_Action_Threads);
 		ui.tableView->addAction(&_TableView_Action_HideProcess);
+		ui.tableView->addAction(&_TableView_Action_KillProcess);
 	}
 	void DriverRightMenuUI()
 	{

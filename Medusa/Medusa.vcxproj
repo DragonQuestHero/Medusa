@@ -159,6 +159,7 @@
     <ClCompile Include="PDBView.cc" />
     <ClCompile Include="Process.cc" />
     <ClCompile Include="StackWalk.cc" />
+    <ClCompile Include="SymParser.cpp" />
     <ClCompile Include="Threads.cc" />
     <QtRcc Include="Medusa.qrc" />
     <QtUic Include="HookScanner.ui" />
@@ -179,6 +180,7 @@
     <ClInclude Include="Driver_Load.h" />
     <ClInclude Include="EzPdb\EzPdb.h" />
     <ClInclude Include="FileCheck.h" />
+    <ClInclude Include="SymParser.h" />
     <QtMoc Include="StackWalk.h" />
     <QtMoc Include="Threads.h" />
     <QtMoc Include="HookScanner.h" />

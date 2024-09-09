@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <thread>
+#include <regex>
 
 
 PDBView::PDBView(QWidget* parent)
@@ -100,10 +101,13 @@ void PDBView::Serch()
 			_Model->setVerticalHeaderItem(i, new QStandardItem);
 			_Model->setData(_Model->index(i, 0), i);
 			_Model->setData(_Model->index(i, 1), x.Name.data());
+			std::ostringstream ret2;
+			_Model->setData(_Model->index(i, 2), x.Type.data());
+			ret2 << std::hex << "Size: 0x" << (ULONG64)x.Size;
+			_Model->setData(_Model->index(i, 3), ret2.str().data());
 			std::ostringstream ret;
-			_Model->setData(_Model->index(i, 2), "DEC:");
-			_Model->setData(_Model->index(i, 3), x.Offset);
-			ret << std::hex << "0x" << (ULONG64)x.Offset;
+			ret << "Offset DEC:" << (ULONG64)x.Offset<<"---";
+			ret << std::hex << "Hex: 0x" << (ULONG64)x.Offset;
 			_Model->setData(_Model->index(i, 4), ret.str().data());
 			i++;
 		}
@@ -122,26 +126,30 @@ void PDBView::Serch()
 		{
 			temp_str3.erase(0, 2);
 		}
-		ULONG64 addr = strtoull(temp_str3.data(), 0, 16);//输入的是数字
-		if (addr != 0)
+		std::regex pattern("^[0-9]+$");
+		if (std::regex_match(temp_str3, pattern))
 		{
-			for (auto x : _PDBInfo._Symbol)
+			ULONG64 addr = strtoull(temp_str3.data(), 0, 16);//输入的是数字
+			if (addr != 0)
 			{
-				if (addr >= x.Addr && addr < x.Addr + x.Size)
+				for (auto x : _PDBInfo._Symbol)
 				{
-					_Model->setVerticalHeaderItem(i, new QStandardItem);
-					_Model->setData(_Model->index(i, 0), i);
-					_Model->setData(_Model->index(i, 1), x.Name.data());
-					std::ostringstream ret;
-					ret << std::hex << "0x" << (ULONG64)x.Addr;
-					_Model->setData(_Model->index(i, 2), ret.str().data());
-					ret.str("");
-					ret << std::hex << "0x" << (ULONG64)_PDBInfo._BaseAddr;
-					_Model->setData(_Model->index(i, 3), ret.str().data());
-					ret.str("");
-					ret << std::hex << "0x" << (ULONG64)x.RVA;
-					_Model->setData(_Model->index(i, 4), ret.str().data());
-					i++;
+					if (addr >= x.Addr && addr < x.Addr + x.Size)
+					{
+						_Model->setVerticalHeaderItem(i, new QStandardItem);
+						_Model->setData(_Model->index(i, 0), i);
+						_Model->setData(_Model->index(i, 1), x.Name.data());
+						std::ostringstream ret;
+						ret << std::hex << "0x" << (ULONG64)x.Addr;
+						_Model->setData(_Model->index(i, 2), ret.str().data());
+						ret.str("");
+						ret << std::hex << "0x" << (ULONG64)_PDBInfo._BaseAddr;
+						_Model->setData(_Model->index(i, 3), ret.str().data());
+						ret.str("");
+						ret << std::hex << "0x" << (ULONG64)x.RVA;
+						_Model->setData(_Model->index(i, 4), ret.str().data());
+						i++;
+					}
 				}
 			}
 		}

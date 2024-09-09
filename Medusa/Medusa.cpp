@@ -58,6 +58,8 @@ void Medusa::Set_SLOTS()
 	connect(&_TableView_Menu_HookCheck, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 	connect(&_TableView_Menu_Modules, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 	connect(&_TableView_Menu_Threads, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
+	connect(&_TableView_Menu_KillProcess, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
+	connect(&_TableView_Action_HideProcess, SIGNAL(triggered(bool)), SLOT(HideProcess(bool)));//进程鼠标右键菜单
 
 
 	connect(&_TableView_Menu_DriverClear, SIGNAL(triggered(QAction*)), SLOT(DriverRightMenu(QAction*)));
@@ -148,6 +150,8 @@ void Medusa::PdbMenu(QAction* action)
 		}
 		ui.progressBar->setValue(100);
 		ui.label->setText("downlode pdb susscess");
+		std::string pe_file_path = std::string(std::getenv("systemroot")) + "\\System32\\ntoskrnl.exe";
+		_PDBView.setWindowTitle(pe_file_path.data());
 		return;
 	}
 	if (action->text() == "Down&Load file")
@@ -399,6 +403,7 @@ void Medusa::DriverLoad(QAction* action)
 
 void Medusa::ProcessRightMenu(QAction* action)
 {
+	ULONG64 PID = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 1).data().toULongLong();
 	if (action->text() == "R3CreateRemoteThread+LoadLibraryA" ||
 		action->text() == "R3APCInject" ||
 		action->text() == "R3MapInject" || 
@@ -408,7 +413,7 @@ void Medusa::ProcessRightMenu(QAction* action)
 		RightMenuDLLInject(action);
 		return;
 	}
-	if (action->text() == "QuickCheckALLProcess" || 
+	else if (action->text() == "QuickCheckALLProcess" || 
 		action->text() == "HookScanner" || 
 		action->text() == "HookScannerQuick" ||
 		action->text() == "HookScannerSimple(Y/N)")
@@ -416,27 +421,34 @@ void Medusa::ProcessRightMenu(QAction* action)
 		RightMenuHookScanner(action);
 		return;
 	}
-	ULONG64 PID = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 1).data().toULongLong();
-	if (action->text() == "R3ModulesView")
+	else if (action->text() == "R3ModulesView")
 	{
 		RightMenuR3ModulesView(PID);
 	}
-	if (action->text() == "R0ModulesView(second check)")
+	else if (action->text() == "R0ModulesView(second check)")
 	{
 		RightMenuR0ModulesView(PID);
 	}
-	if (action->text() == "R3ModuleScanner")
+	else if (action->text() == "R3ModuleScanner")
 	{
 		RightMenuR3ModuleScanner(PID);
 	}
-	if (action->text() == "R3ThreadView")
+	else if (action->text() == "R3ThreadView")
 	{
 		RightMenuR3ThreadsView(PID);
 	}
-	if (action->text() == "R0ThreadView(second check)")
+	else if (action->text() == "R3KillProcess")
 	{
-		RightMenuR0ThreadsView(PID);
+		HANDLE handle = OpenProcess(PROCESS_TERMINATE, FALSE, PID);
+		TerminateProcess(handle, 0);
 	}
+	else if (action->text() == "R0KillProcess")
+	{
+	}
+}
+
+void Medusa::HideProcess(bool)
+{
 }
 
 void Medusa::DriverRightMenu(QAction* action)
