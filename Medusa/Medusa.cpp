@@ -59,6 +59,8 @@ void Medusa::Set_SLOTS()
 	connect(&_TableView_Menu_Modules, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 	connect(&_TableView_Menu_Threads, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 	connect(&_TableView_Menu_KillProcess, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
+	connect(&_TableView_Menu_PDBViewProcess, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
+	connect(&_TableView_Menu_Memory, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 	connect(&_TableView_Action_HideProcess, SIGNAL(triggered(bool)), SLOT(HideProcess(bool)));//进程鼠标右键菜单
 
 
@@ -444,6 +446,59 @@ void Medusa::ProcessRightMenu(QAction* action)
 	}
 	else if (action->text() == "R0KillProcess")
 	{
+	}
+	else if (action->text() == "_EPROCESS")
+	{
+		_PDBView._Model->removeRows(0, _PDBView._Model->rowCount());
+		_PDBView._PDBInfo.UnLoad();
+		ui.label->setText("downloding pdb files..........................");
+		ui.progressBar->setMaximum(100);
+		ui.progressBar->setValue(5);
+		QCoreApplication::processEvents();
+		if (!_PDBView._PDBInfo.DownLoadNtos())
+		{
+			ui.label->setText("");
+			QMessageBox::information(this, "error", "error download pdb");
+			return;
+		}
+		ui.progressBar->setValue(100);
+		ui.label->setText("downlode pdb susscess");
+		std::string pe_file_path = std::string(std::getenv("systemroot")) + "\\System32\\ntoskrnl.exe";
+		_PDBView.setWindowTitle(pe_file_path.data());
+		_PDBView.ui.lineEdit->setText(ui.tableView->model()->index(ui.tableView->currentIndex().row(), 3).data().toString());
+		_PDBView.ui.lineEdit_2->setText("_EPROCESS");
+		_PDBView.Serch();
+		_PDBView.show();
+		return;
+	}
+	else if (action->text() == "_KPROCESS")
+	{
+		_PDBView._Model->removeRows(0, _PDBView._Model->rowCount());
+		_PDBView._PDBInfo.UnLoad();
+		ui.label->setText("downloding pdb files..........................");
+		ui.progressBar->setMaximum(100);
+		ui.progressBar->setValue(5);
+		QCoreApplication::processEvents();
+		if (!_PDBView._PDBInfo.DownLoadNtos())
+		{
+			ui.label->setText("");
+			QMessageBox::information(this, "error", "error download pdb");
+			return;
+		}
+		ui.progressBar->setValue(100);
+		ui.label->setText("downlode pdb susscess");
+		std::string pe_file_path = std::string(std::getenv("systemroot")) + "\\System32\\ntoskrnl.exe";
+		_PDBView.setWindowTitle(pe_file_path.data());
+		_PDBView.ui.lineEdit->setText(ui.tableView->model()->index(ui.tableView->currentIndex().row(), 3).data().toString());
+		_PDBView.ui.lineEdit_2->setText("_KPROCESS");
+		_PDBView.Serch();
+		_PDBView.show();
+		return;
+	}
+	else if (action->text() == "ViewMemory")
+	{
+		_UserMemory.PID = PID;
+		_UserMemory.show();
 	}
 }
 

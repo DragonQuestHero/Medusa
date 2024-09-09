@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form_KernelMemory</class>
- <widget class="QWidget" name="Form_KernelMemory">
+ <class>Form_UserMemory</class>
+ <widget class="QWidget" name="Form_UserMemory">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>KernelMemory</string>
+   <string>UserMemory</string>
   </property>
   <widget class="QPushButton" name="pushButton">
    <property name="geometry">
@@ -30,9 +30,9 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>80</y>
+     <y>90</y>
      <width>1111</width>
-     <height>851</height>
+     <height>841</height>
     </rect>
    </property>
    <property name="currentIndex">
@@ -204,6 +204,9 @@
    </property>
   </widget>
   <widget class="QLabel" name="label">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>30</x>
@@ -217,6 +220,9 @@
    </property>
   </widget>
   <widget class="QRadioButton" name="radioButton_3">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>370</x>
@@ -239,6 +245,9 @@
    </attribute>
   </widget>
   <widget class="QRadioButton" name="radioButton_4">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>470</x>
@@ -255,6 +264,9 @@
    </attribute>
   </widget>
   <widget class="QCheckBox" name="checkBox">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>260</x>
@@ -268,6 +280,9 @@
    </property>
   </widget>
   <widget class="QLineEdit" name="lineEdit_3">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>620</x>
@@ -281,6 +296,9 @@
    </property>
   </widget>
   <widget class="QLabel" name="label_2">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>570</x>
@@ -293,10 +311,55 @@
     <string>NewCR3:</string>
    </property>
   </widget>
+  <widget class="QRadioButton" name="radioButton_5">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>60</y>
+     <width>101</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>ReadFromR0</string>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">buttonGroup_2</string>
+   </attribute>
+  </widget>
+  <widget class="QRadioButton" name="radioButton_6">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>60</y>
+     <width>101</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>ReadFromR3</string>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">buttonGroup_2</string>
+   </attribute>
+  </widget>
  </widget>
  <resources/>
  <connections/>
  <buttongroups>
   <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_2"/>
  </buttongroups>
 </ui>

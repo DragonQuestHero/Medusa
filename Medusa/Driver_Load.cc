@@ -67,6 +67,10 @@ bool Driver_Load::Register_Driver()
 	if (!_Drive_Handle)
 	{
 		_Last_Error = GetLastError();
+		if (_Last_Error == 0x431)
+		{
+			return true;
+		}
 		return false;
 	}
 	return true;
@@ -100,10 +104,10 @@ bool Driver_Load::Stop_Driver()
 	}
 	if (status.dwCurrentState == SERVICE_STOP_PENDING || status.dwCurrentState == SERVICE_STOPPED)
 	{
-		_Last_Error = status.dwServiceSpecificExitCode;
-		return false;
+		return true;
 	}
-	return true;
+	_Last_Error = status.dwServiceSpecificExitCode;
+	return false;
 }
 
 bool Driver_Load::UnRegister_Driver()

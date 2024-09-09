@@ -72,6 +72,34 @@ void PDBView::LoadALL()
 void PDBView::Serch()
 {
 	_Model->removeRows(0, _Model->rowCount());
+	if (ui.lineEdit->text() != "" && ui.lineEdit_2->text() != "")
+	{
+		std::string temp_str3 = ui.lineEdit->text().toStdString();
+		if (temp_str3.find("0x") != std::string::npos)
+		{
+			temp_str3.erase(0, 2);
+		}
+		ULONG64 addr = strtoull(temp_str3.data(), 0, 16);//输入的是数字
+		std::vector<SYMBOLSTRUCT> temp_vector = _PDBInfo.PdbGetStruct(&_PDBInfo._Pdb, ui.lineEdit_2->text().toStdString());
+		int i = 0;
+		for (auto x : temp_vector)
+		{
+			_Model->setVerticalHeaderItem(i, new QStandardItem);
+			_Model->setData(_Model->index(i, 0), i);
+			_Model->setData(_Model->index(i, 1), x.Name.data());
+			std::ostringstream ret2;
+			ret2 << std::hex << "0x" << addr + x.Offset;
+			_Model->setData(_Model->index(i, 2), ret2.str().data());
+
+			std::ostringstream ret;
+			_Model->setData(_Model->index(i, 3), x.Type.data());
+			ret << std::hex << "Size: 0x" << (ULONG64)x.Size;
+			ret << std::hex << "Offset: 0x" << (ULONG64)x.Offset;
+			_Model->setData(_Model->index(i, 4), ret.str().data());
+			i++;
+		}
+		return;
+	}
 	if (ui.lineEdit->text() != "")
 	{
 		ULONG64 RVA = EzPdbGetRva(&_PDBInfo._Pdb, ui.lineEdit->text().toStdString());//NtTerminateThread

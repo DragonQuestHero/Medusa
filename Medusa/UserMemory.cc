@@ -1,9 +1,9 @@
-#include "KernelMemory.h"
+#include "UserMemory.h"
 
 
 #include "Zydis/include/Zydis/Zydis.h"
 
-KernelMemory::KernelMemory(QWidget* parent)
+UserMemory::UserMemory(QWidget* parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
@@ -29,12 +29,12 @@ KernelMemory::KernelMemory(QWidget* parent)
 	connect(ui.pushButton_2, SIGNAL(clicked()), SLOT(DumpMemory()));
 	connect(ui.pushButton_3, SIGNAL(clicked()), SLOT(DumpASM()));
 
-	connect(ui.textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this,&KernelMemory::TexeBar);
-	connect(ui.textEdit_2->verticalScrollBar(), &QScrollBar::valueChanged, this, &KernelMemory::TexeBar);
-	connect(ui.textEdit_3->verticalScrollBar(), &QScrollBar::valueChanged, this, &KernelMemory::TexeBar);
+	connect(ui.textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &UserMemory::TexeBar);
+	connect(ui.textEdit_2->verticalScrollBar(), &QScrollBar::valueChanged, this, &UserMemory::TexeBar);
+	connect(ui.textEdit_3->verticalScrollBar(), &QScrollBar::valueChanged, this, &UserMemory::TexeBar);
 }
 
-void KernelMemory::TexeBar(int value)
+void UserMemory::TexeBar(int value)
 {
 	if (ui.textEdit->verticalScrollBar()->value() == value)
 	{
@@ -53,7 +53,7 @@ void KernelMemory::TexeBar(int value)
 	}
 }
 
-void KernelMemory::DumpMemory()
+void UserMemory::DumpMemory()
 {
 	std::string addr_str = ui.lineEdit->text().toStdString();
 	if (addr_str.find("0x") != std::string::npos)
@@ -72,7 +72,7 @@ void KernelMemory::DumpMemory()
 	{
 		char* temp_buffer = new char[Size];
 		RtlZeroMemory(temp_buffer, Size);
-		ULONG64 ret = ReadKernelMemory(Addr, Size, temp_buffer);
+		ULONG64 ret = ReadUserMemory(Addr, Size, temp_buffer);
 		if (ret)
 		{
 			std::fstream temp_file(addr_str, std::ios::out | std::ios::binary);
@@ -88,7 +88,7 @@ void KernelMemory::DumpMemory()
 	QMessageBox::information(this, "Ret", "error");
 }
 
-void KernelMemory::DumpASM()
+void UserMemory::DumpASM()
 {
 	std::string addr_str = ui.lineEdit->text().toStdString();
 	if (addr_str.find("0x") != std::string::npos)
@@ -107,10 +107,10 @@ void KernelMemory::DumpASM()
 	{
 		char* temp_buffer = new char[Size];
 		RtlZeroMemory(temp_buffer, Size);
-		ULONG64 ret = ReadKernelMemory(Addr, Size, temp_buffer);
+		ULONG64 ret = ReadUserMemory(Addr, Size, temp_buffer);
 		if (ret)
 		{
-			std::fstream temp_file(addr_str+".txt", std::ios::out | std::ios::binary);
+			std::fstream temp_file(addr_str + ".txt", std::ios::out | std::ios::binary);
 			if (temp_file.is_open())
 			{
 				ZyanU64 runtime_address = Addr;
@@ -161,7 +161,7 @@ void KernelMemory::DumpASM()
 	QMessageBox::information(this, "Ret", "error");
 }
 
-void KernelMemory::QueryMemoryTable1(char* temp_buffer, ULONG64 ret, ULONG64 Addr)
+void UserMemory::QueryMemoryTable1(char* temp_buffer, ULONG64 ret, ULONG64 Addr)
 {
 	std::string str_line1;
 	std::string str_line2;
@@ -207,7 +207,7 @@ void KernelMemory::QueryMemoryTable1(char* temp_buffer, ULONG64 ret, ULONG64 Add
 	ui.textEdit_2->setPlainText(QString::fromStdString(str_line3));
 }
 
-void KernelMemory::QueryMemoryTable2(char* temp_buffer, ULONG64 ret, ULONG64 Addr, ULONG64 Size)
+void UserMemory::QueryMemoryTable2(char* temp_buffer, ULONG64 ret, ULONG64 Addr, ULONG64 Size)
 {
 	ZyanU64 runtime_address = Addr;
 
@@ -221,14 +221,14 @@ void KernelMemory::QueryMemoryTable2(char* temp_buffer, ULONG64 ret, ULONG64 Add
 		/* buffer:          */ temp_buffer + offset,
 		/* length:          */ Size - offset,
 		/* instruction:     */ &instruction
-	))) 
+	)))
 	{
 		_Model->setVerticalHeaderItem(i, new QStandardItem);
 		_Model->setData(_Model->index(i, 0), i);
 		std::ostringstream ret;
 		ret << std::hex << "0x" << runtime_address;
 		_Model->setData(_Model->index(i, 1), ret.str().data());
-		
+
 		std::string str_line2;
 		for (int j = 0; j < instruction.info.length; j++)
 		{
@@ -254,7 +254,7 @@ void KernelMemory::QueryMemoryTable2(char* temp_buffer, ULONG64 ret, ULONG64 Add
 	}
 }
 
-void KernelMemory::QueryMemory()
+void UserMemory::QueryMemory()
 {
 	_Model->removeRows(0, _Model->rowCount());
 	ui.textEdit_3->setPlainText("");
@@ -279,27 +279,31 @@ void KernelMemory::QueryMemory()
 	{
 		char* temp_buffer = new char[Size];
 		RtlZeroMemory(temp_buffer, Size);
-		ULONG64 ret = ReadKernelMemory(Addr, Size, temp_buffer);
-		if (ret)
+		if (ui.radioButton_6->isChecked())
 		{
-			if (ui.tabWidget->currentIndex() == 0)
-			{
-				QueryMemoryTable2(temp_buffer, ret, Addr,Size);
-			}
-			if (ui.tabWidget->currentIndex() == 1)
-			{
-				QueryMemoryTable1(temp_buffer, ret, Addr);
-			}
+			
 		}
-		delete temp_buffer;
+		else
+		{
+			ULONG64 ret = ReadUserMemory(Addr, Size, temp_buffer);
+			if (ret)
+			{
+				if (ui.tabWidget->currentIndex() == 0)
+				{
+					QueryMemoryTable2(temp_buffer, ret, Addr, Size);
+				}
+				if (ui.tabWidget->currentIndex() == 1)
+				{
+					QueryMemoryTable1(temp_buffer, ret, Addr);
+				}
+			}
+			delete temp_buffer;
+		}
 	}
-	std::ostringstream ret;
-	ret << "Process:Medusa    CR3:" << std::hex << "0x" << GetKernelCR3();
-	ui.label->setText(ret.str().data());
 }
 
-#define TEST_ReadKernelMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7117,METHOD_BUFFERED ,FILE_ANY_ACCESS)
-ULONG64 KernelMemory::ReadKernelMemory(ULONG64 Addr, ULONG64 Size, void* Buffer)
+#define TEST_ReadUserMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7117,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+ULONG64 UserMemory::ReadUserMemory(ULONG64 Addr, ULONG64 Size, void* Buffer)
 {
 	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -313,7 +317,7 @@ ULONG64 KernelMemory::ReadKernelMemory(ULONG64 Addr, ULONG64 Size, void* Buffer)
 	temp_ulong64[1] = Size;
 
 	DWORD dwRet = 0;
-	DeviceIoControl(m_hDevice, TEST_ReadKernelMemory, temp_ulong64, 0x10, Buffer, Size, &dwRet, NULL);
+	DeviceIoControl(m_hDevice, TEST_ReadUserMemory, temp_ulong64, 0x10, Buffer, Size, &dwRet, NULL);
 
 	delete temp_ulong64;
 	CloseHandle(m_hDevice);
@@ -321,7 +325,7 @@ ULONG64 KernelMemory::ReadKernelMemory(ULONG64 Addr, ULONG64 Size, void* Buffer)
 }
 
 #define TEST_GetCR3 CTL_CODE(FILE_DEVICE_UNKNOWN,0x7121,METHOD_BUFFERED ,FILE_ANY_ACCESS)
-ULONG64 KernelMemory::GetKernelCR3()
+ULONG64 UserMemory::GetKernelCR3()
 {
 	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);

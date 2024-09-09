@@ -23,6 +23,7 @@
 #include "KernelModules.h"
 #include "IOCTLScanner.h"
 #include "KernelMemory.h"
+#include "UserMemory.h"
 
 
 #include "Process.h"
@@ -81,6 +82,7 @@ private:
 	KernelModules _KernelModules;
 	IOCTLScanner _IOCTLScanner;
 	KernelMemory _KernelMemory;
+	UserMemory _UserMemory;
 private:
     QStandardItemModel* _Model;
 	QStandardItemModel* _Model_Driver;
@@ -108,6 +110,12 @@ private:
 
 	QMenu _TableView_Menu_DriverClear;
 	QAction _TableView_Action_DriverClear;
+
+	QMenu _TableView_Menu_PDBViewProcess;
+	QAction _TableView_Action_PDBViewProcess;
+
+	QMenu _TableView_Menu_Memory;
+	QAction _TableView_Action_Memory;
 
 	QAction _TableView_Action_DriverDumpFILE;
 	QAction _TableView_Action_DriverDumpMemory;
@@ -248,14 +256,26 @@ public:
 		_TableView_Menu_KillProcess.addAction("R3KillProcess");
 		_TableView_Menu_KillProcess.addAction("R0KillProcess");
 
+		_TableView_Action_PDBViewProcess.setMenu(&_TableView_Menu_PDBViewProcess);
+		_TableView_Menu_PDBViewProcess.setTitle("PDBViewProcess");
+		_TableView_Menu_PDBViewProcess.addAction("_EPROCESS");
+		_TableView_Menu_PDBViewProcess.addAction("_KPROCESS");
+
 		_TableView_Action_HideProcess.setText("HideProcess");
+
+		_TableView_Action_Memory.setMenu(&_TableView_Menu_Memory);
+		_TableView_Menu_Memory.setTitle("Memory");
+		_TableView_Menu_Memory.addAction("ViewMemory");
+		_TableView_Menu_Memory.addAction("MemoryList");
 
 		ui.tableView->addAction(&_TableView_Action_Inject);
 		ui.tableView->addAction(&_TableView_Action_HookCheck);
 		ui.tableView->addAction(&_TableView_Action_Modules);
 		ui.tableView->addAction(&_TableView_Action_Threads);
-		ui.tableView->addAction(&_TableView_Action_HideProcess);
+		ui.tableView->addAction(&_TableView_Action_Memory);
 		ui.tableView->addAction(&_TableView_Action_KillProcess);
+		ui.tableView->addAction(&_TableView_Action_PDBViewProcess);
+		ui.tableView->addAction(&_TableView_Action_HideProcess);
 	}
 	void DriverRightMenuUI()
 	{

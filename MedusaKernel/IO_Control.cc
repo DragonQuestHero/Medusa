@@ -46,6 +46,9 @@ IO_Control* IO_Control::_This;
 #define TEST_GetCallBackList CTL_CODE(FILE_DEVICE_UNKNOWN,0x7119,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_GetCallBackListNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7120,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
+#define TEST_GetCR3 CTL_CODE(FILE_DEVICE_UNKNOWN,0x7121,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define TEST_SetCR3 CTL_CODE(FILE_DEVICE_UNKNOWN,0x7122,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
 NTSTATUS IO_Control::Create_IO_Control()
 {
 	NTSTATUS status = 0;
@@ -369,6 +372,14 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		}
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_CallBackScanner._ObjectCallBackList.size() * sizeof(ObjectCallBackList);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if (Io_Control_Code == TEST_GetCR3 && Output_Lenght > 0)
+	{
+		*(ULONG64*)Input_Buffer = __readcr3();
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = 8;
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}

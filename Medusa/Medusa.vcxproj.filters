@@ -187,6 +187,9 @@
     <ClCompile Include="SymParser.cpp">
       <Filter>Header Files\SymParser</Filter>
     </ClCompile>
+    <ClCompile Include="UserMemory.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Process.h">
@@ -268,6 +271,9 @@
     <QtUic Include="KernelMemory.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+    <QtUic Include="UserMemory.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="HookScanner.h">
@@ -289,6 +295,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="KernelMemory.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="UserMemory.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

@@ -9,7 +9,7 @@ void KernelModules::GetKernelModuleListALL()
 {
 	_KernelModuleList.clear();
 	GetKernelModuleList1();
-	GetKernelModuleList2();
+	//GetKernelModuleList2();
 	UNICODE_STRING	directory = RTL_CONSTANT_STRING(L"\\driver");
 	UNICODE_STRING	FileSystem = RTL_CONSTANT_STRING(L"\\FileSystem");
 	GetKernelModuleList3(&directory);

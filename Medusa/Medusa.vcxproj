@@ -161,6 +161,7 @@
     <ClCompile Include="StackWalk.cc" />
     <ClCompile Include="SymParser.cpp" />
     <ClCompile Include="Threads.cc" />
+    <ClCompile Include="UserMemory.cc" />
     <QtRcc Include="Medusa.qrc" />
     <QtUic Include="HookScanner.ui" />
     <QtMoc Include="Medusa.h" />
@@ -173,6 +174,7 @@
     <QtUic Include="PDBView.ui" />
     <QtUic Include="StackWalk.ui" />
     <QtUic Include="Threads.ui" />
+    <QtUic Include="UserMemory.ui" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DLLInject.h" />
@@ -181,6 +183,7 @@
     <ClInclude Include="EzPdb\EzPdb.h" />
     <ClInclude Include="FileCheck.h" />
     <ClInclude Include="SymParser.h" />
+    <QtMoc Include="UserMemory.h" />
     <QtMoc Include="StackWalk.h" />
     <QtMoc Include="Threads.h" />
     <QtMoc Include="HookScanner.h" />
