@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QTextCodec>
+#include <QTimer>
 
 #include <fstream>
 #include <sstream>
@@ -24,6 +25,7 @@
 #include "IOCTLScanner.h"
 #include "KernelMemory.h"
 #include "UserMemory.h"
+#include "UserMemoryList.h"
 
 
 #include "Process.h"
@@ -83,7 +85,9 @@ private:
 	IOCTLScanner _IOCTLScanner;
 	KernelMemory _KernelMemory;
 	UserMemory _UserMemory;
+	UserMemoryList _UserMemoryList;
 private:
+	QTimer *_QTimer;
     QStandardItemModel* _Model;
 	QStandardItemModel* _Model_Driver;
 	QStandardItemModel* _Model_UnloadDriver;
@@ -265,8 +269,10 @@ public:
 
 		_TableView_Action_Memory.setMenu(&_TableView_Menu_Memory);
 		_TableView_Menu_Memory.setTitle("Memory");
+		_TableView_Menu_Memory.addAction("MemoryListR3");
+		_TableView_Menu_Memory.addAction("MemoryListR3(second check)");
+		_TableView_Menu_Memory.addAction("MemoryListR0");
 		_TableView_Menu_Memory.addAction("ViewMemory");
-		_TableView_Menu_Memory.addAction("MemoryList");
 
 		ui.tableView->addAction(&_TableView_Action_Inject);
 		ui.tableView->addAction(&_TableView_Action_HookCheck);

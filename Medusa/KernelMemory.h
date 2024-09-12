@@ -38,6 +38,7 @@ public slots:
 	void DumpASM();
 	void QueryMemory();
 	void TexeBar(int value);
+	void ChangeTab();
 public:
 	Ui::Form_KernelMemory ui;
 	QStandardItemModel* _Model;

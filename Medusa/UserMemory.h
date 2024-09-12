@@ -28,7 +28,8 @@ public:
 	UserMemory(QWidget* parent = nullptr);
 	~UserMemory() = default;
 public:
-	ULONG64 ReadUserMemory(ULONG64 Addr, ULONG64 Size, void* Buffer);
+	ULONG64 ReadUserMemoryR3(ULONG64 Addr, ULONG64 Size, void* Buffer);
+	ULONG64 ReadUserMemoryR0(ULONG64 Addr, ULONG64 Size, void* Buffer);
 	ULONG64 GetKernelCR3();
 public:
 	void QueryMemoryTable1(char* temp_buffer, ULONG64 ret, ULONG64 Addr);
@@ -38,6 +39,7 @@ public slots:
 	void DumpASM();
 	void QueryMemory();
 	void TexeBar(int value);
+	void ChangeTab();
 public:
 	Ui::Form_UserMemory ui;
 	QStandardItemModel* _Model;

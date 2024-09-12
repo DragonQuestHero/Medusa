@@ -45,6 +45,12 @@ Medusa::Medusa(QWidget *parent)
 		_Driver_Loaded = true;
 	}
 	CloseHandle(m_hDevice);
+	_UserMemoryList.SetUserMemory(&_UserMemory);
+	_QTimer = new QTimer(this);
+	QObject::connect(_QTimer, &QTimer::timeout, [&](){
+			ChangeTab();
+		});
+	_QTimer->start(10000);
 	ChangeTab();
 }
 
@@ -53,6 +59,7 @@ void Medusa::Set_SLOTS()
 {
 	connect(ui.tabWidget, SIGNAL(currentChanged(int)), SLOT(ChangeTab()));//进程
 	connect(ui.tabWidget, SIGNAL(tabBarClicked(int)), SLOT(ChangeTab()));//进程
+
 
 	connect(&_TableView_Menu_Inject, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
 	connect(&_TableView_Menu_HookCheck, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//进程鼠标右键菜单
@@ -498,7 +505,19 @@ void Medusa::ProcessRightMenu(QAction* action)
 	else if (action->text() == "ViewMemory")
 	{
 		_UserMemory.PID = PID;
+		_UserMemory.ui.label->setText("Process:"+
+			ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString() +"    CR3:0x0" );
 		_UserMemory.show();
+	}
+	else if (action->text() == "MemoryListR3")
+	{
+		_UserMemoryList.ShowUserMemoryListR3(PID, false);
+		_UserMemoryList.show();
+	}
+	else if (action->text() == "MemoryListR3(second check)")
+	{
+	_UserMemoryList.ShowUserMemoryListR3(PID, true);
+	_UserMemoryList.show();
 	}
 }
 

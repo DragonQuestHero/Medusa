@@ -190,6 +190,9 @@
     <ClCompile Include="UserMemory.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UserMemoryList.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Process.h">
@@ -274,6 +277,9 @@
     <QtUic Include="UserMemory.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+    <QtUic Include="UserMemoryList.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="HookScanner.h">
@@ -298,6 +304,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="UserMemory.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="UserMemoryList.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

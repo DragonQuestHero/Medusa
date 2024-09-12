@@ -162,6 +162,7 @@
     <ClCompile Include="SymParser.cpp" />
     <ClCompile Include="Threads.cc" />
     <ClCompile Include="UserMemory.cc" />
+    <ClCompile Include="UserMemoryList.cc" />
     <QtRcc Include="Medusa.qrc" />
     <QtUic Include="HookScanner.ui" />
     <QtMoc Include="Medusa.h" />
@@ -170,6 +171,7 @@
     <QtUic Include="IOCTLScanner.ui" />
     <QtUic Include="Medusa.ui" />
     <QtUic Include="KernelMemory.ui" />
+    <QtUic Include="UserMemoryList.ui" />
     <QtUic Include="Modules.ui" />
     <QtUic Include="PDBView.ui" />
     <QtUic Include="StackWalk.ui" />
@@ -183,6 +185,7 @@
     <ClInclude Include="EzPdb\EzPdb.h" />
     <ClInclude Include="FileCheck.h" />
     <ClInclude Include="SymParser.h" />
+    <QtMoc Include="UserMemoryList.h" />
     <QtMoc Include="UserMemory.h" />
     <QtMoc Include="StackWalk.h" />
     <QtMoc Include="Threads.h" />

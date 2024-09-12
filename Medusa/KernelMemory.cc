@@ -32,6 +32,16 @@ KernelMemory::KernelMemory(QWidget* parent)
 	connect(ui.textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this,&KernelMemory::TexeBar);
 	connect(ui.textEdit_2->verticalScrollBar(), &QScrollBar::valueChanged, this, &KernelMemory::TexeBar);
 	connect(ui.textEdit_3->verticalScrollBar(), &QScrollBar::valueChanged, this, &KernelMemory::TexeBar);
+
+	connect(ui.tabWidget, SIGNAL(currentChanged(int)), SLOT(ChangeTab()));//½ø³Ì
+}
+
+void KernelMemory::ChangeTab()
+{
+	if (ui.lineEdit->text() != "" && ui.lineEdit_2->text() != "")
+	{
+		QueryMemory();
+	}
 }
 
 void KernelMemory::TexeBar(int value)

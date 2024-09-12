@@ -32,6 +32,17 @@ UserMemory::UserMemory(QWidget* parent)
 	connect(ui.textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &UserMemory::TexeBar);
 	connect(ui.textEdit_2->verticalScrollBar(), &QScrollBar::valueChanged, this, &UserMemory::TexeBar);
 	connect(ui.textEdit_3->verticalScrollBar(), &QScrollBar::valueChanged, this, &UserMemory::TexeBar);
+
+	connect(ui.tabWidget, SIGNAL(currentChanged(int)), SLOT(ChangeTab()));//进程
+	//connect(ui.tabWidget, SIGNAL(tabBarClicked(int)), SLOT(ChangeTab()));//进程
+}
+
+void UserMemory::ChangeTab()
+{
+	if (ui.lineEdit->text() != "" && ui.lineEdit_2->text() != "")
+	{
+		QueryMemory();
+	}
 }
 
 void UserMemory::TexeBar(int value)
@@ -72,7 +83,15 @@ void UserMemory::DumpMemory()
 	{
 		char* temp_buffer = new char[Size];
 		RtlZeroMemory(temp_buffer, Size);
-		ULONG64 ret = ReadUserMemory(Addr, Size, temp_buffer);
+		ULONG64 ret = 0;
+		if (ui.radioButton_6->isChecked())
+		{
+			ret = ReadUserMemoryR3(Addr, Size, temp_buffer);
+		}
+		else
+		{
+			ret = ReadUserMemoryR0(Addr, Size, temp_buffer);
+		}
 		if (ret)
 		{
 			std::fstream temp_file(addr_str, std::ios::out | std::ios::binary);
@@ -81,9 +100,11 @@ void UserMemory::DumpMemory()
 				temp_file << std::string(temp_buffer, ret);
 				temp_file.close();
 				QMessageBox::information(this, "Ret", "susscss");
+				delete temp_buffer;
 				return;
 			}
 		}
+		delete temp_buffer;
 	}
 	QMessageBox::information(this, "Ret", "error");
 }
@@ -107,7 +128,15 @@ void UserMemory::DumpASM()
 	{
 		char* temp_buffer = new char[Size];
 		RtlZeroMemory(temp_buffer, Size);
-		ULONG64 ret = ReadUserMemory(Addr, Size, temp_buffer);
+		ULONG64 ret = 0;
+		if (ui.radioButton_6->isChecked())
+		{
+			ret = ReadUserMemoryR3(Addr, Size, temp_buffer);
+		}
+		else
+		{
+			ret = ReadUserMemoryR0(Addr, Size, temp_buffer);
+		}
 		if (ret)
 		{
 			std::fstream temp_file(addr_str + ".txt", std::ios::out | std::ios::binary);
@@ -154,9 +183,11 @@ void UserMemory::DumpASM()
 				}
 				temp_file.close();
 				QMessageBox::information(this, "Ret", "susscss");
+				delete temp_buffer;
 				return;
 			}
 		}
+		delete temp_buffer;
 	}
 	QMessageBox::information(this, "Ret", "error");
 }
@@ -281,11 +312,7 @@ void UserMemory::QueryMemory()
 		RtlZeroMemory(temp_buffer, Size);
 		if (ui.radioButton_6->isChecked())
 		{
-			
-		}
-		else
-		{
-			ULONG64 ret = ReadUserMemory(Addr, Size, temp_buffer);
+			ULONG64 ret = ReadUserMemoryR3(Addr, Size, temp_buffer);
 			if (ret)
 			{
 				if (ui.tabWidget->currentIndex() == 0)
@@ -297,13 +324,40 @@ void UserMemory::QueryMemory()
 					QueryMemoryTable1(temp_buffer, ret, Addr);
 				}
 			}
-			delete temp_buffer;
 		}
+		else
+		{
+			ULONG64 ret = ReadUserMemoryR0(Addr, Size, temp_buffer);
+			if (ret)
+			{
+				if (ui.tabWidget->currentIndex() == 0)
+				{
+					QueryMemoryTable2(temp_buffer, ret, Addr, Size);
+				}
+				if (ui.tabWidget->currentIndex() == 1)
+				{
+					QueryMemoryTable1(temp_buffer, ret, Addr);
+				}
+			}
+		}
+		delete temp_buffer;
 	}
 }
 
+ULONG64 UserMemory::ReadUserMemoryR3(ULONG64 Addr, ULONG64 Size, void* Buffer)
+{
+	HANDLE handle = OpenProcess(PROCESS_VM_READ, false, PID);
+	if (!handle)
+	{
+		return 0;
+	}
+	SIZE_T lpNumberOfBytesRead = 0;
+	ReadProcessMemory(handle, (void*)Addr, Buffer, Size, &lpNumberOfBytesRead);
+	return lpNumberOfBytesRead;
+}
+
 #define TEST_ReadUserMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7117,METHOD_BUFFERED ,FILE_ANY_ACCESS)
-ULONG64 UserMemory::ReadUserMemory(ULONG64 Addr, ULONG64 Size, void* Buffer)
+ULONG64 UserMemory::ReadUserMemoryR0(ULONG64 Addr, ULONG64 Size, void* Buffer)
 {
 	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
