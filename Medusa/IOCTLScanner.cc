@@ -21,6 +21,11 @@ IOCTLScanner::IOCTLScanner(QWidget* parent)
 	ui.tableView->setColumnWidth(1, 250);
 	ui.tableView->setColumnWidth(2, 200);
 	ui.tableView->setColumnWidth(3, 200);
+
+	_TableView_Action_Inject.setText("MemoryView");
+	ui.tableView->addAction(&_TableView_Action_Inject);
+	ui.tableView->setContextMenuPolicy(Qt::ActionsContextMenu);
+	connect(&_TableView_Action_Inject, SIGNAL(triggered(bool)), SLOT(MemoryView(bool)));
 }
 
 std::string IOCTLScanner::GetFunctionName(ULONG64 Index)

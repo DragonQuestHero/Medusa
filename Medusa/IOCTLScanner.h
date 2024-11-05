@@ -17,6 +17,7 @@
 
 #include "ui_IOCTLScanner.h"
 #include "KernelModules.h"
+#include "KernelMemory.h"
 
 struct IOCTLS
 {
@@ -37,7 +38,16 @@ public:
 	bool QueryIOCTLHook(ULONG64 Addr, KernelModules& _KernelModules, std::string);
 public:
 	std::string IOCTLScanner::GetFunctionName(ULONG64 Index);
+	QAction _TableView_Action_Inject;
+	KernelMemory _KernelMemory;
 public slots:
+	void MemoryView(bool)
+	{
+		_KernelMemory.ui.lineEdit->setText(
+			ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString());
+		_KernelMemory.QueryMemory();
+		_KernelMemory.show();
+	}
 public:
 	Ui::Form_IOCTLScanner ui;
 	QStandardItemModel* _Model;

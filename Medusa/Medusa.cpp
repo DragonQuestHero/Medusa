@@ -46,11 +46,12 @@ Medusa::Medusa(QWidget *parent)
 	}
 	CloseHandle(m_hDevice);
 	_UserMemoryList.SetUserMemory(&_UserMemory);
-	_QTimer = new QTimer(this);
+
+	/*_QTimer = new QTimer(this);
 	QObject::connect(_QTimer, &QTimer::timeout, [&](){
 			ChangeTab();
 		});
-	_QTimer->start(10000);
+	_QTimer->start(10000);*/
 	ChangeTab();
 }
 
