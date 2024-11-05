@@ -5,6 +5,7 @@
 #include "EmunProcess.h"
 #include "Modules.h"
 #include "CallBackScanner.h"
+#include "SSDT.h"
 
 #include <string>
 
@@ -127,7 +128,18 @@ void TestCallBack()//²»Ö§³Öwin7
 	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
 }
 
+void TestSSDT()
+{
+	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "TestSSDT start\n");
+	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
+	SSDT _SSDT(0);
+	_SSDT.GetAllSSDT();
+	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "_SSDT._SSDTALL.size():%llx\n", _SSDT._SSDTALL.size());
+	_SSDT.GetAllShadowSSDT();
+	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "_SSDT._SSSDTALL.size():%llx\n", _SSDT._SSSDTALL.size());
 
+	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
+}
 
 
 void TestALL(PDRIVER_OBJECT drive_object)
@@ -138,13 +150,13 @@ void TestALL(PDRIVER_OBJECT drive_object)
 
 
 
-	TestWalkStack();
+	/*TestWalkStack();
 	TestReadKernelMemory();
 	TestGetKernel(drive_object);
 	TestProcess();
 	TestModules();
-	TestCallBack();
-
+	TestCallBack();*/
+	TestSSDT();
 
 	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
 }

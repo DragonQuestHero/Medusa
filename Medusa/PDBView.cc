@@ -71,6 +71,10 @@ void PDBView::LoadALL()
 
 void PDBView::Serch()
 {
+	if (!_PDBInfo._Symbol.size())
+	{
+		_PDBInfo.GetALL();
+	}
 	_Model->removeRows(0, _Model->rowCount());
 	if (ui.lineEdit->text() != "" && ui.lineEdit_2->text() != "")
 	{
@@ -102,6 +106,11 @@ void PDBView::Serch()
 	}
 	if (ui.lineEdit->text() != "")
 	{
+		std::string temp_str3 = ui.lineEdit->text().toStdString();
+		if (temp_str3.find("0x") != std::string::npos)
+		{
+			temp_str3.erase(0, 2);
+		}
 		ULONG64 RVA = EzPdbGetRva(&_PDBInfo._Pdb, ui.lineEdit->text().toStdString());//NtTerminateThread
 		if (RVA)
 		{
@@ -143,10 +152,6 @@ void PDBView::Serch()
 	}
 	if (ui.lineEdit_3->text() != "")
 	{
-		if (!_PDBInfo._Symbol.size())
-		{
-			_PDBInfo.GetALL();
-		}
 		int i = 0;
 
 		std::string temp_str3 = ui.lineEdit_3->text().toStdString();
@@ -154,7 +159,7 @@ void PDBView::Serch()
 		{
 			temp_str3.erase(0, 2);
 		}
-		std::regex pattern("^[0-9]+$");
+		std::regex pattern("^[0-9A-Fa-f]+$");
 		if (std::regex_match(temp_str3, pattern))
 		{
 			ULONG64 addr = strtoull(temp_str3.data(), 0, 16);//输入的是数字

@@ -17,6 +17,7 @@
 
 
 #include "ui_Modules.h"
+#include "ModuleExportFunc.h"
 
 
 struct UserModule
@@ -42,11 +43,14 @@ public:
 public slots:
 	void Dump(bool);
 	void DumpToFile(bool);
+	void ViewExportFunc(bool);
 public:
 	Ui::Form_Modules ui;
 	QStandardItemModel* _Model;
+	ModuleExportFunc _ModuleExportFunc;
 	QAction _TableView_Action_Dump;
 	QAction _TableView_Action_DumpToFile;
+	QAction _TableView_Action_ViewExportFunc;
 private:
 	ULONG64 _PID;
 	std::wstring C_TO_W(std::string str)

@@ -154,10 +154,12 @@
     <ClCompile Include="libpeconv\resource_util.cpp" />
     <ClCompile Include="libpeconv\tls_parser.cpp" />
     <ClCompile Include="libpeconv\util.cpp" />
+    <ClCompile Include="ModuleExportFunc.cc" />
     <ClCompile Include="Modules.cc" />
     <ClCompile Include="PDBInfo.cc" />
     <ClCompile Include="PDBView.cc" />
     <ClCompile Include="Process.cc" />
+    <ClCompile Include="SSDT.cc" />
     <ClCompile Include="StackWalk.cc" />
     <ClCompile Include="SymParser.cpp" />
     <ClCompile Include="Threads.cc" />
@@ -171,6 +173,7 @@
     <QtUic Include="IOCTLScanner.ui" />
     <QtUic Include="Medusa.ui" />
     <QtUic Include="KernelMemory.ui" />
+    <QtUic Include="ModuleExportFunc.ui" />
     <QtUic Include="UserMemoryList.ui" />
     <QtUic Include="Modules.ui" />
     <QtUic Include="PDBView.ui" />
@@ -184,6 +187,8 @@
     <ClInclude Include="Driver_Load.h" />
     <ClInclude Include="EzPdb\EzPdb.h" />
     <ClInclude Include="FileCheck.h" />
+    <QtMoc Include="ModuleExportFunc.h" />
+    <ClInclude Include="SSDT.h" />
     <ClInclude Include="SymParser.h" />
     <QtMoc Include="UserMemoryList.h" />
     <QtMoc Include="UserMemory.h" />

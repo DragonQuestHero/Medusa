@@ -34,10 +34,13 @@ Modules::Modules(QWidget* parent)
 
 	_TableView_Action_Dump.setText("Dump");
 	_TableView_Action_DumpToFile.setText("DumpToFile");
+	_TableView_Action_ViewExportFunc.setText("ViewExportFunc");
 	ui.tableView->addAction(&_TableView_Action_Dump);
 	ui.tableView->addAction(&_TableView_Action_DumpToFile);
+	ui.tableView->addAction(&_TableView_Action_ViewExportFunc);
 	connect(&_TableView_Action_Dump, SIGNAL(triggered(bool)), SLOT(Dump(bool)));
 	connect(&_TableView_Action_DumpToFile, SIGNAL(triggered(bool)), SLOT(DumpToFile(bool)));
+	connect(&_TableView_Action_ViewExportFunc, SIGNAL(triggered(bool)), SLOT(ViewExportFunc(bool)));
 }
 
 void Modules::Dump(bool)
@@ -110,6 +113,17 @@ void Modules::DumpToFile(bool)
 		QMessageBox::information(this, "Ret", "alloc memory error");
 	}
 	CloseHandle(proc);
+}
+
+void Modules::ViewExportFunc(bool)
+{
+	std::string file_name = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 4).data().toString().toStdString();
+	std::string addr_str = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString().toStdString();
+	addr_str.erase(0, 2);
+	ULONG64 addr = strtoull(addr_str.data(), 0, 16);
+
+	_ModuleExportFunc.GetExportFunc(addr, file_name);
+	_ModuleExportFunc.show();
 }
 
 std::vector<MODULEENTRY32W> Modules::GetUserMoudleListR3(ULONG64 PID)

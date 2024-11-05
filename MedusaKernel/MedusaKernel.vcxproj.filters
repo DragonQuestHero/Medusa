@@ -58,6 +58,9 @@
     <ClCompile Include="CallBackScanner.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SSDT.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IO_Control.h">
@@ -100,6 +103,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CallBackScanner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SSDT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

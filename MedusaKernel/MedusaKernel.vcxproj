@@ -175,6 +175,7 @@
     <ClCompile Include="MedusaPDBInfo.cc" />
     <ClCompile Include="MemoryRW.cc" />
     <ClCompile Include="Modules.cc" />
+    <ClCompile Include="SSDT.cc" />
     <ClCompile Include="Test.cc" />
     <ClCompile Include="Threads.cc" />
   </ItemGroup>
@@ -191,6 +192,7 @@
     <ClInclude Include="MemoryRW.h" />
     <ClInclude Include="Modules.h" />
     <ClInclude Include="MedusaPDBInfo.h" />
+    <ClInclude Include="SSDT.h" />
     <ClInclude Include="Test.h" />
     <ClInclude Include="Threads.h" />
   </ItemGroup>

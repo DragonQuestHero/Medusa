@@ -26,6 +26,7 @@
 #include "KernelMemory.h"
 #include "UserMemory.h"
 #include "UserMemoryList.h"
+#include "ModuleExportFunc.h"
 
 
 #include "Process.h"
@@ -50,6 +51,7 @@ public slots:
 	void DriverRightMenu(QAction*);
 	void DriverRightMenuDumpToFILE(bool);
 	void DriverRightMenuDumpToMemory(bool);
+	void DriverRightMenuViewExportFunc(bool);
 	void DriverRightMenuIOCTLScanner(QAction*);
 	void ViewKernelMemory(QAction*);
 public:
@@ -86,6 +88,7 @@ private:
 	KernelMemory _KernelMemory;
 	UserMemory _UserMemory;
 	UserMemoryList _UserMemoryList;
+	ModuleExportFunc _ModuleExportFunc;
 private:
 	QTimer *_QTimer;
     QStandardItemModel* _Model;
@@ -111,6 +114,8 @@ private:
 	QAction _TableView_Action_KillProcess;
 
 	QAction _TableView_Action_HideDriver;
+
+	QAction _TableView_Action_ViewExportFunc;
 
 	QMenu _TableView_Menu_DriverClear;
 	QAction _TableView_Action_DriverClear;
@@ -287,6 +292,8 @@ public:
 	{
 		_TableView_Action_HideDriver.setText("HideDriver");
 
+		_TableView_Action_ViewExportFunc.setText("ViewExportFunc");
+
 		_TableView_Action_DriverClear.setMenu(&_TableView_Menu_DriverClear);
 		_TableView_Menu_DriverClear.setTitle("DriverClear");
 		_TableView_Menu_DriverClear.addAction("ClearLoadInfo");
@@ -307,6 +314,7 @@ public:
 		ui.tableView_Driver->addAction(&_TableView_Action_DriverDumpFILE);
 		ui.tableView_Driver->addAction(&_TableView_Action_DriverDumpMemory);
 		ui.tableView_Driver->addAction(&_TableView_Action_IOCTLScanner);
+		ui.tableView_Driver->addAction(&_TableView_Action_ViewExportFunc);
 	}
 public:
 	int Enable_Debug()

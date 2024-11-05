@@ -15,6 +15,7 @@ struct PDBInfo
 	ULONG64 HashCacheLock;
 	ULONG64 CiEaCacheLookasideList;
 	ULONG64 RtlpLookupFunctionEntryForStackWalks;
+	ULONG64 KeServiceDescriptorTableShadow;
 };
 
 

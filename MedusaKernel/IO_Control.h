@@ -7,6 +7,7 @@
 #include "Threads.h"
 #include "MedusaPDBInfo.h"
 #include "CallBackScanner.h"
+#include "SSDT.h"
 
 
 
@@ -37,5 +38,6 @@ private:
 	Threads _Threads;
 	MedusaPDBInfo _MedusaPDBInfo;
 	CallBackScanner _CallBackScanner;
+	SSDT _SSDT;
 };
 

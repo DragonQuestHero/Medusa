@@ -31,7 +31,7 @@ extern "C" NTSTATUS DriverMain(PDRIVER_OBJECT drive_object, PUNICODE_STRING path
 	_IO_Control->Create_IO_Control();
 
 #ifdef __DEBUG
-	//TestALL(drive_object);
+	TestALL(drive_object);
 #endif // DEBUG
 	return STATUS_SUCCESS;
 }

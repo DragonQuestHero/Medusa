@@ -7,6 +7,7 @@
 
 
 
+
 #define DEVICE_NAME L"\\Device\\IO_Control"
 #define LINK_NAME L"\\??\\IO_Control"
 IO_Control* IO_Control::_This;
@@ -48,6 +49,12 @@ IO_Control* IO_Control::_This;
 
 #define TEST_GetCR3 CTL_CODE(FILE_DEVICE_UNKNOWN,0x7121,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_SetCR3 CTL_CODE(FILE_DEVICE_UNKNOWN,0x7122,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
+#define TEST_GetSSDTList CTL_CODE(FILE_DEVICE_UNKNOWN,0x7123,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define TEST_GetSSDTListNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7124,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
+#define TEST_GetSSSDTList CTL_CODE(FILE_DEVICE_UNKNOWN,0x7125,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define TEST_GetSSSDTListNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7126,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
 NTSTATUS IO_Control::Create_IO_Control()
 {
@@ -380,6 +387,30 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		*(ULONG64*)Input_Buffer = __readcr3();
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = 8;
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+
+
+	if (Io_Control_Code == TEST_GetSSDTListNumber)
+	{
+		if (_This->_SSDT._SSDTALL.size() == 0)
+		{
+			_This->_SSDT.GetAllSSDT();
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_SSDT._SSDTALL.size();
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if (Io_Control_Code == TEST_GetSSSDTListNumber)
+	{
+		if (_This->_SSDT._SSDTALL.size() == 0)
+		{
+			_This->_SSDT.GetAllSSDT();
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_SSDT._SSDTALL.size();
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}

@@ -76,6 +76,7 @@ void Medusa::Set_SLOTS()
 	connect(&_TableView_Action_DriverDumpFILE, SIGNAL(triggered(bool)), SLOT(DriverRightMenuDumpToFILE(bool)));
 	connect(&_TableView_Action_DriverDumpMemory, SIGNAL(triggered(bool)), SLOT(DriverRightMenuDumpToMemory(bool)));
 	connect(&_TableView_Menu_IOCTLScanner, SIGNAL(triggered(QAction*)), SLOT(DriverRightMenuIOCTLScanner(QAction*)));
+	connect(&_TableView_Action_ViewExportFunc, SIGNAL(triggered(bool)), SLOT(DriverRightMenuViewExportFunc(bool)));
 
 	connect(ui.menuMenu, SIGNAL(triggered(QAction*)), SLOT(DriverLoadMenu(QAction*)));
 	connect(ui.menuHypervisor, SIGNAL(triggered(QAction*)), SLOT(HypervisorMenu(QAction*)));
@@ -411,6 +412,13 @@ void Medusa::DriverLoad(QAction* action)
 	}
 }
 
+
+
+
+
+
+
+
 void Medusa::ProcessRightMenu(QAction* action)
 {
 	ULONG64 PID = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 1).data().toULongLong();
@@ -579,6 +587,17 @@ void Medusa::DriverRightMenuDumpToMemory(bool)
 		QMessageBox::information(this, "Ret", "error");
 	}
 	delete temp_buffer;
+}\
+
+void Medusa::DriverRightMenuViewExportFunc(bool)
+{
+	std::string file_name = ui.tableView_Driver->model()->index(ui.tableView_Driver->currentIndex().row(), 4).data().toString().toStdString();
+	std::string addr_str = ui.tableView_Driver->model()->index(ui.tableView_Driver->currentIndex().row(), 2).data().toString().toStdString();
+	addr_str.erase(0, 2);
+	ULONG64 addr = strtoull(addr_str.data(), 0, 16);
+
+	_ModuleExportFunc.GetExportFunc(addr, file_name);
+	_ModuleExportFunc.show();
 }
 
 void Medusa::DriverRightMenuIOCTLScanner(QAction* action)
