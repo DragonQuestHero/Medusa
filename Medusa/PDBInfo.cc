@@ -1,4 +1,4 @@
-#include "PDBInfo.h"
+Ôªø#include "PDBInfo.h"
 #include <Shlwapi.h>
 
 #include "KernelModules.h"
@@ -9,15 +9,19 @@
 
 bool PDBInfo::DownLoadNtos()
 {
+	if (_Pdb.hPdbFile)
+	{
+		EzPdbUnload(&_Pdb);
+	}
 	_BaseAddr = 0;
 	_Symbol.clear();
 	std::string pe_file_path = std::string(std::getenv("systemroot")) + "\\System32\\ntoskrnl.exe";
 
 	KernelModules _KernelModules;
 	_KernelModules.GetKernelModuleListR3();
-	for (auto x : _KernelModules._KernelModuleListR3)
+	for (auto x : _KernelModules._KernelModuleList)
 	{
-		if (std::string((char*)x.Name) == "ntoskrnl.exe")
+		if (x.Name == "ntoskrnl.exe")
 		{
 			_BaseAddr = x.Addr;
 			break;
@@ -77,6 +81,10 @@ bool PDBInfo::DownLoadNtos()
 
 bool PDBInfo::DownLoad(std::string path, bool use_bassaddr)
 {
+	if (_Pdb.hPdbFile)
+	{
+		EzPdbUnload(&_Pdb);
+	}
 	_BaseAddr = 0;
 	_Symbol.clear();
 
@@ -94,7 +102,7 @@ bool PDBInfo::DownLoad(std::string path, bool use_bassaddr)
 			_KernelModules.GetKernelModuleListR3();
 			for (auto x : _KernelModules._KernelModuleListR3)
 			{
-				if (Case_Upper((char*)x.Name) == Case_Upper(std::string(fname) + ext))
+				if (Case_Upper(x.Name) == Case_Upper(std::string(fname) + ext))
 				{
 					_BaseAddr = x.Addr;
 					break;
@@ -176,6 +184,39 @@ bool PDBInfo::DownLoad(std::string path, bool use_bassaddr)
 	return false;
 }
 
+bool PDBInfo::QueryDownLoad(std::string path)
+{
+	std::string symbolpath;
+	if (std::getenv("_NT_SYMBOL_PATH"))
+	{
+		symbolpath = std::getenv("_NT_SYMBOL_PATH");
+		if (symbolpath.find("SRV") != std::string::npos)
+		{
+			std::vector<std::string> temp_vector = Split(symbolpath, "*");
+			for (auto x : temp_vector)
+			{
+				if (PathFileExistsA(x.c_str()))
+				{
+					symbolpath = x;
+					break;
+				}
+			}
+		}
+	}
+	std::string pdb_path = symbolpath + "\\" + GetPdbPath(path);
+	if (PathFileExistsA(pdb_path.c_str()))
+	{
+		return true;
+	}
+	char szDownloadDir[MAX_PATH] = { 0 };
+	GetCurrentDirectoryA(sizeof(szDownloadDir), szDownloadDir);
+	pdb_path = std::string(szDownloadDir) + "\\" + GetPdbPath(path);
+	if (PathFileExistsA(pdb_path.c_str()))
+	{
+		return true;
+	}
+	return false;
+}
 
 struct MyStruct
 {
@@ -205,7 +246,7 @@ BOOL PsymEnumeratesymbolsCallback(
 	NTOSSYMBOL temp_list;
 	RtlZeroMemory(&temp_list, sizeof(NTOSSYMBOL));
 	temp_list.Addr = pSymInfo->Address - pSymInfo->ModBase + _MyStruct->_BaseAddr;
-	temp_list.Name = GBK_To_UTF8(pSymInfo->Name);//ƒ¨»œ÷–Œƒª∑æ≥
+	temp_list.Name = GBK_To_UTF8(pSymInfo->Name);//ÈªòËÆ§‰∏≠ÊñáÁéØÂ¢É
 	temp_list.RVA = pSymInfo->Address - pSymInfo->ModBase;
 	temp_list.Size = pSymInfo->Size;
 	_MyStruct->temp_vector->push_back(temp_list);
@@ -214,6 +255,7 @@ BOOL PsymEnumeratesymbolsCallback(
 
 bool PDBInfo::GetALL()
 {
+	_Symbol.clear();
 	MyStruct _MyStruct;
 	_MyStruct._BaseAddr = _BaseAddr;
 	_MyStruct.temp_vector = &_Symbol;
@@ -331,7 +373,7 @@ std::vector<SYMBOLSTRUCT> PDBInfo::PdbGetStruct(IN PEZPDB Pdb, IN std::string St
 //				if (SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, typeId, TI_GET_TYPEID, &pointedTypeId)) {
 //					DWORD pointedSymTag;
 //					if (SymGetTypeInfo(Pdb->hProcess, EZ_PDB_BASE_OF_DLL, pointedTypeId, TI_GET_SYMTAG, &pointedSymTag)) {
-//						// ¥¶¿Ì÷∏œÚµƒ¿‡–Õ
+//						// Â§ÑÁêÜÊåáÂêëÁöÑÁ±ªÂûã
 //						if (pointedSymTag == SymTagBaseType) 
 //						{
 //							DWORD baseType;

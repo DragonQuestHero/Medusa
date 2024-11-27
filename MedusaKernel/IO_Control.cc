@@ -403,14 +403,40 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
-	else if (Io_Control_Code == TEST_GetSSSDTListNumber)
+	else if (Io_Control_Code == TEST_GetSSDTList)
 	{
-		if (_This->_SSDT._SSDTALL.size() == 0)
+		int i = 0;
+		for (auto x : _This->_SSDT._SSDTALL)
 		{
-			_This->_SSDT.GetAllSSDT();
+			RtlCopyMemory(Input_Buffer + i * sizeof(SSDT_STRUCT), &x, sizeof(SSDT_STRUCT));
+			i++;
 		}
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = _This->_SSDT._SSDTALL.size();
+		pIrp->IoStatus.Information = _This->_SSDT._SSDTALL.size() * sizeof(SSDT_STRUCT);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if (Io_Control_Code == TEST_GetSSSDTListNumber)
+	{
+		if (_This->_SSDT._SSSDTALL.size() == 0)
+		{
+			_This->_SSDT.GetAllShadowSSDT();
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_SSDT._SSSDTALL.size();
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if (Io_Control_Code == TEST_GetSSSDTList)
+	{
+		int i = 0;
+		for (auto x : _This->_SSDT._SSSDTALL)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(SSDT_STRUCT), &x, sizeof(SSDT_STRUCT));
+			i++;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_SSDT._SSSDTALL.size() * sizeof(SSDT_STRUCT);
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}

@@ -98,15 +98,8 @@ void StackWalk::ShowStackWalkThreadR0(ULONG64 TID)
 					std::wstringstream ret;
 					ret << std::hex << "0x" << offset;
 
-					if (x.Check == 0)
-					{
-						Module = C_TO_W((char*)x.Name);
-						Module = Module + std::wstring(L"+") + ret.str();
-					}
-					else
-					{
-						Module = x.Name + std::wstring(L"+") + ret.str();
-					}
+					Module = C_TO_W(x.Name);
+					Module = Module + std::wstring(L"+") + ret.str();
 					found = true;
 					break;
 				}

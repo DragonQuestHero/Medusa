@@ -193,9 +193,6 @@
     <ClCompile Include="UserMemoryList.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SSDT.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ModuleExportFunc.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -249,14 +246,12 @@
     <ClInclude Include="SymParser.h">
       <Filter>Header Files\SymParser</Filter>
     </ClInclude>
-    <ClInclude Include="SSDT.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SysCall.asm">
       <Filter>Source Files</Filter>
     </None>
+    <None Include=".editorconfig" />
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="Medusa.ui">

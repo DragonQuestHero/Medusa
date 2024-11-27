@@ -156,34 +156,25 @@ bool IOCTLScanner::GetIOCTLFunction(ULONG64 Addr, KernelModules& _KernelModules,
 			_Model->setData(_Model->index(i, 2), ret2.str().data());
 			_Model->setData(_Model->index(i, 3), "");
 
-			std::string module_name;
 			bool found = false;
 			for (auto x : _KernelModules._KernelModuleListR0)
 			{
-				if (x.Check == 1 || x.Check == 2)
-				{
-					module_name = W_TO_C((WCHAR*)x.Name);
-				}
-				else
-				{
-					module_name = (char*)x.Name;
-				}
 				if (temp_list[i].Addr >= (ULONG64)x.Addr &&
 					temp_list[i].Addr < (ULONG64)x.Addr + (ULONG64)x.Size)
 				{
-					if (module_name == "ntoskrnl.exe" && !temp_list[i].Check)
+					if (x.Name == "ntoskrnl.exe" && !temp_list[i].Check)
 					{
 						found = true;
 					}
-					else if (name == module_name)
+					else if (name == x.Name)
 					{
 						found = true;
 					}
-					module_name = module_name + "+";
+					x.Name = x.Name + "+";
 					std::ostringstream ret;
 					ret << std::hex << "0x" << temp_list[i].Addr - x.Addr;
-					module_name = module_name + ret.str();
-					_Model->setData(_Model->index(i, 3), module_name.data());
+					x.Name = x.Name + ret.str();
+					_Model->setData(_Model->index(i, 3), x.Name.data());
 					break;
 				}
 			}
@@ -234,25 +225,16 @@ bool IOCTLScanner::QueryIOCTLHook(ULONG64 Addr, KernelModules& _KernelModules, s
 		for (int i = 0; i < 0x1b + 1; i++)
 		{
 			bool found = false;
-			std::string module_name;
 			for (auto x : _KernelModules._KernelModuleListR0)
 			{
-				if (x.Check == 1 || x.Check == 2)
-				{
-					module_name = W_TO_C((WCHAR*)x.Name);
-				}
-				else
-				{
-					module_name = (char*)x.Name;
-				}
 				if (temp_list[i].Addr >= (ULONG64)x.Addr &&
 					temp_list[i].Addr < (ULONG64)x.Addr + (ULONG64)x.Size)
 				{
-					if (module_name == "ntoskrnl.exe" && !temp_list[i].Check)
+					if (x.Name == "ntoskrnl.exe" && !temp_list[i].Check)
 					{
 						found = true;
 					}
-					else if (name == module_name)
+					else if (name == x.Name)
 					{
 						found = true;
 					}

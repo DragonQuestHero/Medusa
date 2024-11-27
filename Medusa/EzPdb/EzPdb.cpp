@@ -683,6 +683,12 @@ bool EzPdbLoad(IN std::string pdbPath, OUT PEZPDB Pdb)
 	//SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS | SYMOPT_AUTO_PUBLICS | SYMOPT_LOAD_ANYTHING);
 
 	DWORD64 SymbolTable = SymLoadModuleEx(GetCurrentProcess(), NULL, pdbPath.c_str(), NULL, EZ_PDB_BASE_OF_DLL, pdbSize, NULL, NULL);
+	if (!SymbolTable && GetLastError() == ERROR_SUCCESS)
+	{
+		SymUnloadModule64(GetCurrentProcess(), EZ_PDB_BASE_OF_DLL);
+		SymCleanup(GetCurrentProcess());
+		SymbolTable = SymLoadModuleEx(GetCurrentProcess(), NULL, pdbPath.c_str(), NULL, EZ_PDB_BASE_OF_DLL, pdbSize, NULL, NULL);
+	}
 	if (!SymbolTable)
 	{
 		SymCleanup(GetCurrentProcess());

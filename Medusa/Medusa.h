@@ -59,6 +59,8 @@ public:
 	void GetKernelModuleList();
 	void GetUnLoadKernelModuleList();
 	void GetALLCallBackList();
+	void GetSSDT();
+	void GetShadowSSDT();
 public:
 	void DriverLoad(QAction*);
 	void RightMenuDLLInject(QAction*);
@@ -72,6 +74,7 @@ public:
 	void RightMenuR3ModuleScanner(ULONG64 PID);
 private:
 	bool _Driver_Loaded = false;
+	bool _Setting_SSDT_SSSDT_PDB = false;
 private:
     Process _Process;
 	Driver_Load _Driver_Load;
@@ -95,6 +98,8 @@ private:
 	QStandardItemModel* _Model_Driver;
 	QStandardItemModel* _Model_UnloadDriver;
 	QStandardItemModel* _Model_CallBackList;
+	QStandardItemModel* _Model_SSDT;
+	QStandardItemModel* _Model_SSSDT;
 private:
 	QMenu _TableView_Menu_Inject;
 	QAction _TableView_Action_Inject;
@@ -227,6 +232,46 @@ public:
 		ui.tableView_CallBackList->setColumnWidth(4, 250);
 		ui.tableView_CallBackList->setColumnWidth(5, 200);
 		ui.tableView_CallBackList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	}
+	void SSDTListUI()
+	{
+		_Model_SSDT = new QStandardItemModel();
+		ui.tableView_SSDT->setModel(_Model_SSDT);
+		ui.tableView_SSDT->setEditTriggers(QAbstractItemView::NoEditTriggers);
+		ui.tableView_SSDT->horizontalHeader()->setSectionsClickable(false);
+		ui.tableView_SSDT->verticalHeader()->setDefaultSectionSize(25);
+		ui.tableView_SSDT->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+		_Model_SSDT->setColumnCount(4);
+		_Model_SSDT->setHeaderData(0, Qt::Horizontal, u8"Index");
+		_Model_SSDT->setHeaderData(1, Qt::Horizontal, u8"Name");
+		_Model_SSDT->setHeaderData(2, Qt::Horizontal, u8"Addr");
+		_Model_SSDT->setHeaderData(3, Qt::Horizontal, u8"Moudle");
+		ui.tableView_SSDT->setColumnWidth(0, 50);
+		ui.tableView_SSDT->setColumnWidth(1, 400);
+		ui.tableView_SSDT->setColumnWidth(2, 300);
+		ui.tableView_SSDT->setColumnWidth(3, 300);
+		ui.tableView_SSDT->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	}
+	void ShadowSSDTListUI()
+	{
+		_Model_SSSDT = new QStandardItemModel();
+		ui.tableView_SSSDT->setModel(_Model_SSSDT);
+		ui.tableView_SSSDT->setEditTriggers(QAbstractItemView::NoEditTriggers);
+		ui.tableView_SSSDT->horizontalHeader()->setSectionsClickable(false);
+		ui.tableView_SSSDT->verticalHeader()->setDefaultSectionSize(25);
+		ui.tableView_SSSDT->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+		_Model_SSSDT->setColumnCount(4);
+		_Model_SSSDT->setHeaderData(0, Qt::Horizontal, u8"Index");
+		_Model_SSSDT->setHeaderData(1, Qt::Horizontal, u8"Name");
+		_Model_SSSDT->setHeaderData(2, Qt::Horizontal, u8"Addr");
+		_Model_SSSDT->setHeaderData(3, Qt::Horizontal, u8"Moudle");
+		ui.tableView_SSSDT->setColumnWidth(0, 50);
+		ui.tableView_SSSDT->setColumnWidth(1, 400);
+		ui.tableView_SSSDT->setColumnWidth(2, 300);
+		ui.tableView_SSSDT->setColumnWidth(3, 300);
+		ui.tableView_SSSDT->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	}
 public:
 	void ProcessRightMenuUI()

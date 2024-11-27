@@ -132,7 +132,7 @@ void TestSSDT()
 {
 	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "TestSSDT start\n");
 	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
-	SSDT _SSDT(0);
+	SSDT _SSDT;
 	_SSDT.GetAllSSDT();
 	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "_SSDT._SSDTALL.size():%llx\n", _SSDT._SSDTALL.size());
 	_SSDT.GetAllShadowSSDT();

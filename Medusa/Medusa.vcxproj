@@ -159,7 +159,6 @@
     <ClCompile Include="PDBInfo.cc" />
     <ClCompile Include="PDBView.cc" />
     <ClCompile Include="Process.cc" />
-    <ClCompile Include="SSDT.cc" />
     <ClCompile Include="StackWalk.cc" />
     <ClCompile Include="SymParser.cpp" />
     <ClCompile Include="Threads.cc" />
@@ -188,7 +187,6 @@
     <ClInclude Include="EzPdb\EzPdb.h" />
     <ClInclude Include="FileCheck.h" />
     <QtMoc Include="ModuleExportFunc.h" />
-    <ClInclude Include="SSDT.h" />
     <ClInclude Include="SymParser.h" />
     <QtMoc Include="UserMemoryList.h" />
     <QtMoc Include="UserMemory.h" />
@@ -214,6 +212,7 @@
     <MASM Include="asm64.asm">
       <FileType>Document</FileType>
     </MASM>
+    <None Include=".editorconfig" />
     <None Include="SysCall.asm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

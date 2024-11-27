@@ -74,54 +74,6 @@
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab_4">
-     <attribute name="title">
-      <string>SSDT</string>
-     </attribute>
-     <widget class="QTableView" name="tableView_SSDT">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>1731</width>
-        <height>851</height>
-       </rect>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>1731</width>
-        <height>851</height>
-       </size>
-      </property>
-      <property name="contextMenuPolicy">
-       <enum>Qt::ActionsContextMenu</enum>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="tab_5">
-     <attribute name="title">
-      <string>SSSDT</string>
-     </attribute>
-     <widget class="QTableView" name="tableView_SSSDT">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>1731</width>
-        <height>851</height>
-       </rect>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>1731</width>
-        <height>851</height>
-       </size>
-      </property>
-      <property name="contextMenuPolicy">
-       <enum>Qt::ActionsContextMenu</enum>
-      </property>
-     </widget>
-    </widget>
     <widget class="QWidget" name="tab_3">
      <attribute name="title">
       <string>UnloadDriver</string>
@@ -151,6 +103,54 @@
       <string>CallBackList</string>
      </attribute>
      <widget class="QTableView" name="tableView_CallBackList">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>1731</width>
+        <height>851</height>
+       </rect>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>1731</width>
+        <height>851</height>
+       </size>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::ActionsContextMenu</enum>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_4">
+     <attribute name="title">
+      <string>SSDT</string>
+     </attribute>
+     <widget class="QTableView" name="tableView_SSDT">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>1731</width>
+        <height>851</height>
+       </rect>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>1731</width>
+        <height>851</height>
+       </size>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::ActionsContextMenu</enum>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_5">
+     <attribute name="title">
+      <string>SSSDT</string>
+     </attribute>
+     <widget class="QTableView" name="tableView_SSSDT">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -265,6 +265,7 @@
     <addaction name="actionUse_microsoft_server"/>
     <addaction name="actionUse_order_server"/>
     <addaction name="actionSendPDBInfo_2"/>
+    <addaction name="actionSSDT_SSSDT_Use_PDB"/>
    </widget>
    <widget class="QMenu" name="menuViewKernelMemory">
     <property name="title">
@@ -369,12 +370,12 @@
   </action>
   <action name="actionUse_microsoft_server">
    <property name="text">
-    <string>Use microsoft server √</string>
+    <string>√ Use microsoft server</string>
    </property>
   </action>
   <action name="actionUse_order_server">
    <property name="text">
-    <string>Use Order Server ×</string>
+    <string>x Use Order Server</string>
    </property>
   </action>
   <action name="actionSendPDBInfo_2">
@@ -390,6 +391,11 @@
   <action name="actionINFO">
    <property name="text">
     <string>INFO</string>
+   </property>
+  </action>
+  <action name="actionSSDT_SSSDT_Use_PDB">
+   <property name="text">
+    <string>× SSDT&amp; SSSDT Use PDB</string>
    </property>
   </action>
  </widget>

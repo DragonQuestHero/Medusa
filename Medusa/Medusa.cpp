@@ -23,7 +23,8 @@ Medusa::Medusa(QWidget *parent)
 	DriverUI();
 	UnloadDriverUI();
 	CallBackListUI();
-
+	SSDTListUI();
+	ShadowSSDTListUI();
 
 
 	ProcessRightMenuUI();
@@ -216,16 +217,28 @@ void Medusa::PdbMenu(QAction* action)
 		_PDBView.show();
 		return;
 	}
+	if (action->text().toStdString().find("SSDT& SSSDT Use PDB") != std::string::npos)
+	{
+		_Setting_SSDT_SSSDT_PDB = !_Setting_SSDT_SSSDT_PDB;
+		if (_Setting_SSDT_SSSDT_PDB)
+		{
+			action->setText(u8"¡Ì SSDT& SSSDT Use PDB");
+		}
+		else
+		{
+			action->setText(u8"¡Á SSDT& SSSDT Use PDB");
+		}
+	}
 	if (action->text().toStdString().find("Use microsoft server") != std::string::npos)
 	{
-		action->setText(u8"Use microsoft server ¡Ì");
-		ui.actionUse_order_server->setText(u8"Use Order Server ¡Á");
+		action->setText(u8"¡Ì Use microsoft server");
+		ui.actionUse_order_server->setText(u8"¡Á Use Order Server");
 		_PDBView._PDBInfo._SymbolServer = "https://msdl.microsoft.com/download/symbols/";
 	}
 	if (action->text().toStdString().find("Use Order Server") != std::string::npos)
 	{
-		action->setText(u8"Use Order Server ¡Ì");
-		ui.actionUse_microsoft_server->setText(u8"Use microsoft server ¡Á");
+		action->setText(u8"¡Ì Use Order Server");
+		ui.actionUse_microsoft_server->setText(u8"¡Á Use microsoft server");
 		_PDBView._PDBInfo._SymbolServer = "https://msdl.szdyg.cn/download/symbols/";
 	}
 	if (action->text() == "SendPDBInfo")
@@ -620,18 +633,9 @@ void Medusa::DriverRightMenuIOCTLScanner(QAction* action)
 		{
 			if (x.DriverObject)
 			{
-				std::string module_name;
-				if (x.Check == 1 || x.Check == 2)
+				if (_IOCTLScanner.QueryIOCTLHook(x.DriverObject, _KernelModules, x.Name))
 				{
-					module_name = W_TO_C((WCHAR*)x.Name);
-				}
-				else
-				{
-					module_name = (char*)x.Name;
-				}
-				if (_IOCTLScanner.QueryIOCTLHook(x.DriverObject, _KernelModules, module_name))
-				{
-					ret = ret + module_name + "\r\n";
+					ret = ret + x.Name + "\r\n";
 				}
 			}
 		}
@@ -673,6 +677,14 @@ void Medusa::ChangeTab()
 	else if (ui.tabWidget->currentIndex() == 3)
 	{
 		GetALLCallBackList();
+	}
+	else if (ui.tabWidget->currentIndex() == 4)
+	{
+		GetSSDT();
+	}
+	else if (ui.tabWidget->currentIndex() == 5)
+	{
+		GetShadowSSDT();
 	}
 }
 
@@ -1202,14 +1214,7 @@ void Medusa::GetKernelModuleList()
 			{
 				_Model_Driver->setVerticalHeaderItem(i, new QStandardItem);
 				_Model_Driver->setData(_Model_Driver->index(i, 0), i);
-				if (x.Check == 1 || x.Check == 2)
-				{
-					_Model_Driver->setData(_Model_Driver->index(i, 1), QString::fromWCharArray((WCHAR*)x.Name));
-				}
-				else
-				{
-					_Model_Driver->setData(_Model_Driver->index(i, 1), (char*)x.Name);
-				}
+				_Model_Driver->setData(_Model_Driver->index(i, 1), x.Name.data());
 				
 				std::ostringstream ret;
 				ret << std::hex << "0x" << (ULONG64)x.Addr;
@@ -1217,49 +1222,23 @@ void Medusa::GetKernelModuleList()
 				std::ostringstream ret2;
 				ret2 << std::hex << "0x" << (ULONG64)x.Size;
 				_Model_Driver->setData(_Model_Driver->index(i, 3), ret2.str().data());
-				if (x.Check == 1 || x.Check == 2)
+				
+				std::string temp_str = x.Path;
+				temp_str = ReplaceStr2(temp_str, "\\SystemRoot\\", "C:\\Windows\\");
+				temp_str = ReplaceStr2(temp_str, "\\??\\", "");
+				_Model_Driver->setData(_Model_Driver->index(i, 4), temp_str.data());
+
+				std::wstring retStr;
+				std::wstring temp_wstr = C_TO_W(x.Path);
+				temp_wstr = ReplaceStr(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
+				temp_wstr = ReplaceStr(temp_wstr, L"\\??\\", L"");
+				if (_Process.QueryValue(L"FileDescription", temp_wstr.data(), retStr))
 				{
-					std::wstring temp_wstr = (WCHAR*)x.Path;
-					temp_wstr = ReplaceStr(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
-					temp_wstr = ReplaceStr(temp_wstr, L"\\??\\", L"");
-					_Model_Driver->setData(_Model_Driver->index(i, 4), QString::fromWCharArray(temp_wstr.data()));
+					_Model_Driver->setData(_Model_Driver->index(i, 5), QString::fromWCharArray(retStr.data()));
 				}
 				else
 				{
-					std::string temp_str = x.Path;
-					temp_str = ReplaceStr2(temp_str, "\\SystemRoot\\", "C:\\Windows\\");
-					temp_str = ReplaceStr2(temp_str, "\\??\\", "");
-					_Model_Driver->setData(_Model_Driver->index(i, 4), temp_str.data());
-				}
-				if (x.Check == 1 || x.Check == 2)
-				{
-					std::wstring retStr;
-					std::wstring temp_wstr = (WCHAR*)x.Path;
-					temp_wstr = ReplaceStr(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
-					temp_wstr = ReplaceStr(temp_wstr, L"\\??\\", L"");
-					if (_Process.QueryValue(L"FileDescription", temp_wstr.data(), retStr))
-					{
-						_Model_Driver->setData(_Model_Driver->index(i, 5), QString::fromWCharArray(retStr.data()));
-					}
-					else
-					{
-						_Model_Driver->setData(_Model_Driver->index(i, 5), "");
-					}
-				}
-				else
-				{
-					std::wstring retStr;
-					std::wstring temp_wstr = C_TO_W(x.Path);
-					temp_wstr = ReplaceStr(temp_wstr, L"\\SystemRoot\\", L"C:\\Windows\\");
-					temp_wstr = ReplaceStr(temp_wstr, L"\\??\\", L"");
-					if (_Process.QueryValue(L"FileDescription", temp_wstr.data(), retStr))
-					{
-						_Model_Driver->setData(_Model_Driver->index(i, 5), QString::fromWCharArray(retStr.data()));
-					}
-					else
-					{
-						_Model_Driver->setData(_Model_Driver->index(i, 5), "");
-					}
+					_Model_Driver->setData(_Model_Driver->index(i, 5), "");
 				}
 
 				std::ostringstream ret3;
@@ -1303,7 +1282,7 @@ void Medusa::GetKernelModuleList()
 			{
 				_Model_Driver->setVerticalHeaderItem(i, new QStandardItem);
 				_Model_Driver->setData(_Model_Driver->index(i, 0), i);
-				_Model_Driver->setData(_Model_Driver->index(i, 1), (char*)x.Name);
+				_Model_Driver->setData(_Model_Driver->index(i, 1), x.Name.data());
 				std::ostringstream ret;
 				ret << std::hex << "0x" << (ULONG64)x.Addr;
 				_Model_Driver->setData(_Model_Driver->index(i, 2), ret.str().data());
@@ -1338,7 +1317,6 @@ void Medusa::GetKernelModuleList()
 void Medusa::GetUnLoadKernelModuleList()
 {
 	_Model_UnloadDriver->removeRows(0, _Model_UnloadDriver->rowCount());
-	KernelModules _KernelModules;
 	_KernelModules.GetUnLoadKernelModuleListR0();
 	if (!_KernelModules._KernelUnLoadModuleListR0.size())
 	{
@@ -1408,15 +1386,7 @@ void Medusa::GetALLCallBackList()
 			if (x.PreOperation >= (ULONG64)y.Addr &&
 				x.PreOperation < (ULONG64)y.Addr + (ULONG64)y.Size)
 			{
-				if (y.Check == 1 || y.Check == 2)
-				{
-					module_name = W_TO_C((WCHAR*)y.Name);
-				}
-				else
-				{
-					module_name = (char*)y.Name;
-				}
-
+				module_name = y.Name;
 				found = true;
 				module_name = module_name + "+";
 				std::ostringstream ret;
@@ -1427,15 +1397,7 @@ void Medusa::GetALLCallBackList()
 				x.PostOperation >= (ULONG64)y.Addr &&
 				x.PostOperation < (ULONG64)y.Addr + (ULONG64)y.Size)
 			{
-				if (y.Check == 1 || y.Check == 2)
-				{
-					module_name = W_TO_C((WCHAR*)y.Name);
-				}
-				else
-				{
-					module_name = (char*)y.Name;
-				}
-
+				module_name = y.Name;
 				module_name = module_name + "+";
 				std::ostringstream ret;
 				ret << std::hex << "0x" << x.PostOperation - y.Addr;
@@ -1489,6 +1451,42 @@ void Medusa::GetALLCallBackList()
 		_Model_CallBackList->item(i, 4)->setBackground(temp_color);
 		_Model_CallBackList->item(i, 5)->setBackground(temp_color);
 
+		i++;
+	}
+}
+
+void Medusa::GetSSDT()
+{
+	_Model_SSDT->removeRows(0, _Model_SSDT->rowCount());
+	std::vector<SSDT_STRUCT2> temp_vector = _KernelModules.GetALLSSDT(_Setting_SSDT_SSSDT_PDB);
+	int i = 0;
+	for (auto x : temp_vector)
+	{
+		_Model_SSDT->setVerticalHeaderItem(i, new QStandardItem);
+		_Model_SSDT->setData(_Model_SSDT->index(i, 0), i);
+		_Model_SSDT->setData(_Model_SSDT->index(i, 1), x.FuncName.data());
+		std::ostringstream ret;
+		ret << std::hex << "0x" << (ULONG64)x.Addr;
+		_Model_SSDT->setData(_Model_SSDT->index(i, 2), ret.str().data());
+		_Model_SSDT->setData(_Model_SSDT->index(i, 3), x.Modules.data());
+		i++;
+	}
+}
+
+void Medusa::GetShadowSSDT()
+{
+	_Model_SSSDT->removeRows(0, _Model_SSSDT->rowCount());
+	std::vector<SSDT_STRUCT2> temp_vector = _KernelModules.GetALLShadowSSDT(_Setting_SSDT_SSSDT_PDB);
+	int i = 0;
+	for (auto x : temp_vector)
+	{
+		_Model_SSSDT->setVerticalHeaderItem(i, new QStandardItem);
+		_Model_SSSDT->setData(_Model_SSSDT->index(i, 0), i);
+		_Model_SSSDT->setData(_Model_SSSDT->index(i, 1), x.FuncName.data());
+		std::ostringstream ret;
+		ret << std::hex << "0x" << (ULONG64)x.Addr;
+		_Model_SSSDT->setData(_Model_SSSDT->index(i, 2), ret.str().data());
+		_Model_SSSDT->setData(_Model_SSSDT->index(i, 3), x.Modules.data());
 		i++;
 	}
 }

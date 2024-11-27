@@ -74,79 +74,81 @@ PSYSTEM_SERVICE_TABLE2 GetKeServiceDescriptorTableAddress(int SearchType)
 
 bool SSDT::GetAllSSDT()
 {
+	PSYSTEM_SERVICE_TABLE2 temp_table = nullptr;
 	if (_KeServiceDescriptorTableShadow)
 	{
-
+		PSYSTEM_DESCRIPTOR_TABLE temp_descriptor_table = (PSYSTEM_DESCRIPTOR_TABLE)_KeServiceDescriptorTableShadow;
+		temp_table = &temp_descriptor_table->win32k;
 	}
 	else
 	{
-		PSYSTEM_SERVICE_TABLE2 temp_table = GetKeServiceDescriptorTableAddress(0);
-		if (!temp_table || !MmIsAddressValid(temp_table) || 
-			!MmIsAddressValid(temp_table->ServiceTable) || !MmIsAddressValid((ULONG64*)temp_table->ArgumentTable))
-		{
-			return false;
+		temp_table = GetKeServiceDescriptorTableAddress(0);
+	}
+	if (!temp_table || !MmIsAddressValid(temp_table) ||
+		!MmIsAddressValid(temp_table->ServiceTable) || !MmIsAddressValid((ULONG64*)temp_table->ArgumentTable))
+	{
+		return false;
+	}
+	for (int i = 0; i < temp_table->ServiceLimit; i++)
+	{
+		uint32_t dwOffset = temp_table->ServiceTable[i];
+		uint64_t result;
+		// 右移 4 位并处理高位
+		if (dwOffset & 0x80000000) {
+			// 当高位为 1 时，设置高 32 位为 0xFFFFFFFF
+			result = (static_cast<uint64_t>(dwOffset) >> 4) | 0xFFFFFFFFF0000000;
 		}
-		for (int i = 0; i < temp_table->ServiceLimit; i++)
-		{
-			uint32_t dwOffset = temp_table->ServiceTable[i];
-			uint64_t result;
-			// 右移 4 位并处理高位
-			if (dwOffset & 0x80000000) {
-				// 当高位为 1 时，设置高 32 位为 0xFFFFFFFF
-				result = (static_cast<uint64_t>(dwOffset) >> 4) | 0xFFFFFFFFF0000000;
-			}
-			else {
-				// 否则直接右移并扩展为 64 位
-				result = static_cast<uint64_t>(dwOffset >> 4);
-			}
-			
-
-			SSDT_STRUCT temp_ssdt = { 0 };
-			temp_ssdt.Index = 0;
-			temp_ssdt.Addr = (ULONG64)temp_table->ServiceTable + result;
-
-			_SSDTALL.push_back(temp_ssdt);
+		else {
+			// 否则直接右移并扩展为 64 位
+			result = static_cast<uint64_t>(dwOffset >> 4);
 		}
+
+
+		SSDT_STRUCT temp_ssdt = { 0 };
+		temp_ssdt.Index = 0;
+		temp_ssdt.Addr = (ULONG64)temp_table->ServiceTable + result;
+
+		_SSDTALL.push_back(temp_ssdt);
 	}
 	return true;
 }
 
 bool SSDT::GetAllShadowSSDT()
 {
+	PSYSTEM_DESCRIPTOR_TABLE temp_descriptor_table = nullptr;
 	if (_KeServiceDescriptorTableShadow)
 	{
-
+		temp_descriptor_table = (PSYSTEM_DESCRIPTOR_TABLE)_KeServiceDescriptorTableShadow;
 	}
 	else
 	{
-
-		PSYSTEM_DESCRIPTOR_TABLE temp_descriptor_table = (PSYSTEM_DESCRIPTOR_TABLE)GetKeServiceDescriptorTableAddress(1);
-		PSYSTEM_SERVICE_TABLE2 temp_table = &temp_descriptor_table->win32k;
-		if (!temp_table || !MmIsAddressValid(temp_table) || !MmIsAddressValid(temp_table->ServiceTable))
-		{
-			return false;
+		temp_descriptor_table = (PSYSTEM_DESCRIPTOR_TABLE)GetKeServiceDescriptorTableAddress(1);
+	}
+	PSYSTEM_SERVICE_TABLE2 temp_table = &temp_descriptor_table->win32k;
+	if (!temp_table || !MmIsAddressValid(temp_table) || !MmIsAddressValid(temp_table->ServiceTable))
+	{
+		return false;
+	}
+	for (int i = 0; i < temp_table->ServiceLimit; i++)
+	{
+		uint32_t dwOffset = temp_table->ServiceTable[i];
+		uint64_t result;
+		// 右移 4 位并处理高位
+		if (dwOffset & 0x80000000) {
+			// 当高位为 1 时，设置高 32 位为 0xFFFFFFFF
+			result = (static_cast<uint64_t>(dwOffset) >> 4) | 0xFFFFFFFFF0000000;
 		}
-		for (int i = 0; i < temp_table->ServiceLimit; i++)
-		{
-			uint32_t dwOffset = temp_table->ServiceTable[i];
-			uint64_t result;
-			// 右移 4 位并处理高位
-			if (dwOffset & 0x80000000) {
-				// 当高位为 1 时，设置高 32 位为 0xFFFFFFFF
-				result = (static_cast<uint64_t>(dwOffset) >> 4) | 0xFFFFFFFFF0000000;
-			}
-			else {
-				// 否则直接右移并扩展为 64 位
-				result = static_cast<uint64_t>(dwOffset >> 4);
-			}
-
-
-			SSDT_STRUCT temp_ssdt = { 0 };
-			temp_ssdt.Index = 0;
-			temp_ssdt.Addr = (ULONG64)temp_table->ServiceTable + result;
-
-			_SSSDTALL.push_back(temp_ssdt);
+		else {
+			// 否则直接右移并扩展为 64 位
+			result = static_cast<uint64_t>(dwOffset >> 4);
 		}
+
+
+		SSDT_STRUCT temp_ssdt = { 0 };
+		temp_ssdt.Index = 0;
+		temp_ssdt.Addr = (ULONG64)temp_table->ServiceTable + result;
+
+		_SSSDTALL.push_back(temp_ssdt);
 	}
 	return true;
 }

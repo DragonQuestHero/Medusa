@@ -45,6 +45,7 @@ public:
 	}
 	~PDBInfo() = default;
 public:
+	bool QueryDownLoad(std::string);
 	bool DownLoadNtos();
 	bool DownLoad(std::string, bool);
 	bool GetALL();
