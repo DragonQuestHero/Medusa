@@ -23,7 +23,7 @@ public:
 	SSDT() = default;
 	~SSDT() = default;
 public:
-	ULONG64 _KeServiceDescriptorTableShadow;
+	ULONG64 _KeServiceDescriptorTableShadow = 0;
 	std::vector<SSDT_STRUCT> _SSDTALL;
 	std::vector<SSDT_STRUCT> _SSSDTALL;
 public:

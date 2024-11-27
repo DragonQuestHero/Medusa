@@ -38,9 +38,9 @@ UserMemoryList::UserMemoryList(QWidget* parent)
 	ui.tableView->setColumnWidth(6, 150);
 
 
-	_TableView_Action_Check.setText("Check");
+	_TableView_Action_Check.setText("MemoryView");
 	ui.tableView->addAction(&_TableView_Action_Check);
-	connect(&_TableView_Action_Check, SIGNAL(triggered(bool)), SLOT(Check(bool)));
+	connect(&_TableView_Action_Check, SIGNAL(triggered(bool)), SLOT(MemoryView(bool)));
 }
 
 std::string ProtectToString(DWORD protect) 
@@ -389,13 +389,14 @@ std::vector<UserMemoryListStruct> UserMemoryList::GetUserMemoryListR3CheckHide(U
 	return temp_vector;
 }
 
-void UserMemoryList::Check(bool)
+void UserMemoryList::MemoryView(bool)
 {
 	_UserMemory->ui.tabWidget->setCurrentIndex(1);
 	_UserMemory->PID = _PID;
 	_UserMemory->ui.label->setText("ProcessID:" + QString::number(_PID) + "    CR3:0x0");
 	_UserMemory->ui.lineEdit->setText(ui.tableView->model()->index(ui.tableView->currentIndex().row(), 1).data().toString());
-	_UserMemory->ui.lineEdit_2->setText(ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString());
+	//_UserMemory->ui.lineEdit_2->setText(ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString());
+	_UserMemory->ui.lineEdit_2->setText("0x1000");
 	if (ui.tableView->model()->index(ui.tableView->currentIndex().row(), 5).data().toString().toStdString().find("MEM_FREE") != std::string::npos)
 	{
 		_UserMemory->ui.lineEdit_2->setText("0x0");

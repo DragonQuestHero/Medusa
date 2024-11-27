@@ -1,4 +1,4 @@
-#include "IO_Control.h"
+ï»¿#include "IO_Control.h"
 
 #include <functional>
 
@@ -59,7 +59,7 @@ IO_Control* IO_Control::_This;
 NTSTATUS IO_Control::Create_IO_Control()
 {
 	NTSTATUS status = 0;
-	//´´½¨Éè±¸¶ÔÏó
+	//åˆ›å»ºè®¾å¤‡å¯¹è±¡
 	RtlInitUnicodeString(&Device_Name, DEVICE_NAME);
 	status = IoCreateDevice(Driver_Object, 0, &Device_Name, FILE_DEVICE_UNKNOWN, 0, FALSE, &Device_Object);
 	if (!NT_SUCCESS(status))
@@ -69,7 +69,7 @@ NTSTATUS IO_Control::Create_IO_Control()
 	}
 
 	Device_Object->Flags |= DO_BUFFERED_IO;
-	//´´½¨·ûºÅÁ¬½Ó
+	//åˆ›å»ºç¬¦å·è¿æ¥
 	RtlInitUnicodeString(&Link_Name, LINK_NAME);
 	status = IoCreateSymbolicLink(&Link_Name, &Device_Name);
 	if (!NT_SUCCESS(status))

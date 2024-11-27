@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <QtWidgets/QMainWindow>
 #include <QStandardItemModel>
@@ -54,6 +54,20 @@ public slots:
 	void DriverRightMenuViewExportFunc(bool);
 	void DriverRightMenuIOCTLScanner(QAction*);
 	void ViewKernelMemory(QAction*);
+	void SSDTMemoryView(bool)
+	{
+		_KernelMemory.ui.lineEdit->setText(
+			ui.tableView_SSDT->model()->index(ui.tableView_SSDT->currentIndex().row(), 2).data().toString());
+		_KernelMemory.QueryMemory();
+		_KernelMemory.show();
+	}
+	void SSSDTMemoryView(bool)
+	{
+		_KernelMemory.ui.lineEdit->setText(
+			ui.tableView_SSSDT->model()->index(ui.tableView_SSSDT->currentIndex().row(), 2).data().toString());
+		_KernelMemory.QueryMemory();
+		_KernelMemory.show();
+	}
 public:
 	void GetProcessList();
 	void GetKernelModuleList();
@@ -136,6 +150,9 @@ private:
 
 	QMenu _TableView_Menu_IOCTLScanner;
 	QAction _TableView_Action_IOCTLScanner;
+
+	QAction _TableView_Action_SSDT_MemoryView;
+	QAction _TableView_Action_SSSDT_MemoryView;
 public:
 	void ProcessUI()
 	{
@@ -361,15 +378,23 @@ public:
 		ui.tableView_Driver->addAction(&_TableView_Action_IOCTLScanner);
 		ui.tableView_Driver->addAction(&_TableView_Action_ViewExportFunc);
 	}
+	void SSDTRightMenuUI()
+	{
+		_TableView_Action_SSDT_MemoryView.setText("MemoryView");
+		_TableView_Action_SSSDT_MemoryView.setText("MemoryView");
+
+		ui.tableView_SSDT->addAction(&_TableView_Action_SSDT_MemoryView);
+		ui.tableView_SSSDT->addAction(&_TableView_Action_SSSDT_MemoryView);
+	}
 public:
 	int Enable_Debug()
 	{
 		BOOL fOK = FALSE;
 		HANDLE hToken;
-		//°ÑÒ»¸ö·ÃÎÊÁîÅÆÖĞÃ»ÓĞÆôÓÃ¸ÃÈ¨ÏŞµ«ÊÇ±¾ÉíÊÇ¾ßÓĞ¸ÃÈ¨ÏŞµÄ½ø³ÌÌáÈ¨
-		if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken)) //´ò¿ª½ø³Ì·ÃÎÊÁîÅÆ  
+		//æŠŠä¸€ä¸ªè®¿é—®ä»¤ç‰Œä¸­æ²¡æœ‰å¯ç”¨è¯¥æƒé™ä½†æ˜¯æœ¬èº«æ˜¯å…·æœ‰è¯¥æƒé™çš„è¿›ç¨‹ææƒ
+		if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken)) //æ‰“å¼€è¿›ç¨‹è®¿é—®ä»¤ç‰Œ  
 		{
-			//ÊÔÍ¼ĞŞ¸Ä¡°µ÷ÊÔ¡±ÌØÈ¨  
+			//è¯•å›¾ä¿®æ”¹â€œè°ƒè¯•â€ç‰¹æƒ  
 			TOKEN_PRIVILEGES tp;
 			tp.PrivilegeCount = 1;
 			LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &tp.Privileges[0].Luid);

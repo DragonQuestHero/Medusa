@@ -212,7 +212,6 @@
     <MASM Include="asm64.asm">
       <FileType>Document</FileType>
     </MASM>
-    <None Include=".editorconfig" />
     <None Include="SysCall.asm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

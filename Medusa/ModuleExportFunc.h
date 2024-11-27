@@ -18,6 +18,9 @@
 
 #include "ui_ModuleExportFunc.h"
 
+#include "KernelMemory.h"
+#include "UserMemory.h"
+
 struct ExportFunc
 {
 	ULONG64 RVA;
@@ -35,7 +38,30 @@ public:
 public:
 	std::vector<ExportFunc> GetExportFunc(ULONG64 Addr, std::string Path);
 public:
+	bool _Previous = false;
+	ULONG64 _PID = 0;
+	KernelMemory _KernelMemory;
+	UserMemory _UserMemory;
+	QAction _TableView_Action_MemoryView;
 public slots:
+	void MemoryView(bool)
+	{
+		if (_Previous)
+		{
+			_KernelMemory.ui.lineEdit->setText(
+				ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString());
+			_KernelMemory.QueryMemory();
+			_KernelMemory.show();
+		}
+		else
+		{
+			_UserMemory.PID = _PID;
+			_UserMemory.ui.lineEdit->setText(
+				ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString());
+			_UserMemory.QueryMemory();
+			_UserMemory.show();
+		}
+	}
 public:
 	Ui::Form_ModuleExportFunc ui;
 	QStandardItemModel* _Model;

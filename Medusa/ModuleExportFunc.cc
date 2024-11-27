@@ -16,6 +16,7 @@ ModuleExportFunc::ModuleExportFunc(QWidget* parent)
 	ui.tableView->horizontalHeader()->setSectionsClickable(false);
 	ui.tableView->verticalHeader()->setDefaultSectionSize(25);
 	ui.tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+	ui.tableView->setContextMenuPolicy(Qt::ActionsContextMenu);
 
 	_Model->setColumnCount(4);
 	_Model->setHeaderData(0, Qt::Horizontal, u8"Index");
@@ -27,6 +28,10 @@ ModuleExportFunc::ModuleExportFunc(QWidget* parent)
 	ui.tableView->setColumnWidth(1, 250);
 	ui.tableView->setColumnWidth(2, 200);
 	ui.tableView->setColumnWidth(3, 200);
+
+	_TableView_Action_MemoryView.setText("MemoryView");
+	ui.tableView->addAction(&_TableView_Action_MemoryView);
+	connect(&_TableView_Action_MemoryView, SIGNAL(triggered(bool)), SLOT(MemoryView(bool)));
 }
 
 
@@ -103,6 +108,12 @@ std::vector<ExportFunc> ModuleExportFunc::GetExportFunc(ULONG64 Addr, std::strin
 	pAddressOfNames = (PULONG)(pExport->AddressOfNames + (ULONG_PTR)pBase);
 	pAddressOfFuncs = (PULONG)(pExport->AddressOfFunctions + (ULONG_PTR)pBase);
 
+	if ((ULONG64)pAddressOfNames == (ULONG_PTR)pBase)
+	{
+		peconv::free_pe_buffer(loaded_pe);
+		return temp_vector;
+	}
+
 	for (int i = 0; i < pExport->NumberOfFunctions; ++i)
 	{
 		//ULONG_PTR funcRVA = pAddressOfFuncs[i];
@@ -123,12 +134,12 @@ std::vector<ExportFunc> ModuleExportFunc::GetExportFunc(ULONG64 Addr, std::strin
 		
 		_Model->setVerticalHeaderItem(i, new QStandardItem);
 		_Model->setData(_Model->index(i, 0), i);
-		_Model->setData(_Model->index(i, 1), funcName);
+		_Model->setData(_Model->index(i, 1), temp_ExportFunc.Name.data());
 		std::ostringstream ret2;
 		ret2 << std::hex << "0x" << temp_ExportFunc.Addr;
 		_Model->setData(_Model->index(i, 2), ret2.str().data());
 		std::ostringstream ret;
-		ret << std::hex << "0x" << *funcRVA;
+		ret << std::hex << "0x" << temp_ExportFunc.RVA;
 		_Model->setData(_Model->index(i, 3), ret.str().data());
 
 		temp_vector.push_back(temp_ExportFunc);

@@ -251,7 +251,6 @@
     <None Include="SysCall.asm">
       <Filter>Source Files</Filter>
     </None>
-    <None Include=".editorconfig" />
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="Medusa.ui">

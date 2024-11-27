@@ -164,9 +164,6 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="CallBackScanner.cc" />
     <ClCompile Include="EmunProcess.cc" />
     <ClCompile Include="IO_Control.cc" />

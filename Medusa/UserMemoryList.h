@@ -49,7 +49,7 @@ public:
 	std::vector<UserMemoryListStruct> GetUserMemoryListR0(ULONG64 PID);
 public:
 public slots:
-	void Check(bool);
+	void MemoryView(bool);
 public:
 	Ui::Form_UserMemoryList ui;
 	QStandardItemModel* _Model;

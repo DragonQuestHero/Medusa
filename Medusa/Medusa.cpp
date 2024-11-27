@@ -1,4 +1,4 @@
-#include "Medusa.h"
+ï»¿#include "Medusa.h"
 
 #include "FileCheck.h"
 #include "Hypervisor.h"
@@ -25,6 +25,7 @@ Medusa::Medusa(QWidget *parent)
 	CallBackListUI();
 	SSDTListUI();
 	ShadowSSDTListUI();
+	SSDTRightMenuUI();
 
 
 	ProcessRightMenuUI();
@@ -59,18 +60,18 @@ Medusa::Medusa(QWidget *parent)
 
 void Medusa::Set_SLOTS()
 {
-	connect(ui.tabWidget, SIGNAL(currentChanged(int)), SLOT(ChangeTab()));//½ø³Ì
-	connect(ui.tabWidget, SIGNAL(tabBarClicked(int)), SLOT(ChangeTab()));//½ø³Ì
+	connect(ui.tabWidget, SIGNAL(currentChanged(int)), SLOT(ChangeTab()));//è¿›ç¨‹
+	connect(ui.tabWidget, SIGNAL(tabBarClicked(int)), SLOT(ChangeTab()));//è¿›ç¨‹
 
 
-	connect(&_TableView_Menu_Inject, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//½ø³ÌÊó±êÓÒ¼ü²Ëµ¥
-	connect(&_TableView_Menu_HookCheck, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//½ø³ÌÊó±êÓÒ¼ü²Ëµ¥
-	connect(&_TableView_Menu_Modules, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//½ø³ÌÊó±êÓÒ¼ü²Ëµ¥
-	connect(&_TableView_Menu_Threads, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//½ø³ÌÊó±êÓÒ¼ü²Ëµ¥
-	connect(&_TableView_Menu_KillProcess, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//½ø³ÌÊó±êÓÒ¼ü²Ëµ¥
-	connect(&_TableView_Menu_PDBViewProcess, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//½ø³ÌÊó±êÓÒ¼ü²Ëµ¥
-	connect(&_TableView_Menu_Memory, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//½ø³ÌÊó±êÓÒ¼ü²Ëµ¥
-	connect(&_TableView_Action_HideProcess, SIGNAL(triggered(bool)), SLOT(HideProcess(bool)));//½ø³ÌÊó±êÓÒ¼ü²Ëµ¥
+	connect(&_TableView_Menu_Inject, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//è¿›ç¨‹é¼ æ ‡å³é”®èœå•
+	connect(&_TableView_Menu_HookCheck, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//è¿›ç¨‹é¼ æ ‡å³é”®èœå•
+	connect(&_TableView_Menu_Modules, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//è¿›ç¨‹é¼ æ ‡å³é”®èœå•
+	connect(&_TableView_Menu_Threads, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//è¿›ç¨‹é¼ æ ‡å³é”®èœå•
+	connect(&_TableView_Menu_KillProcess, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//è¿›ç¨‹é¼ æ ‡å³é”®èœå•
+	connect(&_TableView_Menu_PDBViewProcess, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//è¿›ç¨‹é¼ æ ‡å³é”®èœå•
+	connect(&_TableView_Menu_Memory, SIGNAL(triggered(QAction*)), SLOT(ProcessRightMenu(QAction*)));//è¿›ç¨‹é¼ æ ‡å³é”®èœå•
+	connect(&_TableView_Action_HideProcess, SIGNAL(triggered(bool)), SLOT(HideProcess(bool)));//è¿›ç¨‹é¼ æ ‡å³é”®èœå•
 
 
 	connect(&_TableView_Menu_DriverClear, SIGNAL(triggered(QAction*)), SLOT(DriverRightMenu(QAction*)));
@@ -78,6 +79,9 @@ void Medusa::Set_SLOTS()
 	connect(&_TableView_Action_DriverDumpMemory, SIGNAL(triggered(bool)), SLOT(DriverRightMenuDumpToMemory(bool)));
 	connect(&_TableView_Menu_IOCTLScanner, SIGNAL(triggered(QAction*)), SLOT(DriverRightMenuIOCTLScanner(QAction*)));
 	connect(&_TableView_Action_ViewExportFunc, SIGNAL(triggered(bool)), SLOT(DriverRightMenuViewExportFunc(bool)));
+
+	connect(&_TableView_Action_SSDT_MemoryView, SIGNAL(triggered(bool)), SLOT(SSDTMemoryView(bool)));
+	connect(&_TableView_Action_SSSDT_MemoryView, SIGNAL(triggered(bool)), SLOT(SSSDTMemoryView(bool)));
 
 	connect(ui.menuMenu, SIGNAL(triggered(QAction*)), SLOT(DriverLoadMenu(QAction*)));
 	connect(ui.menuHypervisor, SIGNAL(triggered(QAction*)), SLOT(HypervisorMenu(QAction*)));
@@ -104,42 +108,42 @@ void Medusa::HypervisorMenu(QAction* action)
 	if (action->text() == "R3Check")
 	{
 		Hypervisor _Hypervisor;
-		std::string str = u8"¡Á=detected virtua environment\r\n¡Ì=not\r\n";
+		std::string str = u8"Ã—=detected virtua environment\r\nâˆš=not\r\n";
 		str = str + "[Checking for known hypervisor vendors]:  ";
 		if (_Hypervisor.check_for_known_hypervisor())
 		{
-			str = str + u8"¡Á" + "\r\n";
+			str = str + u8"Ã—" + "\r\n";
 		}
 		else
 		{
-			str = str + u8"¡Ì" + "\r\n";
+			str = str + u8"âˆš" + "\r\n";
 		}
 		str = str + "[Checking highest low function leaf]:  ";
 		if (_Hypervisor.check_highest_low_function_leaf())
 		{
-			str = str + u8"¡Á" + "\r\n";
+			str = str + u8"Ã—" + "\r\n";
 		}
 		else
 		{
-			str = str + u8"¡Ì" + "\r\n";
+			str = str + u8"âˆš" + "\r\n";
 		}
 		str = str + "[Checking invalid leaf]:  ";
 		if (_Hypervisor.check_invalid_leaf())
 		{
-			str = str + u8"¡Á" + "\r\n";
+			str = str + u8"Ã—" + "\r\n";
 		}
 		else
 		{
-			str = str + u8"¡Ì" + "\r\n";
+			str = str + u8"âˆš" + "\r\n";
 		}
 		str = str + "[Profiling CPUID against FYL2XP1]:  ";
 		if (_Hypervisor.take_time_cpuid_against_fyl2xp1())
 		{
-			str = str + u8"¡Á" + "\r\n";
+			str = str + u8"Ã—" + "\r\n";
 		}
 		else
 		{
-			str = str + u8"¡Ì" + "\r\n";
+			str = str + u8"âˆš" + "\r\n";
 		}
 		QMessageBox::information(this, "Ret", str.data());
 	}
@@ -222,23 +226,23 @@ void Medusa::PdbMenu(QAction* action)
 		_Setting_SSDT_SSSDT_PDB = !_Setting_SSDT_SSSDT_PDB;
 		if (_Setting_SSDT_SSSDT_PDB)
 		{
-			action->setText(u8"¡Ì SSDT& SSSDT Use PDB");
+			action->setText(u8"âˆš SSDT& SSSDT Use PDB");
 		}
 		else
 		{
-			action->setText(u8"¡Á SSDT& SSSDT Use PDB");
+			action->setText(u8"Ã— SSDT& SSSDT Use PDB");
 		}
 	}
 	if (action->text().toStdString().find("Use microsoft server") != std::string::npos)
 	{
-		action->setText(u8"¡Ì Use microsoft server");
-		ui.actionUse_order_server->setText(u8"¡Á Use Order Server");
+		action->setText(u8"âˆš Use microsoft server");
+		ui.actionUse_order_server->setText(u8"Ã— Use Order Server");
 		_PDBView._PDBInfo._SymbolServer = "https://msdl.microsoft.com/download/symbols/";
 	}
 	if (action->text().toStdString().find("Use Order Server") != std::string::npos)
 	{
-		action->setText(u8"¡Ì Use Order Server");
-		ui.actionUse_microsoft_server->setText(u8"¡Á Use microsoft server");
+		action->setText(u8"âˆš Use Order Server");
+		ui.actionUse_microsoft_server->setText(u8"Ã— Use microsoft server");
 		_PDBView._PDBInfo._SymbolServer = "https://msdl.szdyg.cn/download/symbols/";
 	}
 	if (action->text() == "SendPDBInfo")
@@ -365,7 +369,7 @@ void Medusa::DriverLoad(QAction* action)
 
 
 
-	//¼ÓÔØÆäËûÇý¶¯
+	//åŠ è½½å…¶ä»–é©±åŠ¨
 	if (action->text() == "Nt")
 	{
 		QFileDialog file_path;
@@ -609,6 +613,8 @@ void Medusa::DriverRightMenuViewExportFunc(bool)
 	addr_str.erase(0, 2);
 	ULONG64 addr = strtoull(addr_str.data(), 0, 16);
 
+	_ModuleExportFunc._PID = 0;
+	_ModuleExportFunc._Previous = true;
 	_ModuleExportFunc.GetExportFunc(addr, file_name);
 	_ModuleExportFunc.show();
 }
@@ -1457,6 +1463,10 @@ void Medusa::GetALLCallBackList()
 
 void Medusa::GetSSDT()
 {
+	if (!_Driver_Loaded)
+	{
+		return;
+	}
 	_Model_SSDT->removeRows(0, _Model_SSDT->rowCount());
 	std::vector<SSDT_STRUCT2> temp_vector = _KernelModules.GetALLSSDT(_Setting_SSDT_SSSDT_PDB);
 	int i = 0;
@@ -1475,6 +1485,10 @@ void Medusa::GetSSDT()
 
 void Medusa::GetShadowSSDT()
 {
+	if (!_Driver_Loaded)
+	{
+		return;
+	}
 	_Model_SSSDT->removeRows(0, _Model_SSSDT->rowCount());
 	std::vector<SSDT_STRUCT2> temp_vector = _KernelModules.GetALLShadowSSDT(_Setting_SSDT_SSSDT_PDB);
 	int i = 0;

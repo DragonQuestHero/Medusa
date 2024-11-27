@@ -122,6 +122,8 @@ void Modules::ViewExportFunc(bool)
 	addr_str.erase(0, 2);
 	ULONG64 addr = strtoull(addr_str.data(), 0, 16);
 
+	_ModuleExportFunc._PID = _PID;
+	_ModuleExportFunc._Previous = false;
 	_ModuleExportFunc.GetExportFunc(addr, file_name);
 	_ModuleExportFunc.show();
 }
