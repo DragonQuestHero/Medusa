@@ -7,8 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>1590</width>
-    <height>785</height>
+    <height>794</height>
    </rect>
+  </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::ActionsContextMenu</enum>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -21,6 +24,9 @@
      <width>1591</width>
      <height>791</height>
     </rect>
+   </property>
+   <property name="contextMenuPolicy">
+    <enum>Qt::ActionsContextMenu</enum>
    </property>
   </widget>
  </widget>

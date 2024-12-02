@@ -475,7 +475,10 @@ void Medusa::ProcessRightMenu(QAction* action)
 	}
 	else if (action->text() == "R3ModuleScanner")
 	{
-		RightMenuR3ModuleScanner(PID);
+		QString process_name = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString();
+		_Modules.setWindowTitle(process_name);
+		_Modules.ShowUserMoudleScanner(PID, false);
+		_Modules.show();
 	}
 	else if (action->text() == "R3ThreadView")
 	{
@@ -844,32 +847,9 @@ void Medusa::RightMenuHookScanner(QAction* action)
 		{
 			return;
 		}
-		_HookScanner._Model->removeRows(0, _HookScanner._Model->rowCount());
-		FileCheck temp_check(_Driver_Loaded);
-		std::vector<_CheckDifferent> temp_vector = temp_check.CheckPlain(PID);
-		int i = 0;
-		for (auto x : temp_vector)
-		{
-			_HookScanner._Model->setVerticalHeaderItem(i, new QStandardItem);
-			_HookScanner._Model->setData(_HookScanner._Model->index(i, 0), i);
-			_HookScanner._Model->setData(_HookScanner._Model->index(i, 1), QString::fromWCharArray(x.Name));
-			std::ostringstream ret;
-			ret << std::hex << "0x" << x.Addr;
-			_HookScanner._Model->setData(_HookScanner._Model->index(i, 2), ret.str().data());
-			_HookScanner._Model->setData(_HookScanner._Model->index(i, 3), String_TO_HEX(std::string(x.FileHex, 20)).data());
-			_HookScanner._Model->setData(_HookScanner._Model->index(i, 4), String_TO_HEX(std::string(x.MemoryHex, 20)).data());
-			_HookScanner._Model->setData(_HookScanner._Model->index(i, 5), QString::fromWCharArray(x.Path));
-			if (x.Fail)
-			{
-				_HookScanner._Model->item(i, 0)->setBackground(QColor(Qt::red));
-				_HookScanner._Model->item(i, 1)->setBackground(QColor(Qt::red));
-				_HookScanner._Model->item(i, 2)->setBackground(QColor(Qt::red));
-				_HookScanner._Model->item(i, 3)->setBackground(QColor(Qt::red));
-				_HookScanner._Model->item(i, 4)->setBackground(QColor(Qt::red));
-				_HookScanner._Model->item(i, 5)->setBackground(QColor(Qt::red));
-			}
-			i++;
-		}
+		QString process_name = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString();
+		_HookScanner.setWindowTitle(process_name);
+		_HookScanner.ProcessHookScanner(PID, _Driver_Loaded);
 		_HookScanner.show();
 	}
 	if (action->text() == "HookScannerQuick")
@@ -879,71 +859,11 @@ void Medusa::RightMenuHookScanner(QAction* action)
 		{
 			return;
 		}
-		_HookScanner._Model->removeRows(0, _HookScanner._Model->rowCount());
-		FileCheck temp_check(_Driver_Loaded);
-		std::vector<_CheckDifferent> temp_vector = temp_check.CheckPlainQuick(PID);
-		int i = 0;
-		for (auto x : temp_vector)
-		{
-			_HookScanner._Model->setVerticalHeaderItem(i, new QStandardItem);
-			_HookScanner._Model->setData(_HookScanner._Model->index(i, 0), i);
-			_HookScanner._Model->setData(_HookScanner._Model->index(i, 1), QString::fromWCharArray(x.Name));
-			std::ostringstream ret;
-			ret << std::hex << "0x" << x.Addr;
-			_HookScanner._Model->setData(_HookScanner._Model->index(i, 2), ret.str().data());
-			_HookScanner._Model->setData(_HookScanner._Model->index(i, 3), String_TO_HEX(std::string(x.FileHex, 20)).data());
-			_HookScanner._Model->setData(_HookScanner._Model->index(i, 4), String_TO_HEX(std::string(x.MemoryHex, 20)).data());
-			_HookScanner._Model->setData(_HookScanner._Model->index(i, 5), QString::fromWCharArray(x.Path));
-			if (x.Fail)
-			{
-				_HookScanner._Model->item(i, 0)->setBackground(QColor(Qt::red));
-				_HookScanner._Model->item(i, 1)->setBackground(QColor(Qt::red));
-				_HookScanner._Model->item(i, 2)->setBackground(QColor(Qt::red));
-				_HookScanner._Model->item(i, 3)->setBackground(QColor(Qt::red));
-				_HookScanner._Model->item(i, 4)->setBackground(QColor(Qt::red));
-				_HookScanner._Model->item(i, 5)->setBackground(QColor(Qt::red));
-			}
-			i++;
-		}
+		QString process_name = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString();
+		_HookScanner.setWindowTitle(process_name);
+		_HookScanner.ProcessHookScannerQuick(PID, _Driver_Loaded);
 		_HookScanner.show();
 	}
-}
-
-void Medusa::RightMenuR3ModuleScanner(ULONG64 PID)
-{
-	auto proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, PID);
-	if (!proc)
-	{
-		QMessageBox::information(this, "Ret", "permissions error");
-		return;
-	}
-	_Modules._Model->removeRows(0, _Modules._Model->rowCount());
-	std::vector<UserModule> temp_vector = _Modules.R3ModuleScanner(PID, proc);
-	CloseHandle(proc);
-	int i = 0;
-	for (auto x : temp_vector)
-	{
-		_Modules._Model->setVerticalHeaderItem(i, new QStandardItem);
-		_Modules._Model->setData(_Modules._Model->index(i, 0), i);
-		std::ostringstream ret;
-		ret << std::hex << (ULONG64)x.Addr;
-		_Modules._Model->setData(_Modules._Model->index(i, 2), ret.str().data());
-		std::ostringstream ret2;
-		ret2 << std::hex << x.Size;
-		_Modules._Model->setData(_Modules._Model->index(i, 3), ret2.str().data());
-		if (std::wstring(x.Name) == L"shellcode")
-		{
-			_Modules._Model->setData(_Modules._Model->index(i, 1), u8"RWXMemory");
-			_Modules._Model->item(i, 0)->setBackground(QColor(Qt::green));
-		}
-		else
-		{
-			_Modules._Model->setData(_Modules._Model->index(i, 1), u8"MemoryDLL");
-			_Modules._Model->item(i, 0)->setBackground(QColor(Qt::red));
-		}
-		i++;
-	}
-	_Modules.show();
 }
 
 void Medusa::RightMenuR3ThreadsView(ULONG64 PID)

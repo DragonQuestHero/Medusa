@@ -12,20 +12,21 @@
 
 
 
-DWORD GetSections(char* pe, std::vector<PIMAGE_SECTION_HEADER>& sections) {
+DWORD GetSections(char* pe, std::vector<PIMAGE_SECTION_HEADER>& sections) 
+{
 	if (!pe) return 0;
 	const PIMAGE_DOS_HEADER dos = reinterpret_cast<PIMAGE_DOS_HEADER>(pe);
 	const PIMAGE_NT_HEADERS nt = reinterpret_cast<PIMAGE_NT_HEADERS>(pe + dos->e_lfanew);
 	uint32_t numSec = nt->FileHeader.NumberOfSections;
 	DWORD count = 0u;
 	auto section = IMAGE_FIRST_SECTION(nt);
-	for (auto i = 0u; i < numSec; i++, section++) 
-	{ 
-		if (section->Characteristics & IMAGE_SCN_CNT_CODE) 
-		{ 
-			sections.push_back(section); 
-			count++; 
-		} 
+	for (auto i = 0u; i < numSec; i++, section++)
+	{
+		if (section->Characteristics & IMAGE_SCN_CNT_CODE)
+		{
+			sections.push_back(section);
+			count++;
+		}
 	}
 	return count;
 }
@@ -120,6 +121,15 @@ int FileCheck::CheckSimple(ULONG64 PID)
 		return -1;
 	}
 
+#ifdef _AMD64_
+	BOOL Wow64Process = false;
+	IsWow64Process(proc, &Wow64Process);
+	if (Wow64Process)
+	{
+		return -1;
+	}
+#endif
+
 	Modules _Module;
 	std::vector<MODULEENTRY32W> temp_vector;
 	if (_Driver)
@@ -168,7 +178,7 @@ int FileCheck::CheckSimple(ULONG64 PID)
 			peconv::free_unaligned(buffer);
 			if (!loaded_pe) break;
 			bool is64b = peconv::is64bit(loaded_pe);
-			if (!is64b) break;
+			//if (!is64b) break;
 			
 
 			std::vector<PIMAGE_SECTION_HEADER> coldSections;
@@ -227,7 +237,6 @@ int FileCheck::CheckSimple(ULONG64 PID)
 	return 0;
 }
 
-
 std::vector<_CheckDifferent> FileCheck::CheckPlain(ULONG64 PID)
 {
 	std::vector<_CheckDifferent> temp_vector_check;
@@ -238,6 +247,15 @@ std::vector<_CheckDifferent> FileCheck::CheckPlain(ULONG64 PID)
 		QMessageBox::information(nullptr, "Error", (std::string("GetLastError:") + std::to_string(GetLastError())).data());
 		return temp_vector_check;
 	}
+#ifdef _AMD64_
+	BOOL Wow64Process = false;
+	IsWow64Process(proc, &Wow64Process);
+	if (Wow64Process)
+	{
+		return temp_vector_check;
+	}
+#endif
+
 
 	Modules _Module;
 	std::vector<MODULEENTRY32W> temp_vector;
@@ -272,6 +290,7 @@ std::vector<_CheckDifferent> FileCheck::CheckPlain(ULONG64 PID)
 		return temp_vector_check;
 	}
 
+
 	for (auto x : temp_vector)
 	{
 		BYTE* data = nullptr;
@@ -290,8 +309,7 @@ std::vector<_CheckDifferent> FileCheck::CheckPlain(ULONG64 PID)
 			peconv::free_unaligned(buffer);
 			if (!loaded_pe) break;
 			bool is64b = peconv::is64bit(loaded_pe);
-			if (!is64b) return temp_vector_check;
-			
+			//if (!is64b) return temp_vector_check;
 
 			if (!GetSections((char*)loaded_pe, coldSections)) break;
 			if (!LoadMem(proc, x, data, _Driver, PID)) break;
@@ -381,6 +399,15 @@ std::vector<_CheckDifferent> FileCheck::CheckPlainQuick(ULONG64 PID)
 		return temp_vector_check;
 	}
 
+#ifdef _AMD64_
+	BOOL Wow64Process = false;
+	IsWow64Process(proc, &Wow64Process);
+	if (Wow64Process)
+	{
+		return temp_vector_check;
+	}
+#endif
+
 	Modules _Module;
 	std::vector<MODULEENTRY32W> temp_vector;
 	if (_Driver)
@@ -435,7 +462,7 @@ std::vector<_CheckDifferent> FileCheck::CheckPlainQuick(ULONG64 PID)
 			peconv::free_unaligned(buffer);
 			if (!loaded_pe) break;
 			bool is64b = peconv::is64bit(loaded_pe);
-			if (!is64b) return temp_vector_check;
+			//if (!is64b) return temp_vector_check;
 
 
 			if (!GetSections((char*)loaded_pe, coldSections)) break;

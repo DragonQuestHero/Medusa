@@ -226,6 +226,45 @@ bool Modules::ShowUserMoudleList(ULONG64 PID, bool kernel_mode)
 			i++;
 		}
 	}
+	return true;
+}
+
+bool Modules::ShowUserMoudleScanner(ULONG64 PID, bool kernel_mode)
+{
+	_PID = PID;
+	auto proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, PID);
+	if (!proc)
+	{
+		QMessageBox::information(this, "Ret", "permissions error");
+		return false;
+	}
+	_Model->removeRows(0, _Model->rowCount());
+	std::vector<UserModule> temp_vector = R3ModuleScanner(PID, proc);
+	CloseHandle(proc);
+	int i = 0;
+	for (auto x : temp_vector)
+	{
+		_Model->setVerticalHeaderItem(i, new QStandardItem);
+		_Model->setData(_Model->index(i, 0), i);
+		std::ostringstream ret;
+		ret << std::hex << (ULONG64)x.Addr;
+		_Model->setData(_Model->index(i, 2), ret.str().data());
+		std::ostringstream ret2;
+		ret2 << std::hex << x.Size;
+		_Model->setData(_Model->index(i, 3), ret2.str().data());
+		if (std::wstring(x.Name) == L"shellcode")
+		{
+			_Model->setData(_Model->index(i, 1), u8"RWXMemory");
+			_Model->item(i, 0)->setBackground(QColor(Qt::green));
+		}
+		else
+		{
+			_Model->setData(_Model->index(i, 1), u8"MemoryDLL");
+			_Model->item(i, 0)->setBackground(QColor(Qt::red));
+		}
+		i++;
+	}
+	return true;
 }
 
 std::vector<MODULEENTRY32W> Modules::GetUserMoudleListR3(ULONG64 PID)

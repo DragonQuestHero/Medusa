@@ -37,6 +37,7 @@ public:
 	~Modules() = default;
 public:
 	bool ShowUserMoudleList(ULONG64 PID,bool kernel_mode);
+	bool ShowUserMoudleScanner(ULONG64 PID, bool kernel_mode);
 	std::vector<MODULEENTRY32W> GetUserMoudleListR3(ULONG64 PID);
 	std::vector<UserModule> GetUserMoudleListR0(ULONG64 PID);
 	std::vector<UserModule> R3ModuleScanner(ULONG64 PID, HANDLE handle);
