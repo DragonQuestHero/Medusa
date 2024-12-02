@@ -82,9 +82,10 @@ bool EmunProcess::EmunProcessALL()
 	bool first_check = false;
 	_Process_List.clear();
 
+	void* pBuffer = NULL;
+
 	do 
 	{
-		void* pBuffer = NULL;
 		ULONG cbBuffer = 0;
 		NTSTATUS status = 0;
 
@@ -152,6 +153,11 @@ bool EmunProcess::EmunProcessALL()
 			pInfo = (PSYSTEM_PROCESS_INFORMATION)(((PUCHAR)pInfo) + pInfo->NextEntryOffset);
 		}
 	} while (false);
+
+	if (pBuffer)
+	{
+		ExFreePool(pBuffer);
+	}
 
 	NTSTATUS                       status = STATUS_SUCCESS;
 	HANDLE                         hret = NULL;
