@@ -29,6 +29,8 @@ ModuleExportFunc::ModuleExportFunc(QWidget* parent)
 	ui.tableView->setColumnWidth(2, 200);
 	ui.tableView->setColumnWidth(3, 200);
 
+	setWindowTitle("ModuleExportFunc");
+
 	_TableView_Action_MemoryView.setText("MemoryView");
 	ui.tableView->addAction(&_TableView_Action_MemoryView);
 	connect(&_TableView_Action_MemoryView, SIGNAL(triggered(bool)), SLOT(MemoryView(bool)));
@@ -38,6 +40,8 @@ ModuleExportFunc::ModuleExportFunc(QWidget* parent)
 
 std::vector<ExportFunc> ModuleExportFunc::GetExportFunc(ULONG64 Addr, std::string Path)
 {
+	setWindowTitle(Path.data());
+
 	_Model->removeRows(0, _Model->rowCount());
 
 	std::vector<ExportFunc> temp_vector;

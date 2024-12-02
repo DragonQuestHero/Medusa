@@ -4,6 +4,8 @@
 
 #include "libpeconv/peconv.h"
 
+#include "Process.h"
+
 
 Modules::Modules(QWidget* parent)
 	: QMainWindow(parent)
@@ -31,6 +33,7 @@ Modules::Modules(QWidget* parent)
 	ui.tableView->setColumnWidth(4, 150);
 	ui.tableView->setColumnWidth(5, 400);
 
+	setWindowTitle("Modules");
 
 	_TableView_Action_Dump.setText("Dump");
 	_TableView_Action_DumpToFile.setText("DumpToFile");
@@ -126,6 +129,86 @@ void Modules::ViewExportFunc(bool)
 	_ModuleExportFunc._Previous = false;
 	_ModuleExportFunc.GetExportFunc(addr, file_name);
 	_ModuleExportFunc.show();
+}
+
+bool Modules::ShowUserMoudleList(ULONG64 PID, bool kernel_mode)
+{
+	if (kernel_mode)
+	{
+		_Model->removeRows(0, _Model->rowCount());
+		std::vector<MODULEENTRY32W> temp_vector = GetUserMoudleListR3(PID);
+		std::vector<UserModule> temp_vector2 = GetUserMoudleListR0(PID);
+		int i = 0;
+		for (auto x : temp_vector2)
+		{
+			_Model->setVerticalHeaderItem(i, new QStandardItem);
+			_Model->setData(_Model->index(i, 0), i);
+			_Model->setData(_Model->index(i, 1), QString::fromWCharArray(x.Name));
+			std::ostringstream ret;
+			ret << std::hex << "0x" << (ULONG64)x.Addr;
+			_Model->setData(_Model->index(i, 2), ret.str().data());
+			std::ostringstream ret2;
+			ret2 << std::hex << "0x" << x.Size;
+			_Model->setData(_Model->index(i, 3), ret2.str().data());
+			_Model->setData(_Model->index(i, 4), QString::fromWCharArray(x.Path));
+			std::wstring retStr;
+			Process _Process;
+			if (_Process.QueryValue(L"FileDescription", x.Path, retStr))
+			{
+				_Model->setData(_Model->index(i, 5), QString::fromWCharArray(retStr.data()));
+			}
+			else
+			{
+				_Model->setData(_Model->index(i, 5), "");
+			}
+			bool found = false;
+			for (auto y : temp_vector)
+			{
+				if (x.Addr == (ULONG64)y.modBaseAddr)
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				_Model->item(i, 0)->setBackground(QColor(Qt::red));
+				_Model->item(i, 1)->setBackground(QColor(Qt::red));
+				_Model->item(i, 2)->setBackground(QColor(Qt::red));
+				_Model->item(i, 3)->setBackground(QColor(Qt::red));
+				_Model->item(i, 4)->setBackground(QColor(Qt::red));
+				_Model->item(i, 5)->setBackground(QColor(Qt::red));
+			}
+			i++;
+		}
+	}
+	else
+	{
+		_Model->removeRows(0, _Model->rowCount());
+		std::vector<MODULEENTRY32W> temp_vector =
+			GetUserMoudleListR3(PID);
+		int i = 0;
+		for (auto x : temp_vector)
+		{
+			_Model->setVerticalHeaderItem(i, new QStandardItem);
+			_Model->setData(_Model->index(i, 0), i);
+			_Model->setData(_Model->index(i, 1), QString::fromWCharArray(x.szModule));
+			std::ostringstream ret;
+			ret << std::hex << "0x" << (ULONG64)x.modBaseAddr;
+			_Model->setData(_Model->index(i, 2), ret.str().data());
+			std::ostringstream ret2;
+			ret2 << std::hex << "0x" << x.modBaseSize;
+			_Model->setData(_Model->index(i, 3), ret2.str().data());
+			_Model->setData(_Model->index(i, 4), QString::fromWCharArray(x.szExePath));
+			std::wstring retStr;
+			Process _Process;
+			if (_Process.QueryValue(L"FileDescription", x.szExePath, retStr))
+			{
+				_Model->setData(_Model->index(i, 5), QString::fromWCharArray(retStr.data()));
+			}
+			i++;
+		}
+	}
 }
 
 std::vector<MODULEENTRY32W> Modules::GetUserMoudleListR3(ULONG64 PID)

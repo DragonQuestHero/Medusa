@@ -83,8 +83,6 @@ public:
 	void RightMenuR3ThreadsView(ULONG64 PID);
 	void RightMenuR0ThreadsView(ULONG64 PID);
 public:
-	void RightMenuR3ModulesView(ULONG64 PID);
-	void RightMenuR0ModulesView(ULONG64 PID);
 	void RightMenuR3ModuleScanner(ULONG64 PID);
 private:
 	bool _Driver_Loaded = false;
