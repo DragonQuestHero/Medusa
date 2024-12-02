@@ -18,7 +18,19 @@
 #include <fstream>
 
 #include "ui_UserMemory.h"
+#include "ntdll.h"
 
+
+struct Message_NtReadWriteVirtualMemory
+{
+	HANDLE ProcessId;
+	HANDLE ProcessHandle;
+	PVOID BaseAddress;
+	PVOID Buffer;
+	SIZE_T BufferBytes;
+	PSIZE_T ReturnBytes;
+	bool Read;
+};
 
 
 class UserMemory : public QMainWindow

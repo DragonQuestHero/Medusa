@@ -21,7 +21,7 @@ IO_Control* IO_Control::_This;
 #define TEST_GetALLUserModule CTL_CODE(FILE_DEVICE_UNKNOWN,0x7104,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_GetALLUserModuleNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7105,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
-#define TEST_GetRWMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7106,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define TEST_ReadUserMemoryFromKernel CTL_CODE(FILE_DEVICE_UNKNOWN,0x7106,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
 #define TEST_GetALLThreads CTL_CODE(FILE_DEVICE_UNKNOWN,0x7107,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_GetALLThreadsNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7108,METHOD_BUFFERED ,FILE_ANY_ACCESS)
@@ -204,7 +204,7 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
-	else if (Io_Control_Code == TEST_GetRWMemory && Input_Lenght > 0)
+	else if (Io_Control_Code == TEST_ReadUserMemoryFromKernel && Input_Lenght > 0)
 	{
 		NewNtReadWriteVirtualMemory((Message_NtReadWriteVirtualMemory*)Input_Buffer);
 		pIrp->IoStatus.Status = STATUS_SUCCESS;

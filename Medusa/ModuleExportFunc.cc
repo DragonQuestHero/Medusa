@@ -130,7 +130,14 @@ std::vector<ExportFunc> ModuleExportFunc::GetExportFunc(ULONG64 Addr, std::strin
 		{
 			temp_ExportFunc.Addr = Addr + *funcRVA;
 		}
-		temp_ExportFunc.Name = funcName;
+		if (IsBadReadPtr(funcName, 1))
+		{
+			temp_ExportFunc.Name = "";
+		}
+		else
+		{
+			temp_ExportFunc.Name = funcName;
+		}
 		
 		_Model->setVerticalHeaderItem(i, new QStandardItem);
 		_Model->setData(_Model->index(i, 0), i);

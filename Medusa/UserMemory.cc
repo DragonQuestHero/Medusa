@@ -356,26 +356,37 @@ ULONG64 UserMemory::ReadUserMemoryR3(ULONG64 Addr, ULONG64 Size, void* Buffer)
 	return lpNumberOfBytesRead;
 }
 
-#define TEST_ReadUserMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7117,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
+#define TEST_ReadUserMemoryFromKernel CTL_CODE(FILE_DEVICE_UNKNOWN,0x7106,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 ULONG64 UserMemory::ReadUserMemoryR0(ULONG64 Addr, ULONG64 Size, void* Buffer)
 {
+	SIZE_T ret = 0;
+	Message_NtReadWriteVirtualMemory temp_message = { 0 };
+	temp_message.ProcessId = (HANDLE)PID;
+	temp_message.BaseAddress = (void*)Addr;
+	temp_message.Buffer = Buffer;
+	temp_message.BufferBytes = Size;
+	temp_message.ReturnBytes = &ret;
+	temp_message.Read = true;
+
 	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (INVALID_HANDLE_VALUE == m_hDevice)
 	{
 		return 0;
 	}
-
-	ULONG64* temp_ulong64 = new ULONG64[2];
-	temp_ulong64[0] = Addr;
-	temp_ulong64[1] = Size;
-
-	DWORD dwRet = 0;
-	DeviceIoControl(m_hDevice, TEST_ReadUserMemory, temp_ulong64, 0x10, Buffer, Size, &dwRet, NULL);
-
-	delete temp_ulong64;
+	IO_STATUS_BLOCK IoStatusBlock = { 0 };
+	NTSTATUS status = ZwDeviceIoControlFile(m_hDevice, nullptr, nullptr, nullptr,
+		&IoStatusBlock, TEST_ReadUserMemoryFromKernel,
+		&temp_message, sizeof(Message_NtReadWriteVirtualMemory),
+		&temp_message, sizeof(Message_NtReadWriteVirtualMemory));
+	if (!NT_SUCCESS(status))
+	{
+		CloseHandle(m_hDevice);
+		return 0;
+	}
 	CloseHandle(m_hDevice);
-	return dwRet;
+	return ret;
 }
 
 #define TEST_GetCR3 CTL_CODE(FILE_DEVICE_UNKNOWN,0x7121,METHOD_BUFFERED ,FILE_ANY_ACCESS)

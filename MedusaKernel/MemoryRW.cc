@@ -87,8 +87,6 @@ NTSTATUS NewNtReadWriteVirtualMemory(Message_NtReadWriteVirtualMemory* message)
 
 volatile LONG number_of_processors = 0;
 volatile bool _ALLCpuReday = false;
-//KEVENT _WaitEvent;
-//KSPIN_LOCK SpinLock;
 
 ULONG_PTR KipiBroadcastWorker(
 	ULONG_PTR Argument
@@ -97,7 +95,7 @@ ULONG_PTR KipiBroadcastWorker(
 	Message_NtReadWriteVirtualMemory* temp_NtReadWriteVirtualMemory = (Message_NtReadWriteVirtualMemory*)Argument;
 	if (0 == (InterlockedDecrement(&number_of_processors)))
 	{
-		if (MmIsAddressValid(temp_NtReadWriteVirtualMemory->BaseAddress) &&
+		if (MmIsAddressValid(temp_NtReadWriteVirtualMemory->BaseAddress) && //要求极限的话 应该每一页都检查 不过就算检查了p位 也还是有可能炸
 			MmIsAddressValid((void*)
 				((ULONG64)temp_NtReadWriteVirtualMemory->BaseAddress + temp_NtReadWriteVirtualMemory->BufferBytes)))
 		{
@@ -121,8 +119,6 @@ bool KernelSafeReadMemoryIPI(ULONG64 addr, void* Buffer, ULONG64 Size)
 	temp_NtReadWriteVirtualMemory.Buffer = Buffer;
 	temp_NtReadWriteVirtualMemory.BufferBytes = Size;
 
-	/*KeInitializeEvent(&_WaitEvent, NotificationEvent, FALSE);
-	KeInitializeSpinLock(&SpinLock);*/
 	number_of_processors = KeQueryActiveProcessorCountEx(ALL_PROCESSOR_GROUPS);
 	if (MmIsAddressValid(temp_NtReadWriteVirtualMemory.BaseAddress) &&
 		MmIsAddressValid((void*)

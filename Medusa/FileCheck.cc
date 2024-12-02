@@ -8,6 +8,8 @@
 
 #include <QMessageBox>
 
+#include "UserMemory.h"
+
 
 
 DWORD GetSections(char* pe, std::vector<PIMAGE_SECTION_HEADER>& sections) {
@@ -28,38 +30,6 @@ DWORD GetSections(char* pe, std::vector<PIMAGE_SECTION_HEADER>& sections) {
 	return count;
 }
 
-struct Message_NtReadWriteVirtualMemory
-{
-	HANDLE ProcessId;
-	HANDLE ProcessHandle;
-	PVOID BaseAddress;
-	PVOID Buffer;
-	SIZE_T BufferBytes;
-	PSIZE_T ReturnBytes;
-	bool Read;
-};
-#define TEST_GetRWMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7106,METHOD_BUFFERED ,FILE_ANY_ACCESS)
-bool KernelRWMemory(Message_NtReadWriteVirtualMemory *temp_message)
-{
-	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
-		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (INVALID_HANDLE_VALUE == m_hDevice)
-	{
-		return false;
-	}
-	IO_STATUS_BLOCK IoStatusBlock = { 0 };
-	NTSTATUS status = ZwDeviceIoControlFile(m_hDevice, nullptr, nullptr, nullptr,
-		&IoStatusBlock, TEST_GetRWMemory,
-		temp_message, sizeof(Message_NtReadWriteVirtualMemory),
-		temp_message, sizeof(Message_NtReadWriteVirtualMemory));
-	if (!NT_SUCCESS(status))
-	{
-		CloseHandle(m_hDevice);
-		return false;
-	}
-	CloseHandle(m_hDevice);
-	return true;
-}
 
 DWORD LoadMem(const HANDLE& proc, const MODULEENTRY32W& modEntry, BYTE*& data,bool _Driver_Loaded,ULONG64 PID)
 {
@@ -89,7 +59,8 @@ code:
 				temp_message.BufferBytes = modEntry.modBaseSize;
 				temp_message.ReturnBytes = &size;
 				temp_message.Read = true;
-				if (KernelRWMemory(&temp_message)) { status = true; };
+				UserMemory _UserMemory;
+				if (_UserMemory.ReadUserMemoryR0((ULONG64)modEntry.modBaseAddr, modEntry.modBaseSize, data)) { status = true; };
 			}
 			goto cleanup;
 		}
@@ -189,12 +160,6 @@ int FileCheck::CheckSimple(ULONG64 PID)
 		BYTE* loaded_pe = nullptr;
 		do
 		{
-			/*HANDLE file = CreateFileW(x.szExePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-			if (file == INVALID_HANDLE_VALUE) break;
-			HANDLE mapping = CreateFileMappingA(file, 0, PAGE_READONLY | SEC_IMAGE, 0, 0, 0);
-			if (mapping == INVALID_HANDLE_VALUE) break;
-			char* cold = (char*)MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0);
-			if (!cold) break;*/
 			size_t v_size = 0;
 			size_t bufsize = 0;
 			BYTE* buffer = peconv::load_file(x.szExePath, bufsize);
