@@ -44,6 +44,10 @@ Modules::Modules(QWidget* parent)
 	connect(&_TableView_Action_Dump, SIGNAL(triggered(bool)), SLOT(Dump(bool)));
 	connect(&_TableView_Action_DumpToFile, SIGNAL(triggered(bool)), SLOT(DumpToFile(bool)));
 	connect(&_TableView_Action_ViewExportFunc, SIGNAL(triggered(bool)), SLOT(ViewExportFunc(bool)));
+
+	_TableView_Action_UserMemory.setText("MemoryView");
+	ui.tableView->addAction(&_TableView_Action_UserMemory);
+	connect(&_TableView_Action_UserMemory, SIGNAL(triggered(bool)), SLOT(MemoryView(bool)));
 }
 
 void Modules::Dump(bool)
@@ -131,8 +135,21 @@ void Modules::ViewExportFunc(bool)
 	_ModuleExportFunc.show();
 }
 
+void Modules::MemoryView(bool)
+{
+	_UserMemory.setWindowTitle("ProcessID:" + QString::number(_PID));
+	_UserMemory.ui.tabWidget->setCurrentIndex(1);
+	_UserMemory.PID = _PID;
+	_UserMemory.ui.label->setText("ProcessID:" + QString::number(_PID) + "    CR3:0x0");
+	_UserMemory.ui.lineEdit->setText(ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString());
+	_UserMemory.ui.lineEdit_2->setText("0x1000");
+	_UserMemory.QueryMemory();
+	_UserMemory.show();
+}
+
 bool Modules::ShowUserMoudleList(ULONG64 PID, bool kernel_mode)
 {
+	_PID = PID;
 	if (kernel_mode)
 	{
 		_Model->removeRows(0, _Model->rowCount());

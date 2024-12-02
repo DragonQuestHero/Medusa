@@ -45,6 +45,7 @@ public slots:
 	void Dump(bool);
 	void DumpToFile(bool);
 	void ViewExportFunc(bool);
+	void MemoryView(bool);
 public:
 	Ui::Form_Modules ui;
 	QStandardItemModel* _Model;
@@ -52,6 +53,8 @@ public:
 	QAction _TableView_Action_Dump;
 	QAction _TableView_Action_DumpToFile;
 	QAction _TableView_Action_ViewExportFunc;
+	QAction _TableView_Action_UserMemory;
+	UserMemory _UserMemory;
 private:
 	ULONG64 _PID;
 	std::wstring C_TO_W(std::string str)

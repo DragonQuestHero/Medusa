@@ -391,6 +391,7 @@ std::vector<UserMemoryListStruct> UserMemoryList::GetUserMemoryListR3CheckHide(U
 
 void UserMemoryList::MemoryView(bool)
 {
+	_UserMemory->setWindowTitle("ProcessID:" + QString::number(_PID));
 	_UserMemory->ui.tabWidget->setCurrentIndex(1);
 	_UserMemory->PID = _PID;
 	_UserMemory->ui.label->setText("ProcessID:" + QString::number(_PID) + "    CR3:0x0");
