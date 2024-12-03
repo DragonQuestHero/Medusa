@@ -56,6 +56,9 @@ IO_Control* IO_Control::_This;
 #define TEST_GetSSSDTList CTL_CODE(FILE_DEVICE_UNKNOWN,0x7125,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_GetSSSDTListNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7126,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
+#define TEST_GetUserMemoryFromCR3 CTL_CODE(FILE_DEVICE_UNKNOWN,0x7127,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define TEST_GetUserMemoryFromCR3Number CTL_CODE(FILE_DEVICE_UNKNOWN,0x7128,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
 NTSTATUS IO_Control::Create_IO_Control()
 {
 	NTSTATUS status = 0;
@@ -437,6 +440,29 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		}
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_SSDT._SSSDTALL.size() * sizeof(SSDT_STRUCT);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+
+	if (Io_Control_Code == TEST_GetUserMemoryFromCR3Number)
+	{
+		ULONG64 pid = *(ULONG64*)Input_Buffer;
+		_This->_UserMemoryList = ScannUserMemoryFromCR3(pid);
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_UserMemoryList.size();
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	else if (Io_Control_Code == TEST_GetUserMemoryFromCR3)
+	{
+		int i = 0;
+		for (auto x : _This->_UserMemoryList)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(UserMemoryListStructCR3), &x, sizeof(UserMemoryListStructCR3));
+			i++;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_UserMemoryList.size() * sizeof(UserMemoryListStructCR3);
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}

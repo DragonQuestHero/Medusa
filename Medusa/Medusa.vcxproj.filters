@@ -196,6 +196,9 @@
     <ClCompile Include="ModuleExportFunc.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UserMemoryListKernel.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Process.h">
@@ -316,6 +319,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="ModuleExportFunc.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="UserMemoryListKernel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

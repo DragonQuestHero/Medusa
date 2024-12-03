@@ -141,6 +141,16 @@ void TestSSDT()
 	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
 }
 
+void TestScanCR3()
+{
+	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "TestScanCR3 start\n");
+	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
+
+	//ScannUserMemoryFromCR3(0x01dc);
+
+	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
+}
+
 
 void TestALL(PDRIVER_OBJECT drive_object)
 {
@@ -155,8 +165,9 @@ void TestALL(PDRIVER_OBJECT drive_object)
 	TestGetKernel(drive_object);
 	TestProcess();
 	TestModules();
-	TestCallBack();*/
-	TestSSDT();
+	TestCallBack();
+	TestSSDT();*/
+	TestScanCR3();
 
 	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
 }

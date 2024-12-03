@@ -391,19 +391,19 @@ std::vector<UserMemoryListStruct> UserMemoryList::GetUserMemoryListR3CheckHide(U
 
 void UserMemoryList::MemoryView(bool)
 {
-	_UserMemory->setWindowTitle("ProcessID:" + QString::number(_PID));
-	_UserMemory->ui.tabWidget->setCurrentIndex(1);
-	_UserMemory->PID = _PID;
-	_UserMemory->ui.label->setText("ProcessID:" + QString::number(_PID) + "    CR3:0x0");
-	_UserMemory->ui.lineEdit->setText(ui.tableView->model()->index(ui.tableView->currentIndex().row(), 1).data().toString());
+	_UserMemory.setWindowTitle("ProcessID:" + QString::number(_PID));
+	_UserMemory.ui.tabWidget->setCurrentIndex(1);
+	_UserMemory.PID = _PID;
+	_UserMemory.ui.label->setText("ProcessID:" + QString::number(_PID) + "    CR3:0x0");
+	_UserMemory.ui.lineEdit->setText(ui.tableView->model()->index(ui.tableView->currentIndex().row(), 1).data().toString());
 	//_UserMemory->ui.lineEdit_2->setText(ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString());
-	_UserMemory->ui.lineEdit_2->setText("0x1000");
+	_UserMemory.ui.lineEdit_2->setText("0x1000");
 	if (ui.tableView->model()->index(ui.tableView->currentIndex().row(), 5).data().toString().toStdString().find("MEM_FREE") != std::string::npos)
 	{
-		_UserMemory->ui.lineEdit_2->setText("0x0");
+		_UserMemory.ui.lineEdit_2->setText("0x0");
 	}
-	_UserMemory->QueryMemory();
-	_UserMemory->show();
+	_UserMemory.QueryMemory();
+	_UserMemory.show();
 }
 
 

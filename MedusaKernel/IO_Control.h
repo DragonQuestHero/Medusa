@@ -8,6 +8,7 @@
 #include "MedusaPDBInfo.h"
 #include "CallBackScanner.h"
 #include "SSDT.h"
+#include "MemoryRW.h"
 
 
 
@@ -39,5 +40,7 @@ private:
 	MedusaPDBInfo _MedusaPDBInfo;
 	CallBackScanner _CallBackScanner;
 	SSDT _SSDT;
+private:
+	std::vector<UserMemoryListStructCR3> _UserMemoryList;
 };
 

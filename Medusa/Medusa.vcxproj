@@ -164,6 +164,7 @@
     <ClCompile Include="Threads.cc" />
     <ClCompile Include="UserMemory.cc" />
     <ClCompile Include="UserMemoryList.cc" />
+    <ClCompile Include="UserMemoryListKernel.cc" />
     <QtRcc Include="Medusa.qrc" />
     <QtUic Include="HookScanner.ui" />
     <QtMoc Include="Medusa.h" />
@@ -186,6 +187,7 @@
     <ClInclude Include="Driver_Load.h" />
     <ClInclude Include="EzPdb\EzPdb.h" />
     <ClInclude Include="FileCheck.h" />
+    <QtMoc Include="UserMemoryListKernel.h" />
     <QtMoc Include="ModuleExportFunc.h" />
     <ClInclude Include="SymParser.h" />
     <QtMoc Include="UserMemoryList.h" />

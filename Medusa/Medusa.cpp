@@ -47,7 +47,6 @@ Medusa::Medusa(QWidget *parent)
 		_Driver_Loaded = true;
 	}
 	CloseHandle(m_hDevice);
-	_UserMemoryList.SetUserMemory(&_UserMemory);
 
 	/*_QTimer = new QTimer(this);
 	QObject::connect(_QTimer, &QTimer::timeout, [&](){
@@ -542,20 +541,48 @@ void Medusa::ProcessRightMenu(QAction* action)
 	}
 	else if (action->text() == "ViewMemory")
 	{
+		QString process_name = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString();
+		_UserMemory.setWindowTitle(process_name);
 		_UserMemory.PID = PID;
 		_UserMemory.ui.label->setText("Process:"+
 			ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString() +"    CR3:0x0" );
 		_UserMemory.show();
 	}
-	else if (action->text() == "MemoryListR3")
+	
+	if (action->text() == "MemoryListR3")
 	{
+		QString process_name = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString();
+		_UserMemoryList.setWindowTitle(process_name);
 		_UserMemoryList.ShowUserMemoryListR3(PID, false);
 		_UserMemoryList.show();
 	}
 	else if (action->text() == "MemoryListR3(second check)")
 	{
-	_UserMemoryList.ShowUserMemoryListR3(PID, true);
-	_UserMemoryList.show();
+		QString process_name = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString();
+		_UserMemoryList.setWindowTitle(process_name);
+		_UserMemoryList.ShowUserMemoryListR3(PID, true);
+		_UserMemoryList.show();
+	}
+	else if (action->text() == "MemoryListR0")
+	{
+		QString process_name = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString();
+		_UserMemoryListKernel.setWindowTitle(process_name);
+		_UserMemoryListKernel.ShowUserMemoryListR0(PID);
+		_UserMemoryListKernel.show();
+	}
+	else if (action->text() == "MemoryListR0_2")
+	{
+		QString process_name = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString();
+		_UserMemoryListKernel.setWindowTitle(process_name);
+		_UserMemoryListKernel.ShowUserMemoryListR0_2(PID);
+		_UserMemoryListKernel.show();
+	}
+	else if (action->text() == "MemoryListR0ALL")
+	{
+		QString process_name = ui.tableView->model()->index(ui.tableView->currentIndex().row(), 2).data().toString();
+		_UserMemoryListKernel.setWindowTitle(process_name);
+		_UserMemoryListKernel.ShowUserMemoryListR0ALL(PID);
+		_UserMemoryListKernel.show();
 	}
 }
 

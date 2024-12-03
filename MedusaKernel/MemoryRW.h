@@ -5,6 +5,7 @@
 #include "CRT/NtSysAPI_Func.hpp"
 
 #include <string>
+#include <vector>
 
 struct Message_NtReadWriteVirtualMemory
 {
@@ -17,6 +18,45 @@ struct Message_NtReadWriteVirtualMemory
 	bool Read;
 };
 
+
+typedef union _DIRECTORY_TABLE_BASE
+{
+	struct
+	{
+		UINT64 Ignored0 : 3;            /* 2:0   */
+		UINT64 PageWriteThrough : 1;    /* 3     */
+		UINT64 PageCacheDisable : 1;    /* 4     */
+		UINT64 _Ignored1 : 7;           /* 11:5  */
+		UINT64 PhysicalAddress : 36;    /* 47:12 */
+		UINT64 _Reserved0 : 16;         /* 63:48 */
+
+	} Bits;
+
+	UINT64 BitAddress;
+
+} CR3, DIR_TABLE_BASE;
+typedef union _ADDRESS_STRUCTURE {
+	struct {
+		ULONG64 Offset : 12;         // 11:0，页内偏移
+		ULONG64 PEIndex : 9;         // 20:12，页表索引
+		ULONG64 PDIndex : 9;         // 29:21，页目录索引
+		ULONG64 PDPTIndex : 9;       // 38:30，页目录指针表索引
+		ULONG64 PML4Index : 9;      // 47:39，PML4 索引
+		ULONG64 Reserved : 16;      // 63:48，保留位
+
+	} Bits;
+	uint64_t BitAddress;
+} ADDRESS_STRUCTURE;
+
+
+using UserMemoryListStructCR3 = struct
+{
+	ULONG64 Addr;
+	ULONG64 Size;
+	HardwarePteX64 PteX64;
+};
+
 NTSTATUS NewNtReadWriteVirtualMemory(Message_NtReadWriteVirtualMemory* message);
 bool KernelSafeReadMemoryIPI(ULONG64 addr, void* Buffer, ULONG64 Size);
 bool KernelSafeReadMemoryDPC(ULONG64 addr, void* Buffer, ULONG64 Size);
+std::vector<UserMemoryListStructCR3> ScannUserMemoryFromCR3(ULONG64 PID);

@@ -26,6 +26,7 @@
 #include "KernelMemory.h"
 #include "UserMemory.h"
 #include "UserMemoryList.h"
+#include "UserMemoryListKernel.h"
 #include "ModuleExportFunc.h"
 
 
@@ -101,6 +102,7 @@ private:
 	KernelMemory _KernelMemory;
 	UserMemory _UserMemory;
 	UserMemoryList _UserMemoryList;
+	UserMemoryListKernel _UserMemoryListKernel;
 	ModuleExportFunc _ModuleExportFunc;
 private:
 	QTimer *_QTimer;
@@ -335,6 +337,9 @@ public:
 		_TableView_Menu_Memory.addAction("MemoryListR3");
 		_TableView_Menu_Memory.addAction("MemoryListR3(second check)");
 		_TableView_Menu_Memory.addAction("MemoryListR0");
+		//_TableView_Menu_Memory.addAction("MemoryListR0CheckFromCR3");
+		_TableView_Menu_Memory.addAction("MemoryListR0_2");
+		_TableView_Menu_Memory.addAction("MemoryListR0ALL");
 		_TableView_Menu_Memory.addAction("ViewMemory");
 
 		ui.tableView->addAction(&_TableView_Action_Inject);

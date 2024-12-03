@@ -131,4 +131,146 @@ bool KernelSafeReadMemoryIPI(ULONG64 addr, void* Buffer, ULONG64 Size)
 }
 
 
+// PA -> VA
+void* UtilVaFromPa(ULONG64 pa) {
+	PHYSICAL_ADDRESS pa2 = {};
+	pa2.QuadPart = pa;
+	return MmGetVirtualForPhysical(pa2);
+}
+
+std::vector<UserMemoryListStructCR3> ScannUserMemoryFromCR3(ULONG64 PID)
+{
+	std::vector<UserMemoryListStructCR3> temp_list;
+
+	PEPROCESS temp_process;
+	NTSTATUS Status = PsLookupProcessByProcessId((HANDLE)PID, &temp_process);
+	if (!NT_SUCCESS(Status))
+	{
+		//加28直接取 给他贯的
+		return temp_list;
+	}
+	ObDereferenceObject(temp_process);
+
+
+	KAPC_STATE ApcState;
+	KeStackAttachProcess(temp_process, &ApcState);
+
+	CR3 temp_cr3;
+	temp_cr3.BitAddress = __readcr3();
+
+	//大专巅峰 半步本科!
+	//void* page_table = ExAllocatePool(NonPagedPool, PAGE_SIZE);//我乃大专巅峰 谁敢蓝我!?
+	//if (!page_table)
+	//{
+	//	return false;
+	//}
+
+	do 
+	{
+		ULONG64 cr3_va = (ULONG64)UtilVaFromPa(temp_cr3.Bits.PhysicalAddress << 12);
+		if (!MmIsAddressValid((void*)cr3_va))
+		{
+			break;
+		}
+		for (int i = 0; i < 0x100; i++)
+		{
+			HardwarePteX64* temp_pxe = (HardwarePteX64*)(cr3_va + i * 8);
+			if (temp_pxe->Bits.valid)
+			{
+				ULONG64 ppe_va = (ULONG64)UtilVaFromPa(temp_pxe->Bits.page_frame_number << 12);
+				if (!MmIsAddressValid((void*)ppe_va))
+				{
+					break;
+				}
+				for (int x = 0; x < 512; x++)
+				{
+					HardwarePteX64* temp_ppe = (HardwarePteX64*)(ppe_va + x * 8);
+					if (temp_ppe->Bits.large_page)
+					{
+						ADDRESS_STRUCTURE temp_addr_struct = { 0 };
+						temp_addr_struct.Bits.Reserved = 0;
+						temp_addr_struct.Bits.Offset = 0;
+						temp_addr_struct.Bits.PML4Index = i;
+						temp_addr_struct.Bits.PDPTIndex = x;
+						temp_addr_struct.Bits.PDIndex = 0;
+						temp_addr_struct.Bits.PEIndex = 0;
+						UserMemoryListStructCR3 temp_struct = { 0 };
+						temp_struct.Addr = temp_addr_struct.BitAddress;
+						temp_struct.Size = PAGE_SIZE * 512 * 512;
+						temp_struct.PteX64.value = temp_ppe->value;
+						temp_list.push_back(temp_struct);
+						continue;
+					}
+					if (temp_ppe->Bits.valid)
+					{
+						ULONG64 pde_va = (ULONG64)UtilVaFromPa(temp_ppe->Bits.page_frame_number << 12);
+						if (!MmIsAddressValid((void*)pde_va))
+						{
+							break;
+						}
+						for (int y = 0; y < 512; y++)
+						{
+							HardwarePteX64* temp_pde = (HardwarePteX64*)(pde_va + y * 8);
+							if (temp_pde->Bits.large_page)
+							{
+								ADDRESS_STRUCTURE temp_addr_struct = { 0 };
+								temp_addr_struct.Bits.Reserved = 0;
+								temp_addr_struct.Bits.Offset = 0;
+								temp_addr_struct.Bits.PML4Index = i;
+								temp_addr_struct.Bits.PDPTIndex = x;
+								temp_addr_struct.Bits.PDIndex = y;
+								temp_addr_struct.Bits.PEIndex = 0;
+								UserMemoryListStructCR3 temp_struct = { 0 };
+								temp_struct.Addr = temp_addr_struct.BitAddress;
+								temp_struct.Size = PAGE_SIZE * 512;
+								temp_struct.PteX64.value = temp_pde->value;
+								temp_list.push_back(temp_struct);
+								continue;
+							}
+							if (temp_pde->Bits.valid)
+							{
+								ULONG64 pte_va = (ULONG64)UtilVaFromPa(temp_pde->Bits.page_frame_number << 12);
+								if (!MmIsAddressValid((void*)pte_va))
+								{
+									break;
+								}
+								for (int z = 0; z < 512; z++)
+								{
+									HardwarePteX64* temp_pte = (HardwarePteX64*)(pte_va + z * 8);
+									if (temp_pte->Bits.valid)
+									{
+										ADDRESS_STRUCTURE temp_addr_struct = { 0 };
+										temp_addr_struct.Bits.Reserved = 0;
+										temp_addr_struct.Bits.Offset = 0;
+										temp_addr_struct.Bits.PML4Index = i;
+										temp_addr_struct.Bits.PDPTIndex = x;
+										temp_addr_struct.Bits.PDIndex = y;
+										temp_addr_struct.Bits.PEIndex = z;
+										UserMemoryListStructCR3 temp_struct = { 0 };
+										temp_struct.Addr = temp_addr_struct.BitAddress;
+										temp_struct.Size = PAGE_SIZE;
+										temp_struct.PteX64.value = temp_pte->value;
+										temp_list.push_back(temp_struct);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	} while (false);
+	KeUnstackDetachProcess(&ApcState);
+	/*auto physical_memory_ranges = MmGetPhysicalMemoryRanges();
+	for (int i = 0; i < 0x1000; i++)
+	{
+		if (physical_memory_ranges[i].BaseAddress.QuadPart == 0 &&
+			physical_memory_ranges[i].NumberOfBytes.QuadPart == 0)
+		{
+			break;
+		}
+	}*/
+	return temp_list;
+}
+
 
