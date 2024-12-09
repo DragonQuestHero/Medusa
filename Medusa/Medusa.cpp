@@ -270,6 +270,10 @@ void Medusa::ViewKernelMemory(QAction* action)
 	{
 		_KernelMemory.show();
 	}
+	if (action->text() == "PageTable")
+	{
+		_PageTable.show();
+	}
 }
 
 void Medusa::DriverLoad(QAction* action)

@@ -156,6 +156,7 @@
     <ClCompile Include="libpeconv\util.cpp" />
     <ClCompile Include="ModuleExportFunc.cc" />
     <ClCompile Include="Modules.cc" />
+    <ClCompile Include="PageTable.cc" />
     <ClCompile Include="PDBInfo.cc" />
     <ClCompile Include="PDBView.cc" />
     <ClCompile Include="Process.cc" />
@@ -174,6 +175,7 @@
     <QtUic Include="Medusa.ui" />
     <QtUic Include="KernelMemory.ui" />
     <QtUic Include="ModuleExportFunc.ui" />
+    <QtUic Include="PageTable.ui" />
     <QtUic Include="UserMemoryList.ui" />
     <QtUic Include="Modules.ui" />
     <QtUic Include="PDBView.ui" />
@@ -189,6 +191,7 @@
     <ClInclude Include="FileCheck.h" />
     <QtMoc Include="UserMemoryListKernel.h" />
     <QtMoc Include="ModuleExportFunc.h" />
+    <QtMoc Include="PageTable.h" />
     <ClInclude Include="SymParser.h" />
     <QtMoc Include="UserMemoryList.h" />
     <QtMoc Include="UserMemory.h" />

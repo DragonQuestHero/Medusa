@@ -28,6 +28,7 @@
 #include "UserMemoryList.h"
 #include "UserMemoryListKernel.h"
 #include "ModuleExportFunc.h"
+#include "PageTable.h"
 
 
 #include "Process.h"
@@ -104,6 +105,7 @@ private:
 	UserMemoryList _UserMemoryList;
 	UserMemoryListKernel _UserMemoryListKernel;
 	ModuleExportFunc _ModuleExportFunc;
+	PageTable _PageTable;
 private:
 	QTimer *_QTimer;
     QStandardItemModel* _Model;

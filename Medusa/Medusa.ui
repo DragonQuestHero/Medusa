@@ -272,6 +272,7 @@
      <string>KernelMemory</string>
     </property>
     <addaction name="actionView"/>
+    <addaction name="actionPageTable"/>
    </widget>
    <widget class="QMenu" name="menuWww_win32k_cn">
     <property name="title">
@@ -396,6 +397,11 @@
   <action name="actionSSDT_SSSDT_Use_PDB">
    <property name="text">
     <string>× SSDT&amp; SSSDT Use PDB</string>
+   </property>
+  </action>
+  <action name="actionPageTable">
+   <property name="text">
+    <string>PageTable</string>
    </property>
   </action>
  </widget>
