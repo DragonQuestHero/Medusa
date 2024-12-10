@@ -338,7 +338,7 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 	if(Io_Control_Code == TEST_ReadKernelMemory && Input_Lenght > 0 && Output_Lenght > 0)
 	{
 		SIZE_T NumberOfBytesTransferred = 0;
-
+		
 		ULONG64 addr = *(ULONG64*)Input_Buffer;
 		ULONG64 size = *(ULONG64*)(Input_Buffer + 8);
 		void* temp_buffer = new char[size];
@@ -351,6 +351,14 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 			if (NumberOfBytesTransferred != 0)
 			{
 				RtlCopyMemory(Input_Buffer, temp_buffer, NumberOfBytesTransferred);
+			}
+			else
+			{
+				if (KernelSafeReadMemoryIPI(addr, temp_buffer, size))
+				{
+					NumberOfBytesTransferred = size;
+					RtlCopyMemory(Input_Buffer, temp_buffer, NumberOfBytesTransferred);
+				}
 			}
 			delete temp_buffer;
 

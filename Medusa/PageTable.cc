@@ -171,33 +171,29 @@ void PageTable::SetTableViewValue(QStandardItemModel* _Model, HardwarePteX64ForW
 
 void PageTable::ReadPage()
 {
-	if (ui.lineEdit->text() != "")
-	{
+	_PXE_Model->removeRows(0, _PXE_Model->rowCount());
+	_PPE_Model->removeRows(0, _PPE_Model->rowCount());
+	_PDE_Model->removeRows(0, _PDE_Model->rowCount());
+	_PTE_Model->removeRows(0, _PTE_Model->rowCount());
+	ui.lineEdit_pxe->setText("");
+	ui.lineEdit_ppe->setText("");
+	ui.lineEdit_pde->setText("");
+	ui.lineEdit_pte->setText("");
+	ui.lineEdit_pxe_2->setText("");
+	ui.lineEdit_ppe_2->setText("");
+	ui.lineEdit_pde_2->setText("");
+	ui.lineEdit_pte_2->setText("");
 
-	}
-	if (ui.lineEdit_2->text() != "")
-	{
-		std::string addr_str = ui.lineEdit_2->text().toStdString();
-		if (addr_str.find("0x") != std::string::npos)
-		{
-			addr_str.erase(0, 2);
-		}
-		ULONG64 Addr = strtoull(addr_str.data(), 0, 16);
-		HardwarePteX64ForWindows temp_pte = { 0 };
-		temp_pte.value = Addr;
-		SetTableViewValue(_PXE_Model, temp_pte);
-	}
-	if (ui.lineEdit_3->text() != "")
-	{
-
-	}
 
 	if (ui.lineEdit_4->text() != "" && ui.lineEdit->text() != "")
 	{
 
 	}
-	if (ui.lineEdit_4->text() == "" && ui.lineEdit->text() != "")
+	else if (ui.lineEdit_4->text() == "" && ui.lineEdit->text() != "")
 	{
+		ui.lineEdit_2->setText("");
+		ui.lineEdit_3->setText("");
+
 		std::string addr_str = ui.lineEdit->text().toStdString();
 		addr_str = ReplaceStr2(addr_str, "`", "");
 		if (addr_str.find("0x") != std::string::npos)
@@ -261,6 +257,36 @@ void PageTable::ReadPage()
 			return;
 		}
 		SetTableViewValue(_PTE_Model, temp_PageTableStruct.pte);
+	}
+	else if (ui.lineEdit_2->text() != "")
+	{
+		ui.lineEdit->setText("");
+		ui.lineEdit_3->setText("");
+
+		std::string addr_str = ui.lineEdit_2->text().toStdString();
+		if (addr_str.find("0x") != std::string::npos)
+		{
+			addr_str.erase(0, 2);
+		}
+		ULONG64 Addr = strtoull(addr_str.data(), 0, 16);
+		HardwarePteX64ForWindows temp_pte = { 0 };
+		temp_pte.value = Addr;
+		SetTableViewValue(_PXE_Model, temp_pte);
+	}
+	else if (ui.lineEdit_3->text() != "")
+	{
+		ui.lineEdit->setText("");
+		ui.lineEdit_2->setText("");
+
+		std::string addr_str = ui.lineEdit_3->text().toStdString();
+		if (addr_str.find("0x") != std::string::npos)
+		{
+			addr_str.erase(0, 2);
+		}
+		ULONG64 Addr = strtoull(addr_str.data(), 0, 16);
+		HardwarePteX64ForWindows temp_pte = { 0 };
+		_KernelMemory.ReadKernelMemory(Addr, 8, &temp_pte.value);
+		SetTableViewValue(_PTE_Model, temp_pte);
 	}
 }
 
