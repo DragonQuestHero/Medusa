@@ -61,6 +61,8 @@ IO_Control* IO_Control::_This;
 
 #define TEST_GetPageTables CTL_CODE(FILE_DEVICE_UNKNOWN,0x7129,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
+#define TEST_DriverUnload CTL_CODE(FILE_DEVICE_UNKNOWN,0x7130,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
 
 NTSTATUS IO_Control::Create_IO_Control()
 {
@@ -507,9 +509,29 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		}
 	}
 
+	if (Io_Control_Code == TEST_DriverUnload)
+	{
+		if (MmIsAddressValid(Input_Buffer))
+		{
+			PDRIVER_OBJECT temp_object = *(PDRIVER_OBJECT*)Input_Buffer;
+			if (MmIsAddressValid(temp_object))
+			{
+				PDRIVER_UNLOAD temp_func = temp_object->DriverUnload;
+				if (MmIsAddressValid(temp_object) && temp_func)
+				{
+					temp_func(temp_object);
+					pIrp->IoStatus.Status = STATUS_SUCCESS;
+					pIrp->IoStatus.Information = 0;
+					IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+					return STATUS_SUCCESS;
+				}
+			}
+		}
+	}
+
 	pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
 	pIrp->IoStatus.Information = 0;
 	IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-	return STATUS_SUCCESS;
+	return STATUS_UNSUCCESSFUL;
 
 }

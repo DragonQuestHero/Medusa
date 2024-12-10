@@ -758,6 +758,18 @@ void Medusa::DriverRightMenuUnload(QAction* action)
 		}
 		QMessageBox::information(this, "error", std::to_string(_Driver_Load2._Last_Error).data());
 	}
+	if (action->text() == "Unload(R0)")
+	{
+		std::string addr_str = ui.tableView_Driver->model()->index(ui.tableView_Driver->currentIndex().row(), 6).data().toString().toStdString();
+		addr_str.erase(0, 2);
+		ULONG64 addr = strtoull(addr_str.data(), 0, 16);
+		if (_KernelModules.DriverUnload(addr))
+		{
+			QMessageBox::information(this, "success", "driver unload");
+			return;
+		}
+		QMessageBox::information(this, "error", "error");
+	}
 }
 
 void Medusa::ChangeTab()

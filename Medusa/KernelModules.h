@@ -71,6 +71,7 @@ public:
 	bool DumpDriver(ULONG64 Address, ULONG64, void*);
 	std::vector<SSDT_STRUCT2> GetALLSSDT(bool);
 	std::vector<SSDT_STRUCT2> GetALLShadowSSDT(bool);
+	bool DriverUnload(ULONG64 Address);
 public:
 	bool KernelModules::IsAddressInAnyDriversList(ULONG64 Address)
 	{

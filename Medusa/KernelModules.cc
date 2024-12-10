@@ -399,3 +399,23 @@ std::vector<SSDT_STRUCT2> KernelModules::GetALLShadowSSDT(bool Setting_SSDT_SSSD
 	CloseHandle(m_hDevice);
 	return _SSDTALL;
 }
+
+#define TEST_DriverUnload CTL_CODE(FILE_DEVICE_UNKNOWN,0x7130,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+bool KernelModules::DriverUnload(ULONG64 Address)
+{
+	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (INVALID_HANDLE_VALUE == m_hDevice)
+	{
+		return false;
+	}
+
+	DWORD dwRet = 0;
+	if (DeviceIoControl(m_hDevice, TEST_DriverUnload, &Address, 8, 0, 0, &dwRet, NULL))
+	{
+		CloseHandle(m_hDevice);
+		return true;
+	}
+	CloseHandle(m_hDevice);
+	return false;
+}
