@@ -59,6 +59,9 @@ IO_Control* IO_Control::_This;
 #define TEST_GetUserMemoryFromCR3 CTL_CODE(FILE_DEVICE_UNKNOWN,0x7127,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_GetUserMemoryFromCR3Number CTL_CODE(FILE_DEVICE_UNKNOWN,0x7128,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
+#define TEST_GetPageTables CTL_CODE(FILE_DEVICE_UNKNOWN,0x7129,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
+
 NTSTATUS IO_Control::Create_IO_Control()
 {
 	NTSTATUS status = 0;
@@ -67,7 +70,6 @@ NTSTATUS IO_Control::Create_IO_Control()
 	status = IoCreateDevice(Driver_Object, 0, &Device_Name, FILE_DEVICE_UNKNOWN, 0, FALSE, &Device_Object);
 	if (!NT_SUCCESS(status))
 	{
-		DbgPrint("Create Device error!\n");
 		return status;
 	}
 
@@ -78,7 +80,6 @@ NTSTATUS IO_Control::Create_IO_Control()
 	if (!NT_SUCCESS(status))
 	{
 		IoDeleteDevice(Device_Object);
-		DbgPrint("Create Link error!\n");
 		return status;
 	}
 
@@ -90,6 +91,10 @@ NTSTATUS IO_Control::Create_IO_Control()
 	_Threads.InitWin32StartAddressOffset();
 	_KernelModules.Init(Driver_Object);
 
+	if (!_PageTable.Init())
+	{
+		return STATUS_UNSUCCESSFUL;
+	}
 
 	return STATUS_SUCCESS;
 }
@@ -148,7 +153,8 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
-	else if (Io_Control_Code == TEST_GetALLKernelModuleNumber)
+	
+	if (Io_Control_Code == TEST_GetALLKernelModuleNumber)
 	{
 		_This->_KernelModules.GetKernelModuleListALL();
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
@@ -177,7 +183,9 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
-	else if (Io_Control_Code == TEST_GetALLUserModuleNumber)
+	
+	
+	if (Io_Control_Code == TEST_GetALLUserModuleNumber)
 	{
 		Modules _Modules;
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
@@ -207,7 +215,8 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
-	else if (Io_Control_Code == TEST_ReadUserMemoryFromKernel && Input_Lenght > 0)
+	
+	if (Io_Control_Code == TEST_ReadUserMemoryFromKernel && Input_Lenght > 0)
 	{
 		NewNtReadWriteVirtualMemory((Message_NtReadWriteVirtualMemory*)Input_Buffer);
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
@@ -215,7 +224,8 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
-	else if (Io_Control_Code == TEST_GetALLThreadsNumber)
+	
+	if (Io_Control_Code == TEST_GetALLThreadsNumber)
 	{
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_Threads.GetThreadListR0(*(ULONG64*)Input_Buffer).size();
@@ -243,11 +253,14 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
-	else if (Io_Control_Code == TEST_GetPDBInfo)
+	
+	if (Io_Control_Code == TEST_GetPDBInfo)
 	{
 		RtlCopyMemory(&_This->_MedusaPDBInfo._PDBInfo, Input_Buffer, sizeof(PDBInfo));
 	}
-	else if (Io_Control_Code == TEST_GetUnLoadKernelModuleNumber)
+	
+	
+	if (Io_Control_Code == TEST_GetUnLoadKernelModuleNumber)
 	{
 		_This->_KernelModules.GetUnLoadKernelModuleList();
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
@@ -298,14 +311,16 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
-	else if (Io_Control_Code == TEST_DumpDriver && Output_Lenght > 0)
+	
+	if (Io_Control_Code == TEST_DumpDriver && Output_Lenght > 0)
 	{
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_KernelModules.DumpDriver(*(ULONG64*)Input_Buffer, Input_Buffer + 8);
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
-	else if(Io_Control_Code == TEST_GetIOCTLFunction && Input_Lenght > 0 && Output_Lenght > 0)
+	
+	if(Io_Control_Code == TEST_GetIOCTLFunction && Input_Lenght > 0 && Output_Lenght > 0)
 	{
 		std::vector<IOCTLS> temp_vector = _This->_KernelModules.GetIOCTLFunctionR0(*(ULONG64*)Input_Buffer);
 		int i = 0;
@@ -319,7 +334,8 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
-	else if(Io_Control_Code == TEST_ReadKernelMemory && Input_Lenght > 0 && Output_Lenght > 0)
+	
+	if(Io_Control_Code == TEST_ReadKernelMemory && Input_Lenght > 0 && Output_Lenght > 0)
 	{
 		SIZE_T NumberOfBytesTransferred = 0;
 
@@ -344,7 +360,8 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 			return STATUS_SUCCESS;
 		}
 	}
-	else if (Io_Control_Code == TEST_InjectDLL && Input_Lenght > 0)
+	
+	if (Io_Control_Code == TEST_InjectDLL && Input_Lenght > 0)
 	{
 		ULONG64 pid = *(ULONG64*)Input_Buffer;
 		ULONG64 size = *(ULONG64*)(Input_Buffer + 8);
@@ -385,7 +402,8 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	}
-	else if (Io_Control_Code == TEST_GetCR3 && Output_Lenght > 0)
+	
+	if (Io_Control_Code == TEST_GetCR3 && Output_Lenght > 0)
 	{
 		*(ULONG64*)Input_Buffer = __readcr3();
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
@@ -465,6 +483,20 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		pIrp->IoStatus.Information = _This->_UserMemoryList.size() * sizeof(UserMemoryListStructCR3);
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
+	}
+
+	if (Io_Control_Code == TEST_GetPageTables)
+	{
+		if (MmIsAddressValid(Input_Buffer))
+		{
+			ULONG64 pid = *(ULONG64*)Input_Buffer;
+			ULONG64 addr = *(ULONG64*)(Input_Buffer + 8);
+			RtlCopyMemory(Input_Buffer, &_This->_PageTable.GetPageTable(pid, addr), sizeof(PageTableStruct));
+			pIrp->IoStatus.Status = STATUS_SUCCESS;
+			pIrp->IoStatus.Information = sizeof(PageTableStruct);
+			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+			return STATUS_SUCCESS;
+		}
 	}
 
 	pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;

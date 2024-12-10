@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1579</width>
-    <height>373</height>
+    <height>492</height>
    </rect>
   </property>
   <property name="contextMenuPolicy">
@@ -140,7 +140,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>60</y>
+     <y>90</y>
      <width>1561</width>
      <height>61</height>
     </rect>
@@ -165,7 +165,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>140</y>
+     <y>200</y>
      <width>1561</width>
      <height>61</height>
     </rect>
@@ -175,7 +175,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>220</y>
+     <y>310</y>
      <width>1561</width>
      <height>61</height>
     </rect>
@@ -185,7 +185,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>300</y>
+     <y>420</y>
      <width>1561</width>
      <height>61</height>
     </rect>
@@ -202,6 +202,270 @@
    </property>
    <property name="text">
     <string>Read</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>50</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>PxeAddress:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_pxe">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>50</y>
+     <width>301</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>13</pointsize>
+    </font>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_ppe">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>160</y>
+     <width>301</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>13</pointsize>
+    </font>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>160</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>PpeAddress:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_pde">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>270</y>
+     <width>301</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>13</pointsize>
+    </font>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_6">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>270</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>PdeAddress:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_pte">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>380</y>
+     <width>301</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>13</pointsize>
+    </font>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_7">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>380</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>PteAddress:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_ppe_2">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>160</y>
+     <width>301</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>13</pointsize>
+    </font>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_pxe_2">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>50</y>
+     <width>301</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>13</pointsize>
+    </font>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_8">
+   <property name="geometry">
+    <rect>
+     <x>430</x>
+     <y>380</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>PteValue:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_pte_2">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>380</y>
+     <width>301</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>13</pointsize>
+    </font>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_9">
+   <property name="geometry">
+    <rect>
+     <x>430</x>
+     <y>160</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>PpeValue:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_10">
+   <property name="geometry">
+    <rect>
+     <x>430</x>
+     <y>50</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>PxeValue:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_pde_2">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>270</y>
+     <width>301</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>13</pointsize>
+    </font>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_11">
+   <property name="geometry">
+    <rect>
+     <x>430</x>
+     <y>270</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>PdeValue:</string>
    </property>
   </widget>
  </widget>

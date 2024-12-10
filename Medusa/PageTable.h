@@ -21,6 +21,36 @@
 #include "UserMemoryList.h"
 
 
+typedef union _DIRECTORY_TABLE_BASE
+{
+	struct
+	{
+		UINT64 Ignored0 : 3;            /* 2:0   */
+		UINT64 PageWriteThrough : 1;    /* 3     */
+		UINT64 PageCacheDisable : 1;    /* 4     */
+		UINT64 _Ignored1 : 7;           /* 11:5  */
+		UINT64 PhysicalAddress : 36;    /* 47:12 */
+		UINT64 _Reserved0 : 16;         /* 63:48 */
+
+	} Bits;
+
+	UINT64 BitAddress;
+
+} DIR_TABLE_BASE;
+
+using PageTableStruct = struct
+{
+	DIR_TABLE_BASE cr3;
+	ULONG64 pxe_addr;
+	ULONG64 ppe_addr;
+	ULONG64 pde_addr;
+	ULONG64 pte_addr;
+	HardwarePteX64ForWindows pxe;
+	HardwarePteX64ForWindows ppe;
+	HardwarePteX64ForWindows pde;
+	HardwarePteX64ForWindows pte;
+};
+
 class PageTable : public QMainWindow
 {
 	Q_OBJECT
@@ -103,6 +133,7 @@ public:
 		tableView->setColumnWidth(14, 140);
 	}
 	void SetTableViewValue(QStandardItemModel* _Model, HardwarePteX64ForWindows&);
+	PageTableStruct GetPageTableFromKernel(ULONG64 PID, ULONG64 addr);
 public slots:
 	void ReadPage();
 	void MemoryView(bool)
@@ -123,4 +154,19 @@ public:
 	ULONG64 _PID = 0;
 	QAction _TableView_Action_MemoryView;
 private:
+	std::string ReplaceStr2(std::string& str,
+		const std::string& old_value, const std::string& new_value)
+	{
+		for (std::string::size_type pos(0); pos != std::string::npos; pos += new_value.length()) {
+			if ((pos = str.find(old_value, pos)) != std::string::npos)
+			{
+				str.replace(pos, old_value.length(), new_value);
+			}
+			else
+			{
+				break;
+			}
+		}
+		return str;
+	}
 };

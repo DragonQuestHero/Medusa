@@ -191,4 +191,102 @@ void PageTable::ReadPage()
 	{
 
 	}
+
+	if (ui.lineEdit_4->text() != "" && ui.lineEdit->text() != "")
+	{
+
+	}
+	if (ui.lineEdit_4->text() == "" && ui.lineEdit->text() != "")
+	{
+		std::string addr_str = ui.lineEdit->text().toStdString();
+		addr_str = ReplaceStr2(addr_str, "`", "");
+		if (addr_str.find("0x") != std::string::npos)
+		{
+			addr_str.erase(0, 2);
+		}
+		ULONG64 Addr = strtoull(addr_str.data(), 0, 16);
+		PageTableStruct temp_PageTableStruct = GetPageTableFromKernel(GetCurrentProcessId(), Addr);
+
+		std::ostringstream ret1;
+		ret1 << std::hex << "0x" << temp_PageTableStruct.pxe_addr;
+		ui.lineEdit_pxe->setText(ret1.str().data());
+		ret1.str("");
+		ret1.clear();
+
+		ret1 << std::hex << "0x" << temp_PageTableStruct.ppe_addr;
+		ui.lineEdit_ppe->setText(ret1.str().data());
+		ret1.str("");
+		ret1.clear();
+
+		ret1 << std::hex << "0x" << temp_PageTableStruct.pde_addr;
+		ui.lineEdit_pde->setText(ret1.str().data());
+		ret1.str("");
+		ret1.clear();
+
+		ret1 << std::hex << "0x" << temp_PageTableStruct.pte_addr;
+		ui.lineEdit_pte->setText(ret1.str().data());
+		ret1.str("");
+		ret1.clear();
+
+
+		ret1 << std::hex << "0x" << temp_PageTableStruct.pxe.value;
+		ui.lineEdit_pxe_2->setText(ret1.str().data());
+		ret1.str("");
+		ret1.clear();
+
+		ret1 << std::hex << "0x" << temp_PageTableStruct.ppe.value;
+		ui.lineEdit_ppe_2->setText(ret1.str().data());
+		ret1.str("");
+		ret1.clear();
+
+		ret1 << std::hex << "0x" << temp_PageTableStruct.pde.value;
+		ui.lineEdit_pde_2->setText(ret1.str().data());
+		ret1.str("");
+		ret1.clear();
+
+		ret1 << std::hex << "0x" << temp_PageTableStruct.pte.value;
+		ui.lineEdit_pte_2->setText(ret1.str().data());
+		ret1.str("");
+		ret1.clear();
+
+		SetTableViewValue(_PXE_Model, temp_PageTableStruct.pxe);
+		SetTableViewValue(_PPE_Model, temp_PageTableStruct.ppe);
+		if (temp_PageTableStruct.ppe.Bits.large_page)
+		{
+			return;
+		}
+		SetTableViewValue(_PDE_Model, temp_PageTableStruct.pde);
+		if (temp_PageTableStruct.pde.Bits.large_page)
+		{
+			return;
+		}
+		SetTableViewValue(_PTE_Model, temp_PageTableStruct.pte);
+	}
+}
+
+#define TEST_GetPageTables CTL_CODE(FILE_DEVICE_UNKNOWN,0x7129,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+PageTableStruct PageTable::GetPageTableFromKernel(ULONG64 PID, ULONG64 addr)
+{
+	PageTableStruct temp_PageTableStruct = { 0 };
+
+	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (INVALID_HANDLE_VALUE == m_hDevice)
+	{
+		return temp_PageTableStruct;
+	}
+
+	ULONG64 temp_buffer[2] = { 0 };
+	temp_buffer[0] = PID;
+	temp_buffer[1] = addr;
+
+	DWORD dwRet = 0;
+	DeviceIoControl(m_hDevice, TEST_GetPageTables, temp_buffer,sizeof(ULONG64)*2, &temp_PageTableStruct, sizeof(PageTableStruct), &dwRet, NULL);
+	if (dwRet)
+	{
+		CloseHandle(m_hDevice);
+		return temp_PageTableStruct;
+	}
+	CloseHandle(m_hDevice);
+	return temp_PageTableStruct;
 }
