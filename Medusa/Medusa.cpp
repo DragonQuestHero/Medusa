@@ -77,7 +77,9 @@ void Medusa::Set_SLOTS()
 	connect(&_TableView_Action_DriverDumpFILE, SIGNAL(triggered(bool)), SLOT(DriverRightMenuDumpToFILE(bool)));
 	connect(&_TableView_Action_DriverDumpMemory, SIGNAL(triggered(bool)), SLOT(DriverRightMenuDumpToMemory(bool)));
 	connect(&_TableView_Menu_IOCTLScanner, SIGNAL(triggered(QAction*)), SLOT(DriverRightMenuIOCTLScanner(QAction*)));
+	connect(&_TableView_Menu_PDBViewDriver, SIGNAL(triggered(QAction*)), SLOT(DriverRightMenu(QAction*)));
 	connect(&_TableView_Action_ViewExportFunc, SIGNAL(triggered(bool)), SLOT(DriverRightMenuViewExportFunc(bool)));
+	connect(&_TableView_Menu_Driver_Unload, SIGNAL(triggered(QAction*)), SLOT(DriverRightMenuUnload(QAction*)));
 
 	connect(&_TableView_Action_SSDT_MemoryView, SIGNAL(triggered(bool)), SLOT(SSDTMemoryView(bool)));
 	connect(&_TableView_Action_SSSDT_MemoryView, SIGNAL(triggered(bool)), SLOT(SSSDTMemoryView(bool)));
@@ -596,6 +598,30 @@ void Medusa::HideProcess(bool)
 
 void Medusa::DriverRightMenu(QAction* action)
 {
+	if (action->text() == "_DRIVER_OBJECT")
+	{
+		_PDBView._Model->removeRows(0, _PDBView._Model->rowCount());
+		_PDBView._PDBInfo.UnLoad();
+		ui.label->setText("downloding pdb files..........................");
+		ui.progressBar->setMaximum(100);
+		ui.progressBar->setValue(5);
+		QCoreApplication::processEvents();
+		if (!_PDBView._PDBInfo.DownLoadNtos())
+		{
+			ui.label->setText("");
+			QMessageBox::information(this, "error", "error download pdb");
+			return;
+		}
+		ui.progressBar->setValue(100);
+		ui.label->setText("downlode pdb susscess");
+		std::string pe_file_path = std::string(std::getenv("systemroot")) + "\\System32\\ntoskrnl.exe";
+		_PDBView.setWindowTitle(pe_file_path.data());
+		_PDBView.ui.lineEdit->setText(ui.tableView_Driver->model()->index(ui.tableView_Driver->currentIndex().row(), 6).data().toString());
+		_PDBView.ui.lineEdit_2->setText("_DRIVER_OBJECT");
+		_PDBView.Serch();
+		_PDBView.show();
+		return;
+	}
 }
 
 void Medusa::DriverRightMenuDumpToFILE(bool)
@@ -706,6 +732,31 @@ void Medusa::DriverRightMenuIOCTLScanner(QAction* action)
 		{
 			QMessageBox::information(this, "Ret", "normal");
 		}
+	}
+}
+
+void Medusa::DriverRightMenuUnload(QAction* action)
+{
+	if (action->text() == "Unload(R3)")
+	{
+		Driver_Load _Driver_Load2;
+		std::string path_str = 
+			ui.tableView_Driver->model()->index(ui.tableView_Driver->currentIndex().row(), 4).data().toString().toStdString();
+		_Driver_Load2.Init(path_str);
+		if (_Driver_Load2.Stop_Driver())
+		{
+			QMessageBox::information(this, "success", "driver unload");
+			return;
+		}
+		else
+		{
+			if (_Driver_Load2.Nt_Stop_Driver())
+			{
+				QMessageBox::information(this, "success", "driver unload");
+				return;
+			}
+		}
+		QMessageBox::information(this, "error", std::to_string(_Driver_Load2._Last_Error).data());
 	}
 }
 

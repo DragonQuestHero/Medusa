@@ -70,6 +70,7 @@ public slots:
 		_KernelMemory.QueryMemory();
 		_KernelMemory.show();
 	}
+	void DriverRightMenuUnload(QAction*);
 public:
 	void GetProcessList();
 	void GetKernelModuleList();
@@ -153,6 +154,12 @@ private:
 
 	QAction _TableView_Action_SSDT_MemoryView;
 	QAction _TableView_Action_SSSDT_MemoryView;
+
+	QMenu _TableView_Menu_Driver_Unload;
+	QAction _TableView_Action_Driver_Unload;
+
+	QMenu _TableView_Menu_PDBViewDriver;
+	QAction _TableView_Action_PDBViewDriver;
 public:
 	void ProcessUI()
 	{
@@ -363,6 +370,7 @@ public:
 		_TableView_Menu_DriverClear.setTitle("DriverClear");
 		_TableView_Menu_DriverClear.addAction("ClearLoadInfo");
 		_TableView_Menu_DriverClear.addAction("ClearLoadInfo(usepdb)");
+		_TableView_Menu_DriverClear.addAction("ClearRegister");
 
 		_TableView_Action_DriverDumpFILE.setText("DriverDumpToFILE");
 		_TableView_Action_DriverDumpMemory.setText("DriverDumpToMemory");
@@ -373,13 +381,23 @@ public:
 		_TableView_Menu_IOCTLScanner.addAction("ScanIOCTLHook");
 		_TableView_Menu_IOCTLScanner.addAction("ScanAllDriverIOCTLHook");
 
+		_TableView_Action_PDBViewDriver.setMenu(&_TableView_Menu_PDBViewDriver);
+		_TableView_Menu_PDBViewDriver.setTitle("PDBViewDriver");
+		_TableView_Menu_PDBViewDriver.addAction("_DRIVER_OBJECT");
+
+		_TableView_Action_Driver_Unload.setMenu(&_TableView_Menu_Driver_Unload);
+		_TableView_Menu_Driver_Unload.setTitle("Unload");
+		_TableView_Menu_Driver_Unload.addAction("Unload(R3)");
+		_TableView_Menu_Driver_Unload.addAction("Unload(R0)");
 
 		ui.tableView_Driver->addAction(&_TableView_Action_HideDriver);
 		ui.tableView_Driver->addAction(&_TableView_Action_DriverClear);
 		ui.tableView_Driver->addAction(&_TableView_Action_DriverDumpFILE);
 		ui.tableView_Driver->addAction(&_TableView_Action_DriverDumpMemory);
 		ui.tableView_Driver->addAction(&_TableView_Action_IOCTLScanner);
+		ui.tableView_Driver->addAction(&_TableView_Action_PDBViewDriver);
 		ui.tableView_Driver->addAction(&_TableView_Action_ViewExportFunc);
+		ui.tableView_Driver->addAction(&_TableView_Action_Driver_Unload);
 	}
 	void SSDTRightMenuUI()
 	{

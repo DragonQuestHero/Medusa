@@ -299,6 +299,7 @@ bool Driver_Load::Nt_Stop_Driver()
 		}
 		else
 		{
+			_Last_Error = ret;
 			char* temp_error = nullptr;
 			if (FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER |
 				FORMAT_MESSAGE_FROM_SYSTEM |
