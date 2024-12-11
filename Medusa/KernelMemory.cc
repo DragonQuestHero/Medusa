@@ -273,6 +273,7 @@ void KernelMemory::QueryMemory()
 
 
 	std::string addr_str = ui.lineEdit->text().toStdString();
+	addr_str = ReplaceStr2(addr_str, "`", "");
 	if (addr_str.find("0x") != std::string::npos)
 	{
 		addr_str.erase(0, 2);
@@ -289,7 +290,19 @@ void KernelMemory::QueryMemory()
 	{
 		char* temp_buffer = new char[Size];
 		RtlZeroMemory(temp_buffer, Size);
-		ULONG64 ret = ReadKernelMemory(Addr, Size, temp_buffer);
+		ULONG64 ret = 0;
+		if (ui.checkBox_PhysicalMemory->isChecked())
+		{
+			ret = KernelReadPhysicalMemory(Addr, Size, temp_buffer);
+		}
+		else if (ui.checkBox_SpecialPhysicalMemory->isChecked())
+		{
+			ret = KernelReadSpecialPhysicalMemory(Addr, Size, temp_buffer);
+		}
+		else
+		{
+			ret = ReadKernelMemory(Addr, Size, temp_buffer);
+		}
 		if (ret)
 		{
 			if (ui.tabWidget->currentIndex() == 0)
@@ -324,6 +337,49 @@ ULONG64 KernelMemory::ReadKernelMemory(ULONG64 Addr, ULONG64 Size, void* Buffer)
 
 	DWORD dwRet = 0;
 	DeviceIoControl(m_hDevice, TEST_ReadKernelMemory, temp_ulong64, 0x10, Buffer, Size, &dwRet, NULL);
+
+	delete temp_ulong64;
+	CloseHandle(m_hDevice);
+	return dwRet;
+}
+
+#define IOCTL_KernelReadPhysicalMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7131,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define IOCTL_KernelReadSpecialPhysicalMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7132,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+ULONG64 KernelMemory::KernelReadPhysicalMemory(ULONG64 Addr, ULONG64 Size, void* Buffer)
+{
+	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (INVALID_HANDLE_VALUE == m_hDevice)
+	{
+		return 0;
+	}
+
+	ULONG64* temp_ulong64 = new ULONG64[2];
+	temp_ulong64[0] = Addr;
+	temp_ulong64[1] = Size;
+
+	DWORD dwRet = 0;
+	DeviceIoControl(m_hDevice, IOCTL_KernelReadPhysicalMemory, temp_ulong64, 0x10, Buffer, Size, &dwRet, NULL);
+
+	delete temp_ulong64;
+	CloseHandle(m_hDevice);
+	return dwRet;
+}
+ULONG64 KernelMemory::KernelReadSpecialPhysicalMemory(ULONG64 Addr, ULONG64 Size, void* Buffer)
+{
+	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (INVALID_HANDLE_VALUE == m_hDevice)
+	{
+		return 0;
+	}
+
+	ULONG64* temp_ulong64 = new ULONG64[2];
+	temp_ulong64[0] = Addr;
+	temp_ulong64[1] = Size;
+
+	DWORD dwRet = 0;
+	DeviceIoControl(m_hDevice, IOCTL_KernelReadSpecialPhysicalMemory, temp_ulong64, 0x10, Buffer, Size, &dwRet, NULL);
 
 	delete temp_ulong64;
 	CloseHandle(m_hDevice);

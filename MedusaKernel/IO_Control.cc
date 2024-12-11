@@ -63,6 +63,9 @@ IO_Control* IO_Control::_This;
 
 #define TEST_DriverUnload CTL_CODE(FILE_DEVICE_UNKNOWN,0x7130,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
+#define IOCTL_KernelReadPhysicalMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7131,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define IOCTL_KernelReadSpecialPhysicalMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7132,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
 
 NTSTATUS IO_Control::Create_IO_Control()
 {
@@ -339,35 +342,47 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 	
 	if(Io_Control_Code == TEST_ReadKernelMemory && Input_Lenght > 0 && Output_Lenght > 0)
 	{
-		SIZE_T NumberOfBytesTransferred = 0;
-		
-		ULONG64 addr = *(ULONG64*)Input_Buffer;
-		ULONG64 size = *(ULONG64*)(Input_Buffer + 8);
-		void* temp_buffer = new char[size];
-		if (temp_buffer)
+		if (MmIsAddressValid(Input_Buffer))
 		{
-			RtlZeroMemory(temp_buffer, size);
-			MM_COPY_ADDRESS SourceAddress;
-			SourceAddress.VirtualAddress = (PVOID)addr;
-			NTSTATUS status = MmCopyMemory(temp_buffer, SourceAddress, size, MM_COPY_MEMORY_VIRTUAL, &NumberOfBytesTransferred);
-			if (NumberOfBytesTransferred != 0)
+			ULONG64 addr = *(ULONG64*)Input_Buffer;
+			ULONG64 size = *(ULONG64*)(Input_Buffer + 8);
+			if (ReadKernelMemory(addr, Input_Buffer, size))
 			{
-				RtlCopyMemory(Input_Buffer, temp_buffer, NumberOfBytesTransferred);
+				pIrp->IoStatus.Status = STATUS_SUCCESS;
+				pIrp->IoStatus.Information = size;
+				IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+				return STATUS_SUCCESS;
 			}
-			else
+		}
+	}
+	if (Io_Control_Code == IOCTL_KernelReadSpecialPhysicalMemory && Input_Lenght > 0 && Output_Lenght > 0)
+	{
+		if (MmIsAddressValid(Input_Buffer))
+		{
+			ULONG64 addr = *(ULONG64*)Input_Buffer;
+			ULONG64 size = *(ULONG64*)(Input_Buffer + 8);
+			if (KernelReadSpecialPhysicalMemory(addr, Input_Buffer, size))
 			{
-				if (KernelSafeReadMemoryIPI(addr, temp_buffer, size))
-				{
-					NumberOfBytesTransferred = size;
-					RtlCopyMemory(Input_Buffer, temp_buffer, NumberOfBytesTransferred);
-				}
+				pIrp->IoStatus.Status = STATUS_SUCCESS;
+				pIrp->IoStatus.Information = size;
+				IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+				return STATUS_SUCCESS;
 			}
-			delete temp_buffer;
-
-			pIrp->IoStatus.Status = STATUS_SUCCESS;
-			pIrp->IoStatus.Information = NumberOfBytesTransferred;
-			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-			return STATUS_SUCCESS;
+		}
+	}
+	if (Io_Control_Code == IOCTL_KernelReadPhysicalMemory && Input_Lenght > 0 && Output_Lenght > 0)
+	{
+		if (MmIsAddressValid(Input_Buffer))
+		{
+			ULONG64 addr = *(ULONG64*)Input_Buffer;
+			ULONG64 size = *(ULONG64*)(Input_Buffer + 8);
+			if (KernelReadPhysicalMemory(addr, Input_Buffer, size))
+			{
+				pIrp->IoStatus.Status = STATUS_SUCCESS;
+				pIrp->IoStatus.Information = size;
+				IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+				return STATUS_SUCCESS;
+			}
 		}
 	}
 	

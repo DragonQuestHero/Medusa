@@ -1075,6 +1075,23 @@ typedef struct _OB_CALLBACK_CONTEXT_BLOCK
 	void(__fastcall* PostCallback)(void*, _OB_POST_OPERATION_INFORMATION*);
 	_EX_RUNDOWN_REF RundownReference;
 }OB_CALLBACK_CONTEXT_BLOCK;
+
+typedef union _DIRECTORY_TABLE_BASE
+{
+	struct
+	{
+		UINT64 Ignored0 : 3;            /* 2:0   */
+		UINT64 PageWriteThrough : 1;    /* 3     */
+		UINT64 PageCacheDisable : 1;    /* 4     */
+		UINT64 _Ignored1 : 7;           /* 11:5  */
+		UINT64 PhysicalAddress : 36;    /* 47:12 */
+		UINT64 _Reserved0 : 16;         /* 63:48 */
+
+	} Bits;
+
+	ULONG64 BitAddress;
+
+} CR3, DIR_TABLE_BASE;
 //-------------------------------------------
 extern "C" POBJECT_TYPE *IoDriverObjectType;
 

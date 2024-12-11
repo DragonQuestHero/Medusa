@@ -85,6 +85,38 @@ NTSTATUS NewNtReadWriteVirtualMemory(Message_NtReadWriteVirtualMemory* message)
 	return Status;
 }
 
+bool ReadKernelMemory(ULONG64 addr, void* Buffer, ULONG64 Size)
+{
+	SIZE_T NumberOfBytesTransferred = 0;
+	void* temp_buffer = new char[Size];
+	if (temp_buffer)
+	{
+		RtlZeroMemory(temp_buffer, Size);
+		MM_COPY_ADDRESS SourceAddress;
+		SourceAddress.VirtualAddress = (PVOID)addr;
+		NTSTATUS status = MmCopyMemory(temp_buffer, SourceAddress, Size, MM_COPY_MEMORY_VIRTUAL, &NumberOfBytesTransferred);
+		if (NumberOfBytesTransferred != 0)
+		{
+			RtlCopyMemory(Buffer, temp_buffer, NumberOfBytesTransferred);
+		}
+		else
+		{
+			if (KernelSafeReadMemoryIPI(addr, temp_buffer, Size))
+			{
+				NumberOfBytesTransferred = Size;
+				RtlCopyMemory(Buffer, temp_buffer, NumberOfBytesTransferred);
+			}
+		}
+		delete temp_buffer;
+	}
+	if (NumberOfBytesTransferred)
+	{
+		return true;
+	}
+	return false;
+}
+
+
 volatile LONG number_of_processors = 0;
 volatile bool _ALLCpuReday = false;
 
@@ -273,4 +305,69 @@ std::vector<UserMemoryListStructCR3> ScannUserMemoryFromCR3(ULONG64 PID)
 	return temp_list;
 }
 
+bool CheckPhysicalMemoryIsAddressValid(ULONG64 addr)
+{
+	auto physical_memory_ranges = MmGetPhysicalMemoryRanges();
+	if (!physical_memory_ranges)//特殊情况干脆不检查了
+	{
+		return false;
+	}
+	for (int i = 0; i < 0x1000; i++)
+	{
+		if (physical_memory_ranges[i].BaseAddress.QuadPart == 0 &&
+			physical_memory_ranges[i].NumberOfBytes.QuadPart == 0)
+		{
+			break;
+		}
+		if (addr >= physical_memory_ranges[i].BaseAddress.QuadPart &&
+			addr < (physical_memory_ranges[i].BaseAddress.QuadPart + physical_memory_ranges[i].NumberOfBytes.QuadPart))
+		{
+			ExFreePoolWithTag(physical_memory_ranges, 'hPmM');
+			return true; // 地址在有效范围内
+		}
+	}
+	ExFreePoolWithTag(physical_memory_ranges, 'hPmM');
+	return false;
+}
 
+bool KernelReadPhysicalMemory(ULONG64 addr, void* Buffer, ULONG64 Size)
+{
+	if (CheckPhysicalMemoryIsAddressValid(addr))
+	{
+		void* va = UtilVaFromPa(addr);
+		return ReadKernelMemory((ULONG64)va, Buffer, Size);
+	}
+	return false;
+}
+
+bool KernelReadSpecialPhysicalMemory(ULONG64 addr, void* Buffer, ULONG64 Size)
+{
+	if (Size > PAGE_SIZE)
+	{
+		return false;
+	}
+	ULONG64 offset = addr & 0xFFF;
+	if (offset + Size > PAGE_SIZE)
+	{
+		return false;
+	}
+
+	PageTable _PageTable;
+	ULONG64 temp_ptr = (ULONG64)ExAllocatePool(NonPagedPool, PAGE_SIZE);
+	PageTableStruct temp_PageTableStruct = _PageTable.GetPageTable((ULONG64)PsGetCurrentProcessId(), temp_ptr);
+	if (!temp_PageTableStruct.pte_addr)
+	{
+		ExFreePool((void*)temp_ptr);
+		return false;
+	}
+	ULONG64 old_pfn = temp_PageTableStruct.pte.Bits.page_frame_number;
+	HardwarePte* temp_pte = (HardwarePte*)temp_PageTableStruct.pte_addr;
+	temp_pte->Bits.page_frame_number = addr >> 12;
+	__invlpg((void*)temp_ptr);
+	ULONG64 addr_offset = temp_ptr + offset;
+	RtlCopyMemory(Buffer, (void*)addr_offset, Size);
+	temp_pte->Bits.page_frame_number = old_pfn;
+	__invlpg((void*)temp_ptr);
+	ExFreePool((void*)temp_ptr);
+	return true;
+}

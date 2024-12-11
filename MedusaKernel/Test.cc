@@ -166,8 +166,8 @@ void TestALL(PDRIVER_OBJECT drive_object)
 	TestProcess();
 	TestModules();
 	TestCallBack();
-	TestSSDT();*/
-	TestScanCR3();
+	TestSSDT();
+	TestScanCR3();*/
 
 	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "=====================================\n");
 }
