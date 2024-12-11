@@ -26,7 +26,7 @@ IO_Control* IO_Control::_This;
 #define TEST_GetALLThreads CTL_CODE(FILE_DEVICE_UNKNOWN,0x7107,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define TEST_GetALLThreadsNumber CTL_CODE(FILE_DEVICE_UNKNOWN,0x7108,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
-#define TEST_GetPDBInfo CTL_CODE(FILE_DEVICE_UNKNOWN,0x7109,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define IOCTL_GetPDBInfo CTL_CODE(FILE_DEVICE_UNKNOWN,0x7109,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
 //#define TEST_GetUnLoadDriver CTL_CODE(FILE_DEVICE_UNKNOWN,0x7110,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
@@ -65,6 +65,8 @@ IO_Control* IO_Control::_This;
 
 #define IOCTL_KernelReadPhysicalMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7131,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 #define IOCTL_KernelReadSpecialPhysicalMemory CTL_CODE(FILE_DEVICE_UNKNOWN,0x7132,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+
+#define IOCTL_KillProcess CTL_CODE(FILE_DEVICE_UNKNOWN,0x7133,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 
 
 NTSTATUS IO_Control::Create_IO_Control()
@@ -259,9 +261,13 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		return STATUS_SUCCESS;
 	}
 	
-	if (Io_Control_Code == TEST_GetPDBInfo)
+	if (Io_Control_Code == IOCTL_GetPDBInfo)
 	{
 		RtlCopyMemory(&_This->_MedusaPDBInfo._PDBInfo, Input_Buffer, sizeof(PDBInfo));
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = 0;
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
 	}
 	
 	
@@ -541,6 +547,15 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 					return STATUS_SUCCESS;
 				}
 			}
+		}
+	}
+
+	if (Io_Control_Code == IOCTL_KillProcess)
+	{
+		if (MmIsAddressValid(Input_Buffer))
+		{
+			ULONG64 pid = *(ULONG64*)Input_Buffer;
+			
 		}
 	}
 

@@ -489,6 +489,10 @@ void Medusa::ProcessRightMenu(QAction* action)
 	{
 		RightMenuR3ThreadsView(PID);
 	}
+	else if (action->text() == "R0ThreadView(second check)")
+	{
+		RightMenuR0ThreadsView(PID);
+	}
 	else if (action->text() == "R3KillProcess")
 	{
 		HANDLE handle = OpenProcess(PROCESS_TERMINATE, FALSE, PID);
@@ -496,6 +500,7 @@ void Medusa::ProcessRightMenu(QAction* action)
 	}
 	else if (action->text() == "R0KillProcess")
 	{
+		
 	}
 	else if (action->text() == "_EPROCESS")
 	{

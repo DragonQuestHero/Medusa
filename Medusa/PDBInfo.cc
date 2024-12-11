@@ -434,7 +434,7 @@ void PDBInfo::UnLoad()
 }
 
 
-#define TEST_GetPDBInfo CTL_CODE(FILE_DEVICE_UNKNOWN,0x7109,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+#define IOCTL_GetPDBInfo CTL_CODE(FILE_DEVICE_UNKNOWN,0x7109,METHOD_BUFFERED ,FILE_ANY_ACCESS)
 bool PDBInfo::SendMedusaPDBInfo()
 {
 	_BaseAddr = 0;
@@ -510,7 +510,7 @@ bool PDBInfo::SendMedusaPDBInfo()
 	}
 
 	ULONG dwRet = 0;
-	if (DeviceIoControl(m_hDevice, TEST_GetPDBInfo, &_MedusaPDBInfo, sizeof(MedusaPDBInfo), 0, 0, &dwRet, NULL))
+	if (DeviceIoControl(m_hDevice, IOCTL_GetPDBInfo, &_MedusaPDBInfo, sizeof(MedusaPDBInfo), 0, 0, &dwRet, NULL))
 	{
 		CloseHandle(m_hDevice);
 		return true;
