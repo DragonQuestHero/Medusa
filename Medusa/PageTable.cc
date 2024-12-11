@@ -18,6 +18,38 @@ PageTable::PageTable(QWidget* parent)
 	connect(ui.pushButton, &QPushButton::clicked, this, &PageTable::ReadPage);
 }
 
+void PageTable::SetAddrOffset(ULONG64 Addr)
+{
+	ADDRESS_STRUCTURE temp_ADDRESS_STRUCTURE = { 0 };
+	temp_ADDRESS_STRUCTURE.BitAddress = Addr;
+
+	std::ostringstream ret1;
+	ret1 << std::hex << "0x" << temp_ADDRESS_STRUCTURE.Bits.PML4Index;
+	ui.lineEdit_pxe_Index->setText(ret1.str().data());
+	ret1.str("");
+	ret1.clear();
+
+	ret1 << std::hex << "0x" << temp_ADDRESS_STRUCTURE.Bits.PDPTIndex;
+	ui.lineEdit_ppe_Index->setText(ret1.str().data());
+	ret1.str("");
+	ret1.clear();
+
+	ret1 << std::hex << "0x" << temp_ADDRESS_STRUCTURE.Bits.PDIndex;
+	ui.lineEdit_pde_Index->setText(ret1.str().data());
+	ret1.str("");
+	ret1.clear();
+
+	ret1 << std::hex << "0x" << temp_ADDRESS_STRUCTURE.Bits.PEIndex;
+	ui.lineEdit_pte_Index->setText(ret1.str().data());
+	ret1.str("");
+	ret1.clear();
+
+	ret1 << std::hex << "0x" << temp_ADDRESS_STRUCTURE.Bits.Offset;
+	ui.lineEdit_offset->setText(ret1.str().data());
+	ret1.str("");
+	ret1.clear();
+}
+
 void PageTable::SetTableViewValue(QStandardItemModel* _Model, HardwarePteX64ForWindows &temp_pte)
 {
 	_Model->removeRows(0, _Model->rowCount());
@@ -187,7 +219,17 @@ void PageTable::ReadPage()
 
 	if (ui.lineEdit_4->text() != "" && ui.lineEdit->text() != "")
 	{
+		ui.lineEdit_2->setText("");
+		ui.lineEdit_3->setText("");
 
+		std::string addr_str = ui.lineEdit->text().toStdString();
+		addr_str = ReplaceStr2(addr_str, "`", "");
+		if (addr_str.find("0x") != std::string::npos)
+		{
+			addr_str.erase(0, 2);
+		}
+		ULONG64 Addr = strtoull(addr_str.data(), 0, 16);
+		SetAddrOffset(Addr);
 	}
 	else if (ui.lineEdit_4->text() == "" && ui.lineEdit->text() != "")
 	{
@@ -201,6 +243,8 @@ void PageTable::ReadPage()
 			addr_str.erase(0, 2);
 		}
 		ULONG64 Addr = strtoull(addr_str.data(), 0, 16);
+		SetAddrOffset(Addr);
+
 		PageTableStruct temp_PageTableStruct = GetPageTableFromKernel(GetCurrentProcessId(), Addr);
 
 		std::ostringstream ret1;

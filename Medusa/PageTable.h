@@ -51,6 +51,19 @@ using PageTableStruct = struct
 	HardwarePteX64ForWindows pte;
 };
 
+typedef union _ADDRESS_STRUCTURE {
+	struct {
+		ULONG64 Offset : 12;         // 11:0，页内偏移
+		ULONG64 PEIndex : 9;         // 20:12，页表索引
+		ULONG64 PDIndex : 9;         // 29:21，页目录索引
+		ULONG64 PDPTIndex : 9;       // 38:30，页目录指针表索引
+		ULONG64 PML4Index : 9;      // 47:39，PML4 索引
+		ULONG64 Reserved : 16;      // 63:48，保留位
+
+	} Bits;
+	uint64_t BitAddress;
+} ADDRESS_STRUCTURE;
+
 class PageTable : public QMainWindow
 {
 	Q_OBJECT
@@ -133,6 +146,7 @@ public:
 		tableView->setColumnWidth(14, 140);
 	}
 	void SetTableViewValue(QStandardItemModel* _Model, HardwarePteX64ForWindows&);
+	void SetAddrOffset(ULONG64 Addr);
 	PageTableStruct GetPageTableFromKernel(ULONG64 PID, ULONG64 addr);
 public slots:
 	void ReadPage();
