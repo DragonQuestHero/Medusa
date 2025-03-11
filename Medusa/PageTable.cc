@@ -48,6 +48,11 @@ void PageTable::SetAddrOffset(ULONG64 Addr)
 	ui.lineEdit_offset->setText(ret1.str().data());
 	ret1.str("");
 	ret1.clear();
+
+	ret1 << std::hex << "0x" << temp_ADDRESS_STRUCTURE.Bits_LargePage.LargeOffset;
+	ui.lineEdit_offset_largepage->setText(ret1.str().data());
+	ret1.str("");
+	ret1.clear();
 }
 
 void PageTable::SetTableViewValue(QStandardItemModel* _Model, HardwarePteX64ForWindows &temp_pte)

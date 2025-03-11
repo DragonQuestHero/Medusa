@@ -31,11 +31,8 @@ typedef union _DIRECTORY_TABLE_BASE
 		UINT64 _Ignored1 : 7;           /* 11:5  */
 		UINT64 PhysicalAddress : 36;    /* 47:12 */
 		UINT64 _Reserved0 : 16;         /* 63:48 */
-
 	} Bits;
-
 	UINT64 BitAddress;
-
 } DIR_TABLE_BASE;
 
 using PageTableStruct = struct
@@ -59,8 +56,17 @@ typedef union _ADDRESS_STRUCTURE {
 		ULONG64 PDPTIndex : 9;       // 38:30，页目录指针表索引
 		ULONG64 PML4Index : 9;      // 47:39，PML4 索引
 		ULONG64 Reserved : 16;      // 63:48，保留位
-
 	} Bits;
+
+	struct
+	{
+		ULONG64 LargeOffset : 21;  // 20:0  页内偏移（2MB）
+		ULONG64 PDIndex : 9;   // 29:21 页目录索引（PDE，此时指向大页）
+		ULONG64 PDPTIndex : 9;   // 38:30 PDPT索引
+		ULONG64 PML4Index : 9;   // 47:39 PML4索引
+		ULONG64 Reserved : 16;  // 63:48 保留位
+	} Bits_LargePage;
+
 	uint64_t BitAddress;
 } ADDRESS_STRUCTURE;
 

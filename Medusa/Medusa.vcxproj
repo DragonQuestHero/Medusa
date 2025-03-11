@@ -192,6 +192,7 @@
     <QtMoc Include="UserMemoryListKernel.h" />
     <QtMoc Include="ModuleExportFunc.h" />
     <QtMoc Include="PageTable.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SymParser.h" />
     <QtMoc Include="UserMemoryList.h" />
     <QtMoc Include="UserMemory.h" />
@@ -218,6 +219,12 @@
       <FileType>Document</FileType>
     </MASM>
     <None Include="SysCall.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Medusa.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="mywife.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
