@@ -42,6 +42,8 @@ public:
 public:
 	ULONG64 ReadUserMemoryR3(ULONG64 Addr, ULONG64 Size, void* Buffer);
 	ULONG64 ReadUserMemoryR0(ULONG64 Addr, ULONG64 Size, void* Buffer);
+	ULONG64 WriteUserMemoryR3(ULONG64 Addr, ULONG64 Size, void* Buffer);
+	ULONG64 WriteUserMemoryR0(ULONG64 Addr, ULONG64 Size, void* Buffer);
 	ULONG64 GetKernelCR3();
 public:
 	void QueryMemoryTable1(char* temp_buffer, ULONG64 ret, ULONG64 Addr);
