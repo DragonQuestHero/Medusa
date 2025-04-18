@@ -156,7 +156,7 @@ bool ReadKernelMemory(ULONG64 addr, void* Buffer, ULONG64 Size)
 		}
 		else
 		{
-			if (KernelSafeReadMemoryIPI(addr, temp_buffer, Size))
+			if (KernelSafeReadWriteMemoryIPI(addr, temp_buffer, Size, true))
 			{
 				NumberOfBytesTransferred = Size;
 				RtlCopyMemory(Buffer, temp_buffer, NumberOfBytesTransferred);
@@ -171,23 +171,48 @@ bool ReadKernelMemory(ULONG64 addr, void* Buffer, ULONG64 Size)
 	return false;
 }
 
+bool WriteKernelMemory(ULONG64 addr, void* Buffer, ULONG64 Size)
+{
+	SIZE_T NumberOfBytesTransferred = 0;
+	
+	MM_COPY_ADDRESS SourceAddress;
+	SourceAddress.VirtualAddress = (PVOID)Buffer;
+	NTSTATUS status = MmCopyMemory((PVOID)addr, SourceAddress, Size, MM_COPY_MEMORY_VIRTUAL, &NumberOfBytesTransferred);
+	if (NumberOfBytesTransferred != 0)
+	{
+		return true;
+	}
+	return false;
+}
 
 volatile LONG number_of_processors = 0;
 volatile bool _ALLCpuReday = false;
 
-ULONG_PTR KipiBroadcastWorker(
+ULONG_PTR IPIReadWriteMemoryExec(
 	ULONG_PTR Argument
 )
 {
 	Message_NtReadWriteVirtualMemory* temp_NtReadWriteVirtualMemory = (Message_NtReadWriteVirtualMemory*)Argument;
 	if (0 == (InterlockedDecrement(&number_of_processors)))
 	{
-		if (MmIsAddressValid(temp_NtReadWriteVirtualMemory->BaseAddress) && //要求极限的话 应该每一页都检查 不过就算检查了p位 也还是有可能炸
-			MmIsAddressValid((void*)
-				((ULONG64)temp_NtReadWriteVirtualMemory->BaseAddress + temp_NtReadWriteVirtualMemory->BufferBytes)))
+		//要求极限的话 应该每一页都检查 不过就算检查了p位 也还是有可能炸
+		if (MmIsAddressValid(temp_NtReadWriteVirtualMemory->BaseAddress)
+			&& MmIsAddressValid((void*)
+				((ULONG64)temp_NtReadWriteVirtualMemory->BaseAddress + temp_NtReadWriteVirtualMemory->BufferBytes))
+			&& MmIsAddressValid(temp_NtReadWriteVirtualMemory->Buffer)
+			&& MmIsAddressValid((void*)
+				((ULONG64)temp_NtReadWriteVirtualMemory->Buffer + temp_NtReadWriteVirtualMemory->BufferBytes)))
 		{
-			RtlCopyMemory(temp_NtReadWriteVirtualMemory->Buffer,
-				temp_NtReadWriteVirtualMemory->BaseAddress, temp_NtReadWriteVirtualMemory->BufferBytes);
+			if (temp_NtReadWriteVirtualMemory->Read)
+			{
+				RtlCopyMemory(temp_NtReadWriteVirtualMemory->Buffer,
+					temp_NtReadWriteVirtualMemory->BaseAddress, temp_NtReadWriteVirtualMemory->BufferBytes);
+			}
+			else
+			{
+				RtlCopyMemory(temp_NtReadWriteVirtualMemory->BaseAddress, temp_NtReadWriteVirtualMemory->Buffer,
+					 temp_NtReadWriteVirtualMemory->BufferBytes);
+			}
 		}
 		_ALLCpuReday = true;
 	}
@@ -199,24 +224,27 @@ ULONG_PTR KipiBroadcastWorker(
 }
 
 
-bool KernelSafeReadMemoryIPI(ULONG64 addr, void* Buffer, ULONG64 Size)
+bool KernelSafeReadWriteMemoryIPI(ULONG64 addr, void* Buffer, ULONG64 Size ,bool Read)
 {
 	Message_NtReadWriteVirtualMemory temp_NtReadWriteVirtualMemory;
 	temp_NtReadWriteVirtualMemory.BaseAddress = (void*)addr;
 	temp_NtReadWriteVirtualMemory.Buffer = Buffer;
 	temp_NtReadWriteVirtualMemory.BufferBytes = Size;
+	temp_NtReadWriteVirtualMemory.Read = Read;
 
 	number_of_processors = KeQueryActiveProcessorCountEx(ALL_PROCESSOR_GROUPS);
-	if (MmIsAddressValid(temp_NtReadWriteVirtualMemory.BaseAddress) &&
-		MmIsAddressValid((void*)
-		((ULONG64)temp_NtReadWriteVirtualMemory.BaseAddress + temp_NtReadWriteVirtualMemory.BufferBytes)))
+	if (MmIsAddressValid(temp_NtReadWriteVirtualMemory.BaseAddress) 
+		&& MmIsAddressValid((void*)
+		((ULONG64)temp_NtReadWriteVirtualMemory.BaseAddress + temp_NtReadWriteVirtualMemory.BufferBytes))
+		&& MmIsAddressValid(temp_NtReadWriteVirtualMemory.Buffer) 
+		&& MmIsAddressValid((void*)
+			((ULONG64)temp_NtReadWriteVirtualMemory.Buffer + temp_NtReadWriteVirtualMemory.BufferBytes)))
 	{
-		KeIpiGenericCall(&KipiBroadcastWorker, (ULONG64)&temp_NtReadWriteVirtualMemory);
+		KeIpiGenericCall(&IPIReadWriteMemoryExec, (ULONG64)&temp_NtReadWriteVirtualMemory);
 		return true;
 	}
 	return false;
 }
-
 
 // PA -> VA
 void* UtilVaFromPa(ULONG64 pa) {

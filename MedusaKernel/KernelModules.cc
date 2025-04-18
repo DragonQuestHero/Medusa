@@ -305,7 +305,7 @@ std::vector<KernelModulesVector> KernelModules::GetKernelModuleList4Quick()
 				}
 				void* base_addr = poolEntry.VirtualAddress;
 				void* memory_p = new char[PAGE_SIZE];
-				if (KernelSafeReadMemoryIPI((ULONG64)base_addr, memory_p, PAGE_SIZE))
+				if (KernelSafeReadWriteMemoryIPI((ULONG64)base_addr, memory_p, PAGE_SIZE,1))
 				{
 					for (int i = 0; i < PAGE_SIZE - 2; i++)
 					{

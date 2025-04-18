@@ -44,7 +44,7 @@ using UserMemoryListStructCR3 = struct
 NTSTATUS NewNtReadWriteVirtualMemory(Message_NtReadWriteVirtualMemory* message);
 NTSTATUS NewNtReadWriteVirtualMemoryFromKernel(Message_NtReadWriteVirtualMemory* message);
 bool ReadKernelMemory(ULONG64 addr, void* Buffer, ULONG64 Size);
-bool KernelSafeReadMemoryIPI(ULONG64 addr, void* Buffer, ULONG64 Size);
+bool KernelSafeReadWriteMemoryIPI(ULONG64 addr, void* Buffer, ULONG64 Size, bool Read);
 bool KernelSafeReadMemoryDPC(ULONG64 addr, void* Buffer, ULONG64 Size);
 std::vector<UserMemoryListStructCR3> ScannUserMemoryFromCR3(ULONG64 PID);
 bool KernelReadPhysicalMemory(ULONG64 addr, void* Buffer, ULONG64 Size);
