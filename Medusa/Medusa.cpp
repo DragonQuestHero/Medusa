@@ -49,10 +49,15 @@ Medusa::Medusa(QWidget *parent)
 	CloseHandle(m_hDevice);
 
 	/*_QTimer = new QTimer(this);
-	QObject::connect(_QTimer, &QTimer::timeout, [&](){
+	QObject::connect(_QTimer, &QTimer::timeout, [&]() {
+		ULONG64 temp_process_list_count = _Process._Process_List_R3.size();
+		_Process.GetProcessListR3();
+		if (temp_process_list_count != _Process._Process_List_R3.size())
+		{
 			ChangeTab();
+		}
 		});
-	_QTimer->start(10000);*/
+	_QTimer->start(2000);*/
 	ChangeTab();
 }
 
@@ -497,10 +502,27 @@ void Medusa::ProcessRightMenu(QAction* action)
 	{
 		HANDLE handle = OpenProcess(PROCESS_TERMINATE, FALSE, PID);
 		TerminateProcess(handle, 0);
+		CloseHandle(handle);
 	}
 	else if (action->text() == "R0KillProcess")
 	{
-		
+		_Process.KillProcess(0, PID);
+		ChangeTab();
+	}
+	else if (action->text() == "R0KillProcess-1")
+	{
+		_Process.KillProcess(1, PID);
+		ChangeTab();
+	}
+	else if (action->text() == "R0KillProcess-2")
+	{
+		_Process.KillProcess(2, PID);
+		ChangeTab();
+	}
+	else if (action->text() == "R0KillProcess-3")
+	{
+		_Process.KillProcess(3, PID);
+		ChangeTab();
 	}
 	else if (action->text() == "_EPROCESS")
 	{

@@ -4,6 +4,9 @@
 #include "CRT/NtSysAPI_Func.hpp"
 
 
+#include "MemoryRW.h"
+#include "Modules.h"
+
 
 
 
@@ -67,9 +70,116 @@ Clean:
 	return false;
 }
 
+bool EmunProcess::KillProcess(ULONG64 pid)
+{
+	NTSTATUS status;
+	HANDLE processHandle;
+	OBJECT_ATTRIBUTES objAttr;
+	CLIENT_ID clientId;
+
+	InitializeObjectAttributes(&objAttr, NULL, 0, NULL, NULL);
+
+	clientId.UniqueProcess = (HANDLE)pid;
+	clientId.UniqueThread = NULL;
+
+	status = ZwOpenProcess(&processHandle, 1, &objAttr, &clientId);
+	if (!NT_SUCCESS(status)) {
+		return false;
+	}
+
+	status = ZwTerminateProcess(processHandle, 0);
+	if (!NT_SUCCESS(status))
+	{
+		ZwClose(processHandle);
+		return false;
+	}
+	else
+	{
+		ZwClose(processHandle);
+		return true;
+	}
+}
+
+bool EmunProcess::KillProcess1(ULONG64 pid)
+{
+	NTSTATUS status;
+	HANDLE processHandle;
+	OBJECT_ATTRIBUTES objAttr;
+	CLIENT_ID clientId;
+
+	InitializeObjectAttributes(&objAttr, NULL, 0, NULL, NULL);
+
+	clientId.UniqueProcess = (HANDLE)pid;
+	clientId.UniqueThread = NULL;
+
+	status = ZwOpenProcess(&processHandle, 1, &objAttr, &clientId);
+	if (!NT_SUCCESS(status)) {
+		return KillProcess2(pid);
+	}
+
+	status = ZwTerminateProcess(processHandle, 0);
+	if (!NT_SUCCESS(status)) 
+	{
+		ZwClose(processHandle);
+		return false;
+	}
+	else 
+	{
+		ZwClose(processHandle);
+		return true;
+	}
+}
+
+bool EmunProcess::KillProcess2(ULONG64 pid)
+{
+	PEPROCESS temp_process;
+	NTSTATUS Status = PsLookupProcessByProcessId((HANDLE)pid, &temp_process);
+	if (!NT_SUCCESS(Status))
+	{
+		return false;
+	}
+	ObDereferenceObject(temp_process);
+	void* temp_start_addr = PsGetProcessSectionBaseAddress(temp_process);
+
+
+	Modules _Modules;
+	UserModule _UserModule = _Modules.GetModuleInfoFromAddr(pid,(ULONG64)temp_start_addr);
+	
+	void* temp_zero_buffer = ExAllocatePool(NonPagedPool, PAGE_SIZE);
+	for (int i = 0; i < _UserModule.Size / PAGE_SIZE; i++)
+	{
+		Message_NtReadWriteVirtualMemory temp_message;
+		temp_message.ProcessId = (HANDLE)pid;
+		temp_message.ProcessHandle = 0;
+		temp_message.BaseAddress = (void*)(_UserModule.Addr + i * PAGE_SIZE);
+		temp_message.Read = 0;
+		temp_message.BufferBytes = PAGE_SIZE;
+		temp_message.Buffer = temp_zero_buffer;
+		SIZE_T NumberOfBytesWritten;
+		temp_message.ReturnBytes = &NumberOfBytesWritten;
+		NewNtReadWriteVirtualMemoryFromKernel(&temp_message);
+	}
+	ExFreePool(temp_zero_buffer);
+	return true;
+}
+
+bool EmunProcess::KillProcess3(ULONG64 pid)
+{
+	PEPROCESS temp_process;
+	NTSTATUS Status = PsLookupProcessByProcessId((HANDLE)pid, &temp_process);
+	if (!NT_SUCCESS(Status))
+	{
+		return false;
+	}
+	ObDereferenceObject(temp_process);
+	KAPC_STATE ApcState;
+	KeStackAttachProcess(temp_process, &ApcState);
 
 
 
+	KeUnstackDetachProcess(&ApcState);
+	return true;
+}
 
 
 

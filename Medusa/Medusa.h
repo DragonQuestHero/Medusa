@@ -333,6 +333,9 @@ public:
 		_TableView_Menu_KillProcess.setTitle("KillProcess");
 		_TableView_Menu_KillProcess.addAction("R3KillProcess");
 		_TableView_Menu_KillProcess.addAction("R0KillProcess");
+		_TableView_Menu_KillProcess.addAction("R0KillProcess-1");
+		_TableView_Menu_KillProcess.addAction("R0KillProcess-2");
+		//_TableView_Menu_KillProcess.addAction("R0KillProcess-3");
 
 		_TableView_Action_PDBViewProcess.setMenu(&_TableView_Menu_PDBViewProcess);
 		_TableView_Menu_PDBViewProcess.setTitle("PDBViewProcess");

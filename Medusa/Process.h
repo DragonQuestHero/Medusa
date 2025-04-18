@@ -37,6 +37,7 @@ public:
 	bool GetProcessListR3();
 	bool GetProcessListFromR0();
 	bool QueryValue(const std::wstring& valueName, const LPCWSTR& szModuleName, std::wstring& retStr);
+	bool KillProcess(int mode, ULONG64 pid);
 private:
 	std::vector<ModuleList> GetModuleListR3(ULONG64 PID);
 public:

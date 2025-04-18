@@ -26,6 +26,10 @@ public:
 	bool EmunProcessUseingNT();
 	bool EmunProcessUseingPID();
 	void EmunProcessSecondCheck();
+	bool KillProcess(ULONG64 pid);
+	bool KillProcess1(ULONG64 pid);
+	bool KillProcess2(ULONG64 pid);
+	bool KillProcess3(ULONG64 pid);
 public:
 	bool Get_Process_Image(HANDLE Process_Handle, UNICODE_STRING* Process_Path);
 public:

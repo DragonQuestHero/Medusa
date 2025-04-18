@@ -122,9 +122,8 @@ NTSTATUS IO_Control::IO_Default(PDEVICE_OBJECT  DeviceObject, PIRP  pIrp)
 	return STATUS_SUCCESS;
 }
 
-NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIrp)
+bool IO_Control::IOCTL_ProcessThread(PIO_STACK_LOCATION irp, PIRP  pIrp)
 {
-	PIO_STACK_LOCATION irp = IoGetCurrentIrpStackLocation(pIrp);
 	ULONG Io_Control_Code = irp->Parameters.DeviceIoControl.IoControlCode;
 	ULONG Input_Lenght = irp->Parameters.DeviceIoControl.InputBufferLength;
 	ULONG Output_Lenght = irp->Parameters.DeviceIoControl.OutputBufferLength;
@@ -137,7 +136,7 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_EmunProcess._Process_List.size();
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
+		return true;
 	}
 	else if (Io_Control_Code == TEST_GetALLProcess)
 	{
@@ -146,7 +145,7 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 			pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
 			pIrp->IoStatus.Information = 0;
 			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-			return STATUS_SUCCESS;
+			return true;
 		}
 
 		int i = 0;
@@ -158,86 +157,14 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_EmunProcess._Process_List.size() * sizeof(PROCESS_LIST);
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
+		return true;
 	}
-	
-	if (Io_Control_Code == TEST_GetALLKernelModuleNumber)
-	{
-		_This->_KernelModules.GetKernelModuleListALL();
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = _This->_KernelModules._KernelModuleList.size();
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
-	else if (Io_Control_Code == TEST_GetALLKernelModule)
-	{
-		if (Output_Lenght < _This->_KernelModules._KernelModuleList.size() * sizeof(KernelModulesVector))
-		{
-			pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
-			pIrp->IoStatus.Information = 0;
-			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-			return STATUS_SUCCESS;
-		}
-
-		int i = 0;
-		for (auto x : _This->_KernelModules._KernelModuleList)
-		{
-			RtlCopyMemory(Input_Buffer + i * sizeof(KernelModulesVector), &x, sizeof(KernelModulesVector));
-			i++;
-		}
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = _This->_KernelModules._KernelModuleList.size() * sizeof(KernelModulesVector);
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
-	
-	
-	if (Io_Control_Code == TEST_GetALLUserModuleNumber)
-	{
-		Modules _Modules;
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = _Modules.GetWin32MoudleList(*(ULONG64*)Input_Buffer).size();
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
-	else if (Io_Control_Code == TEST_GetALLUserModule)
-	{
-		Modules _Modules;
-		std::vector<UserModule> temp_vector = _Modules.GetWin32MoudleList(*(ULONG64*)Input_Buffer);
-		if (Output_Lenght < temp_vector.size() * sizeof(UserModule))
-		{
-			pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
-			pIrp->IoStatus.Information = 0;
-			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-			return STATUS_SUCCESS;
-		}
-		int i = 0;
-		for (auto x : temp_vector)
-		{
-			RtlCopyMemory(Input_Buffer + i * sizeof(UserModule), &x, sizeof(UserModule));
-			i++;
-		}
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = temp_vector.size() * sizeof(UserModule);
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
-	
-	if (Io_Control_Code == TEST_ReadUserMemoryFromKernel && Input_Lenght > 0)
-	{
-		NewNtReadWriteVirtualMemory((Message_NtReadWriteVirtualMemory*)Input_Buffer);
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = 0;
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
-	
-	if (Io_Control_Code == TEST_GetALLThreadsNumber)
+	else if (Io_Control_Code == TEST_GetALLThreadsNumber)
 	{
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_Threads.GetThreadListR0(*(ULONG64*)Input_Buffer).size();
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
+		return true;
 	}
 	else if (Io_Control_Code == TEST_GetALLThreads)
 	{
@@ -247,7 +174,7 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 			pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
 			pIrp->IoStatus.Information = 0;
 			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-			return STATUS_SUCCESS;
+			return true;
 		}
 		int i = 0;
 		for (auto x : temp_vector)
@@ -258,56 +185,15 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = temp_vector.size() * sizeof(ThreadList);
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
+		return true;
 	}
-	
-	if (Io_Control_Code == IOCTL_GetPDBInfo)
-	{
-		RtlCopyMemory(&_This->_MedusaPDBInfo._PDBInfo, Input_Buffer, sizeof(PDBInfo));
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = 0;
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
-	
-	
-	if (Io_Control_Code == TEST_GetUnLoadKernelModuleNumber)
-	{
-		_This->_KernelModules.GetUnLoadKernelModuleList();
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = _This->_KernelModules._UnLoadKernelModuleList.size();
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
-	else if (Io_Control_Code == TEST_GetUnLoadKernelModule)
-	{
-		if (Output_Lenght < _This->_KernelModules._UnLoadKernelModuleList.size() * sizeof(KernelUnloadModules))
-		{
-			pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
-			pIrp->IoStatus.Information = 0;
-			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-			return STATUS_SUCCESS;
-		}
-
-		int i = 0;
-		for (auto x : _This->_KernelModules._UnLoadKernelModuleList)
-		{
-			RtlCopyMemory(Input_Buffer + i * sizeof(KernelUnloadModules), &x, sizeof(KernelUnloadModules));
-			i++;
-		}
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = _This->_KernelModules._UnLoadKernelModuleList.size() * sizeof(KernelUnloadModules);
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
-	
-	if (Io_Control_Code == TEST_GetThreadStackWalkNumber && Input_Lenght > 0)
+	else if (Io_Control_Code == TEST_GetThreadStackWalkNumber && Input_Lenght > 0)
 	{
 		_This->_Threads.StackWalkThread(*(ULONG64*)Input_Buffer);
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_Threads.temp_walk_vector.size();
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
+		return true;
 	}
 	else if (Io_Control_Code == TEST_GetThreadStackWalk)
 	{
@@ -320,78 +206,18 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_Threads.temp_walk_vector.size() * sizeof(ULONG64);
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
+		return true;
 	}
-	
-	if (Io_Control_Code == TEST_DumpDriver && Output_Lenght > 0)
-	{
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = _This->_KernelModules.DumpDriver(*(ULONG64*)Input_Buffer, Input_Buffer + 8);
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
-	
-	if(Io_Control_Code == TEST_GetIOCTLFunction && Input_Lenght > 0 && Output_Lenght > 0)
-	{
-		std::vector<IOCTLS> temp_vector = _This->_KernelModules.GetIOCTLFunctionR0(*(ULONG64*)Input_Buffer);
-		int i = 0;
-		for (auto x : temp_vector)
-		{
-			RtlCopyMemory(Input_Buffer + i * sizeof(IOCTLS), &x, sizeof(IOCTLS));
-			i++;
-		}
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = temp_vector.size() * sizeof(IOCTLS);
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
-	
-	if(Io_Control_Code == TEST_ReadKernelMemory && Input_Lenght > 0 && Output_Lenght > 0)
-	{
-		if (MmIsAddressValid(Input_Buffer))
-		{
-			ULONG64 addr = *(ULONG64*)Input_Buffer;
-			ULONG64 size = *(ULONG64*)(Input_Buffer + 8);
-			if (ReadKernelMemory(addr, Input_Buffer, size))
-			{
-				pIrp->IoStatus.Status = STATUS_SUCCESS;
-				pIrp->IoStatus.Information = size;
-				IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-				return STATUS_SUCCESS;
-			}
-		}
-	}
-	if (Io_Control_Code == IOCTL_KernelReadSpecialPhysicalMemory && Input_Lenght > 0 && Output_Lenght > 0)
-	{
-		if (MmIsAddressValid(Input_Buffer))
-		{
-			ULONG64 addr = *(ULONG64*)Input_Buffer;
-			ULONG64 size = *(ULONG64*)(Input_Buffer + 8);
-			if (KernelReadSpecialPhysicalMemory(addr, Input_Buffer, size))
-			{
-				pIrp->IoStatus.Status = STATUS_SUCCESS;
-				pIrp->IoStatus.Information = size;
-				IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-				return STATUS_SUCCESS;
-			}
-		}
-	}
-	if (Io_Control_Code == IOCTL_KernelReadPhysicalMemory && Input_Lenght > 0 && Output_Lenght > 0)
-	{
-		if (MmIsAddressValid(Input_Buffer))
-		{
-			ULONG64 addr = *(ULONG64*)Input_Buffer;
-			ULONG64 size = *(ULONG64*)(Input_Buffer + 8);
-			if (KernelReadPhysicalMemory(addr, Input_Buffer, size))
-			{
-				pIrp->IoStatus.Status = STATUS_SUCCESS;
-				pIrp->IoStatus.Information = size;
-				IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-				return STATUS_SUCCESS;
-			}
-		}
-	}
-	
+	return false;
+}
+
+bool IO_Control::IOCTL_DLLInject(PIO_STACK_LOCATION irp, PIRP  pIrp)
+{
+	ULONG Io_Control_Code = irp->Parameters.DeviceIoControl.IoControlCode;
+	ULONG Input_Lenght = irp->Parameters.DeviceIoControl.InputBufferLength;
+	ULONG Output_Lenght = irp->Parameters.DeviceIoControl.OutputBufferLength;
+	char* Input_Buffer = (char*)pIrp->AssociatedIrp.SystemBuffer;
+
 	if (Io_Control_Code == TEST_InjectDLL && Input_Lenght > 0)
 	{
 		ULONG64 pid = *(ULONG64*)Input_Buffer;
@@ -408,99 +234,206 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		}
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
+		return true;
 	}
 
+	return false;
+}
 
-	if (Io_Control_Code == TEST_GetCallBackListNumber)
+bool IO_Control::IOCTL_Modules(PIO_STACK_LOCATION irp, PIRP  pIrp)
+{
+	ULONG Io_Control_Code = irp->Parameters.DeviceIoControl.IoControlCode;
+	ULONG Input_Lenght = irp->Parameters.DeviceIoControl.InputBufferLength;
+	ULONG Output_Lenght = irp->Parameters.DeviceIoControl.OutputBufferLength;
+	char* Input_Buffer = (char*)pIrp->AssociatedIrp.SystemBuffer;
+
+	if (Io_Control_Code == TEST_GetALLKernelModuleNumber)
 	{
-		_This->_CallBackScanner.GetALLCallBackList();
+		_This->_KernelModules.GetKernelModuleListALL();
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = _This->_CallBackScanner._ObjectCallBackList.size();
+		pIrp->IoStatus.Information = _This->_KernelModules._KernelModuleList.size();
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
+		return true;
 	}
-	else if (Io_Control_Code == TEST_GetCallBackList)
+	else if (Io_Control_Code == TEST_GetALLKernelModule)
 	{
-		int i = 0;
-		for (auto x : _This->_CallBackScanner._ObjectCallBackList)
+		if (Output_Lenght < _This->_KernelModules._KernelModuleList.size() * sizeof(KernelModulesVector))
 		{
-			RtlCopyMemory(Input_Buffer + i * sizeof(ObjectCallBackList), &x, sizeof(ObjectCallBackList));
+			pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
+			pIrp->IoStatus.Information = 0;
+			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+			return true;
+		}
+
+		int i = 0;
+		for (auto x : _This->_KernelModules._KernelModuleList)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(KernelModulesVector), &x, sizeof(KernelModulesVector));
 			i++;
 		}
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = _This->_CallBackScanner._ObjectCallBackList.size() * sizeof(ObjectCallBackList);
+		pIrp->IoStatus.Information = _This->_KernelModules._KernelModuleList.size() * sizeof(KernelModulesVector);
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
+		return true;
 	}
-	
-	if (Io_Control_Code == TEST_GetCR3 && Output_Lenght > 0)
+	else if (Io_Control_Code == TEST_GetALLUserModuleNumber)
+	{
+		Modules _Modules;
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _Modules.GetWin32MoudleList(*(ULONG64*)Input_Buffer).size();
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return true;
+	}
+	else if (Io_Control_Code == TEST_GetALLUserModule)
+	{
+		Modules _Modules;
+		std::vector<UserModule> temp_vector = _Modules.GetWin32MoudleList(*(ULONG64*)Input_Buffer);
+		if (Output_Lenght < temp_vector.size() * sizeof(UserModule))
+		{
+			pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
+			pIrp->IoStatus.Information = 0;
+			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+			return true;
+		}
+		int i = 0;
+		for (auto x : temp_vector)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(UserModule), &x, sizeof(UserModule));
+			i++;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = temp_vector.size() * sizeof(UserModule);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return true;
+	}
+	else if (Io_Control_Code == TEST_GetUnLoadKernelModuleNumber)
+	{
+		_This->_KernelModules.GetUnLoadKernelModuleList();
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_KernelModules._UnLoadKernelModuleList.size();
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return true;
+	}
+	else if (Io_Control_Code == TEST_GetUnLoadKernelModule)
+	{
+		if (Output_Lenght < _This->_KernelModules._UnLoadKernelModuleList.size() * sizeof(KernelUnloadModules))
+		{
+			pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
+			pIrp->IoStatus.Information = 0;
+			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+			return true;
+		}
+
+		int i = 0;
+		for (auto x : _This->_KernelModules._UnLoadKernelModuleList)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(KernelUnloadModules), &x, sizeof(KernelUnloadModules));
+			i++;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_KernelModules._UnLoadKernelModuleList.size() * sizeof(KernelUnloadModules);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return true;
+	}
+	else if (Io_Control_Code == TEST_DumpDriver && Output_Lenght > 0)
+	{
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_KernelModules.DumpDriver(*(ULONG64*)Input_Buffer, Input_Buffer + 8);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return true;
+	}
+
+	return false;
+}
+
+bool IO_Control::IOCTL_Memory(PIO_STACK_LOCATION irp, PIRP  pIrp)
+{
+	ULONG Io_Control_Code = irp->Parameters.DeviceIoControl.IoControlCode;
+	ULONG Input_Lenght = irp->Parameters.DeviceIoControl.InputBufferLength;
+	ULONG Output_Lenght = irp->Parameters.DeviceIoControl.OutputBufferLength;
+	char* Input_Buffer = (char*)pIrp->AssociatedIrp.SystemBuffer;
+
+	if (Io_Control_Code == TEST_ReadUserMemoryFromKernel && Input_Lenght > 0)
+	{
+		NewNtReadWriteVirtualMemory((Message_NtReadWriteVirtualMemory*)Input_Buffer);
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = 0;
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return true;
+	}
+	else if (Io_Control_Code == TEST_ReadKernelMemory && Input_Lenght > 0 && Output_Lenght > 0)
+	{
+		if (MmIsAddressValid(Input_Buffer))
+		{
+			ULONG64 addr = *(ULONG64*)Input_Buffer;
+			ULONG64 size = *(ULONG64*)(Input_Buffer + 8);
+			if (ReadKernelMemory(addr, Input_Buffer, size))
+			{
+				pIrp->IoStatus.Status = STATUS_SUCCESS;
+				pIrp->IoStatus.Information = size;
+				IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+				return true;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (Io_Control_Code == IOCTL_KernelReadSpecialPhysicalMemory && Input_Lenght > 0 && Output_Lenght > 0)
+	{
+		if (MmIsAddressValid(Input_Buffer))
+		{
+			ULONG64 addr = *(ULONG64*)Input_Buffer;
+			ULONG64 size = *(ULONG64*)(Input_Buffer + 8);
+			if (KernelReadSpecialPhysicalMemory(addr, Input_Buffer, size))
+			{
+				pIrp->IoStatus.Status = STATUS_SUCCESS;
+				pIrp->IoStatus.Information = size;
+				IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+				return true;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (Io_Control_Code == IOCTL_KernelReadPhysicalMemory && Input_Lenght > 0 && Output_Lenght > 0)
+	{
+		if (MmIsAddressValid(Input_Buffer))
+		{
+			ULONG64 addr = *(ULONG64*)Input_Buffer;
+			ULONG64 size = *(ULONG64*)(Input_Buffer + 8);
+			if (KernelReadPhysicalMemory(addr, Input_Buffer, size))
+			{
+				pIrp->IoStatus.Status = STATUS_SUCCESS;
+				pIrp->IoStatus.Information = size;
+				IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+				return true;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (Io_Control_Code == TEST_GetCR3 && Output_Lenght > 0)
 	{
 		*(ULONG64*)Input_Buffer = __readcr3();
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = 8;
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
+		return true;
 	}
-
-
-	if (Io_Control_Code == TEST_GetSSDTListNumber)
-	{
-		if (_This->_SSDT._SSDTALL.size() == 0)
-		{
-			_This->_SSDT.GetAllSSDT();
-		}
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = _This->_SSDT._SSDTALL.size();
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
-	else if (Io_Control_Code == TEST_GetSSDTList)
-	{
-		int i = 0;
-		for (auto x : _This->_SSDT._SSDTALL)
-		{
-			RtlCopyMemory(Input_Buffer + i * sizeof(SSDT_STRUCT), &x, sizeof(SSDT_STRUCT));
-			i++;
-		}
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = _This->_SSDT._SSDTALL.size() * sizeof(SSDT_STRUCT);
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
-	else if (Io_Control_Code == TEST_GetSSSDTListNumber)
-	{
-		if (_This->_SSDT._SSSDTALL.size() == 0)
-		{
-			_This->_SSDT.GetAllShadowSSDT();
-		}
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = _This->_SSDT._SSSDTALL.size();
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
-	else if (Io_Control_Code == TEST_GetSSSDTList)
-	{
-		int i = 0;
-		for (auto x : _This->_SSDT._SSSDTALL)
-		{
-			RtlCopyMemory(Input_Buffer + i * sizeof(SSDT_STRUCT), &x, sizeof(SSDT_STRUCT));
-			i++;
-		}
-		pIrp->IoStatus.Status = STATUS_SUCCESS;
-		pIrp->IoStatus.Information = _This->_SSDT._SSSDTALL.size() * sizeof(SSDT_STRUCT);
-		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-	}
-
-	if (Io_Control_Code == TEST_GetUserMemoryFromCR3Number)
+	else if (Io_Control_Code == TEST_GetUserMemoryFromCR3Number)
 	{
 		ULONG64 pid = *(ULONG64*)Input_Buffer;
 		_This->_UserMemoryList = ScannUserMemoryFromCR3(pid);
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_UserMemoryList.size();
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
+		return true;
 	}
 	else if (Io_Control_Code == TEST_GetUserMemoryFromCR3)
 	{
@@ -513,7 +446,7 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		pIrp->IoStatus.Status = STATUS_SUCCESS;
 		pIrp->IoStatus.Information = _This->_UserMemoryList.size() * sizeof(UserMemoryListStructCR3);
 		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
+		return true;
 	}
 
 	if (Io_Control_Code == TEST_GetPageTables)
@@ -526,9 +459,195 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 			pIrp->IoStatus.Status = STATUS_SUCCESS;
 			pIrp->IoStatus.Information = sizeof(PageTableStruct);
 			IoCompleteRequest(pIrp, IO_NO_INCREMENT);
-			return STATUS_SUCCESS;
+			return true;
 		}
 	}
+
+
+	return false;
+}
+
+bool IO_Control::IOCTL_KernelInfo(PIO_STACK_LOCATION irp, PIRP  pIrp)
+{
+	ULONG Io_Control_Code = irp->Parameters.DeviceIoControl.IoControlCode;
+	ULONG Input_Lenght = irp->Parameters.DeviceIoControl.InputBufferLength;
+	ULONG Output_Lenght = irp->Parameters.DeviceIoControl.OutputBufferLength;
+	char* Input_Buffer = (char*)pIrp->AssociatedIrp.SystemBuffer;
+
+	if (Io_Control_Code == TEST_GetIOCTLFunction && Input_Lenght > 0 && Output_Lenght > 0)
+	{
+		std::vector<IOCTLS> temp_vector = _This->_KernelModules.GetIOCTLFunctionR0(*(ULONG64*)Input_Buffer);
+		int i = 0;
+		for (auto x : temp_vector)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(IOCTLS), &x, sizeof(IOCTLS));
+			i++;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = temp_vector.size() * sizeof(IOCTLS);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return true;
+	}
+	else if (Io_Control_Code == TEST_GetCallBackListNumber)
+	{
+		_This->_CallBackScanner.GetALLCallBackList();
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_CallBackScanner._ObjectCallBackList.size();
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return true;
+	}
+	else if (Io_Control_Code == TEST_GetCallBackList)
+	{
+		int i = 0;
+		for (auto x : _This->_CallBackScanner._ObjectCallBackList)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(ObjectCallBackList), &x, sizeof(ObjectCallBackList));
+			i++;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_CallBackScanner._ObjectCallBackList.size() * sizeof(ObjectCallBackList);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return true;
+	}
+	else if (Io_Control_Code == TEST_GetSSDTListNumber)
+	{
+		if (_This->_SSDT._SSDTALL.size() == 0)
+		{
+			_This->_SSDT.GetAllSSDT();
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_SSDT._SSDTALL.size();
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return true;
+	}
+	else if (Io_Control_Code == TEST_GetSSDTList)
+	{
+		int i = 0;
+		for (auto x : _This->_SSDT._SSDTALL)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(SSDT_STRUCT), &x, sizeof(SSDT_STRUCT));
+			i++;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_SSDT._SSDTALL.size() * sizeof(SSDT_STRUCT);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return true;
+	}
+	else if (Io_Control_Code == TEST_GetSSSDTListNumber)
+	{
+		if (_This->_SSDT._SSSDTALL.size() == 0)
+		{
+			_This->_SSDT.GetAllShadowSSDT();
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_SSDT._SSSDTALL.size();
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return true;
+	}
+	else if (Io_Control_Code == TEST_GetSSSDTList)
+	{
+		int i = 0;
+		for (auto x : _This->_SSDT._SSSDTALL)
+		{
+			RtlCopyMemory(Input_Buffer + i * sizeof(SSDT_STRUCT), &x, sizeof(SSDT_STRUCT));
+			i++;
+		}
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = _This->_SSDT._SSSDTALL.size() * sizeof(SSDT_STRUCT);
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return true;
+	}
+
+	return false;
+}
+
+NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIrp)
+{
+	PIO_STACK_LOCATION irp = IoGetCurrentIrpStackLocation(pIrp);
+	ULONG Io_Control_Code = irp->Parameters.DeviceIoControl.IoControlCode;
+	ULONG Input_Lenght = irp->Parameters.DeviceIoControl.InputBufferLength;
+	ULONG Output_Lenght = irp->Parameters.DeviceIoControl.OutputBufferLength;
+	char* Input_Buffer = (char*)pIrp->AssociatedIrp.SystemBuffer;
+
+
+	if (IOCTL_ProcessThread(irp, pIrp))
+	{
+		return STATUS_SUCCESS;
+	}
+	if (IOCTL_Modules(irp, pIrp))
+	{
+		return STATUS_SUCCESS;
+	}
+	if (IOCTL_Memory(irp, pIrp))
+	{
+		return STATUS_SUCCESS;
+	}
+	if (IOCTL_DLLInject(irp, pIrp))
+	{
+		return STATUS_SUCCESS;
+	}
+	if (IOCTL_KernelInfo(irp, pIrp))
+	{
+		return STATUS_SUCCESS;
+	}
+
+	if (Io_Control_Code == IOCTL_KillProcess)
+	{
+		if (MmIsAddressValid(Input_Buffer))
+		{
+			ULONG64 mode = *(ULONG64*)Input_Buffer;
+			ULONG64 pid = *(ULONG64*)(Input_Buffer + 8);
+			bool ret = false;
+			if (mode == 0)
+			{
+				ret = _This->_EmunProcess.KillProcess(pid);
+			}
+			else if (mode == 1)
+			{
+				ret = _This->_EmunProcess.KillProcess1(pid);
+			}
+			else if (mode == 2)
+			{
+				ret = _This->_EmunProcess.KillProcess2(pid);
+			}
+			else if (mode == 3)
+			{
+				ret = _This->_EmunProcess.KillProcess3(pid);
+			}
+
+			if (ret)
+			{
+				pIrp->IoStatus.Status = STATUS_SUCCESS;
+				pIrp->IoStatus.Information = 0;
+				IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+				return STATUS_SUCCESS;
+			}
+			else
+			{
+				pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
+				pIrp->IoStatus.Information = 0;
+				IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+				return STATUS_UNSUCCESSFUL;
+			}
+		}
+	}
+	
+
+	
+	
+	if (Io_Control_Code == IOCTL_GetPDBInfo)
+	{
+		RtlCopyMemory(&_This->_MedusaPDBInfo._PDBInfo, Input_Buffer, sizeof(PDBInfo));
+		pIrp->IoStatus.Status = STATUS_SUCCESS;
+		pIrp->IoStatus.Information = 0;
+		IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+		return STATUS_SUCCESS;
+	}
+	
+	
+	
+	
+
 
 	if (Io_Control_Code == TEST_DriverUnload)
 	{
@@ -550,14 +669,7 @@ NTSTATUS IO_Control::Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIr
 		}
 	}
 
-	if (Io_Control_Code == IOCTL_KillProcess)
-	{
-		if (MmIsAddressValid(Input_Buffer))
-		{
-			ULONG64 pid = *(ULONG64*)Input_Buffer;
-			
-		}
-	}
+	
 
 	pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
 	pIrp->IoStatus.Information = 0;

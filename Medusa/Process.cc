@@ -197,3 +197,25 @@ bool Process::QueryValue(const std::wstring& valueName, const LPCWSTR& szModuleN
 
 	return bSuccess;
 }
+
+#define IOCTL_KillProcess CTL_CODE(FILE_DEVICE_UNKNOWN,0x7133,METHOD_BUFFERED ,FILE_ANY_ACCESS)
+bool Process::KillProcess(int mode, ULONG64 pid)
+{
+	HANDLE m_hDevice = CreateFileA("\\\\.\\IO_Control", GENERIC_READ | GENERIC_WRITE, 0,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (INVALID_HANDLE_VALUE == m_hDevice)
+	{
+		return 0;
+	}
+
+	ULONG64* temp_ulong64 = new ULONG64[2];
+	temp_ulong64[0] = mode;
+	temp_ulong64[1] = pid;
+
+	DWORD dwRet = 0;
+	NTSTATUS status = DeviceIoControl(m_hDevice, IOCTL_KillProcess, temp_ulong64, 0x10, nullptr, 0, &dwRet, NULL);
+	
+	delete temp_ulong64;
+	CloseHandle(m_hDevice);
+	return NT_SUCCESS(status) ? true : false;
+}

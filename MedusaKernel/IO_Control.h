@@ -29,6 +29,11 @@ private:
 	static IO_Control* _This;
 	static NTSTATUS IO_Default(PDEVICE_OBJECT  DeviceObject, PIRP  pIrp);
 	static NTSTATUS Code_Control_Center(PDEVICE_OBJECT  DeviceObject, PIRP  pIrp);
+	static bool IOCTL_ProcessThread(PIO_STACK_LOCATION irp, PIRP  pIrp);
+	static bool IOCTL_DLLInject(PIO_STACK_LOCATION irp, PIRP  pIrp);
+	static bool IOCTL_Modules(PIO_STACK_LOCATION irp, PIRP  pIrp);
+	static bool IOCTL_Memory(PIO_STACK_LOCATION irp, PIRP  pIrp);
+	static bool IOCTL_KernelInfo(PIO_STACK_LOCATION irp, PIRP  pIrp);
 private:
 	DRIVER_OBJECT *Driver_Object = nullptr;
 	DEVICE_OBJECT *Device_Object = nullptr;

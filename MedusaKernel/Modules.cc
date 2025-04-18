@@ -155,3 +155,33 @@ bool Modules::R0MapInject(ULONG64 PID, ULONG64 Size, void* DLLImage)
 	}
 	return false;
 }
+
+UserModule Modules::GetNtdll(ULONG64 PID)
+{
+	UserModule temp_UserModule = { 0 };
+	std::vector<UserModule> temp_vector = GetWin32MoudleList(PID);
+	for (auto x : temp_vector)
+	{
+		if (CompareWcharStrings(x.Name, L"Ntdll.dll"))
+		{
+			RtlCopyMemory(&temp_UserModule, &x, sizeof(UserModule));
+			break;
+		}
+	}
+	return temp_UserModule;
+}
+
+UserModule Modules::GetModuleInfoFromAddr(ULONG64 PID,ULONG64 Addr)
+{
+	UserModule temp_UserModule = { 0 };
+	std::vector<UserModule> temp_vector = GetWin32MoudleList(PID);
+	for (auto x : temp_vector)
+	{
+		if (x.Addr == Addr)
+		{
+			RtlCopyMemory(&temp_UserModule, &x, sizeof(UserModule));
+			break;
+		}
+	}
+	return temp_UserModule;
+}

@@ -42,6 +42,7 @@ using UserMemoryListStructCR3 = struct
 };
 
 NTSTATUS NewNtReadWriteVirtualMemory(Message_NtReadWriteVirtualMemory* message);
+NTSTATUS NewNtReadWriteVirtualMemoryFromKernel(Message_NtReadWriteVirtualMemory* message);
 bool ReadKernelMemory(ULONG64 addr, void* Buffer, ULONG64 Size);
 bool KernelSafeReadMemoryIPI(ULONG64 addr, void* Buffer, ULONG64 Size);
 bool KernelSafeReadMemoryDPC(ULONG64 addr, void* Buffer, ULONG64 Size);
